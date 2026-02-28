@@ -52,6 +52,13 @@ dfl:
   reduction: mean
 perturb: 
   reduction: mean
+  sigma: 0.01
   noise: normal
+  sigma_schedule: linear_decay
+  sigma_start: 0.01
+  sigma_end: 0.0001
+  n_samples: 25
+  output_activation: tanh
+  sigma_n_epochs: 300
 cpLayer:
   reduction: mean

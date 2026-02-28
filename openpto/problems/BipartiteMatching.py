@@ -137,17 +137,14 @@ class BipartiteMatching(PTOProblem):
                     to_add.remove(gnodes.index(v))
                 except Exception:
                     print(v, " not in list")
-            missing_list = (
-                lhs_nodes_idx
-                if len(lhs_nodes_idx) < len(rhs_nodes_idx)
-                else rhs_nodes_idx
-            )
-
-            while len(missing_list) < 50:
-                misidx = to_add.pop()
-                print("node {} idx added successfully".format(gnodes[misidx]))
-                missing_list.append(misidx)
-            assert len(lhs_nodes_idx) == len(rhs_nodes_idx)
+            # Pad both sides to n_nodes (50) with remaining nodes
+            for target_list in (lhs_nodes_idx, rhs_nodes_idx):
+                while len(target_list) < n_nodes and to_add:
+                    misidx = to_add.pop()
+                    print("node {} idx added successfully".format(gnodes[misidx]))
+                    target_list.append(misidx)
+            assert len(lhs_nodes_idx) == len(rhs_nodes_idx) == n_nodes, \
+                f"Partition {i}: lhs={len(lhs_nodes_idx)}, rhs={len(rhs_nodes_idx)}, expected {n_nodes}"
             adj = nx.to_numpy_array(g_part[i])
             sum_before = adj.sum()
             adj = adj[lhs_nodes_idx]

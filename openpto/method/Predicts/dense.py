@@ -21,6 +21,7 @@ act_func_dict = {
     "relu": nn.ReLU(),
     "softmax": partial(nn.Softmax, dim=-1),
     "sigmoid": nn.Sigmoid(),
+    "softplus": nn.Softplus(),
 }
 
 

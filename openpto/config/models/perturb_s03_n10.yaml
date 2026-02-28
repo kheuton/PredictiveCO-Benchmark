@@ -52,6 +52,9 @@ dfl:
   reduction: mean
 perturb: 
   reduction: mean
+  sigma: 0.3
+  n_samples: 10
   noise: normal
+
 cpLayer:
   reduction: mean

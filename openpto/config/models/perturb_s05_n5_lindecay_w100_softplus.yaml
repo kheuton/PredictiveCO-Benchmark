@@ -49,9 +49,17 @@ ce:
   reduction: mean
 dfl:
   dflalpha: 0.1
-  reduction: mean
 perturb: 
   reduction: mean
+  sigma: 0.5
+  n_samples: 5
   noise: normal
+  output_activation: softplus
+  sigma_schedule: linear_decay
+  sigma_start: 0.5
+  sigma_end: 0.05
+  sigma_n_epochs: 500
+  sigma_warmup_epochs: 100
+
 cpLayer:
   reduction: mean

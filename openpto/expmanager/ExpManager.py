@@ -299,6 +299,11 @@ class ExpManager:
             time_since_best += 1
             total_train_time += time.time() - time_train_start
 
+            # Step loss_fn scheduler (e.g. sigma schedule for perturbed)
+            if hasattr(loss_fn, "step"):
+                new_val = loss_fn.step(iter_idx)
+                self.logger.info(f"  loss_fn.step({iter_idx}) -> {new_val}")
+
             ###### Check metrics on val set
             self.logger.info(
                 f"Previous best epoch: {best_epoch}, time since best: {time_since_best}"

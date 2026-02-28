@@ -50,8 +50,9 @@ ce:
 dfl:
   dflalpha: 0.1
   reduction: mean
-perturb: 
+perturb:
   reduction: mean
-  noise: normal
+  sigma: 0.5
+  reduction: mean
 cpLayer:
   reduction: mean

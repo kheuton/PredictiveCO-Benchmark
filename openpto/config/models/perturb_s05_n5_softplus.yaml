@@ -49,9 +49,12 @@ ce:
   reduction: mean
 dfl:
   dflalpha: 0.1
-  reduction: mean
 perturb: 
   reduction: mean
+  sigma: 0.5
+  n_samples: 5
   noise: normal
+  output_activation: softplus
+
 cpLayer:
   reduction: mean

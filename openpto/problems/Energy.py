@@ -175,7 +175,7 @@ class Energy(PTOProblem):
         if fname is None:
             fname = "prices2013.dat"
 
-        df = pd.read_csv(fname, delim_whitespace=True, quotechar='"')
+        df = pd.read_csv(fname, sep=r'\s+', quotechar='"')
         # remove unnecessary columns
         df.drop(
             ["#DateTime", "Holiday", "ActualWindProduction", "SystemLoadEP2"],
