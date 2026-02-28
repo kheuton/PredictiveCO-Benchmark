@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-Perturbed optimization function
+Differentiable Perturbed Optimizers  (Berthet et al., NeurIPS 2020)
 
-Based on the differentiable perturbation approach from:
-  Berthet et al., "Learning with Differentiable Perturbed Optimizers", NeurIPS 2020.
+The default ``perturbed`` class implements the *correct* DPO approach:
+  forward  — returns the **soft decision** E_ε[z(θ̂ + σε)]
+  backward — Jacobian–vector product via the log-derivative trick on the
+             **solution vectors** (not scalar objectives).
+  loss     — evaluated externally: |f(θ*, z̄) − f(θ*, z*)|
 
-The autograd backward pass follows the reference PyTorch implementation:
+The legacy ``perturbed_reinforce`` class preserves the old REINFORCE-on-
+scalar-objective formulation for reproducibility of earlier experiments.
+
+Reference PyTorch implementation:
   https://github.com/tuero/perturbations-differential-pytorch
 """
 
@@ -140,12 +146,317 @@ class SigmaScheduler:
 
 
 # ---------------------------------------------------------------------------
-# Perturbed Optimization Model
+# Perturbed Optimization Model  (Berthet et al. — correct DPO)
 # ---------------------------------------------------------------------------
 
 class perturbed(optModel):
     """
-    Reference:
+    Differentiable Perturbed Optimizer (Berthet et al., NeurIPS 2020).
+
+    Produces a **soft decision** z̄ = E_ε[z(θ̂ + σε)] via ``perturbedSoftDecision``
+    and evaluates the objective under true coefficients.  Gradients flow through
+    z̄ back to the prediction model via the Berthet Jacobian.
+
+    Loss = |f(θ*, z̄) − f(θ*, z*)|   (direction-agnostic regret)
+    """
+
+    def __init__(
+        self,
+        ptoSolver,
+        n_samples=10,
+        sigma=1.0,
+        noise="normal",
+        seed=135,
+        output_activation="none",
+        # Sigma scheduler params (optional)
+        sigma_schedule="constant",
+        sigma_start=None,
+        sigma_end=0.01,
+        sigma_n_epochs=300,
+        sigma_gamma=0.5,
+        sigma_step_size=100,
+        sigma_warmup_epochs=0,
+        **hyperparams,
+    ):
+        """
+        Args:
+            ptoSolver (optModel): an  optimization model
+            n_samples (int): number of Monte-Carlo samples
+            sigma (float): the amplitude of the perturbation
+            noise (str): noise distribution, 'normal' or 'gumbel'
+            seed (int): random state seed
+            output_activation (str): activation applied to predictions before
+                perturbation. One of 'none', 'sigmoid', 'tanh', 'softplus'.
+            sigma_schedule (str): 'constant', 'linear_decay', 'cosine_decay', 'step_decay'
+            sigma_start (float): starting sigma (defaults to sigma if None)
+            sigma_end (float): ending sigma for decay schedules
+            sigma_n_epochs (int): total epochs for schedule computation
+            sigma_gamma (float): multiplicative factor for step_decay
+            sigma_step_size (int): epoch interval for step_decay
+            sigma_warmup_epochs (int): hold sigma_start for this many epochs
+                before starting the decay schedule (default: 0)
+        """
+        super().__init__(ptoSolver)
+        self.n_samples = n_samples
+        self.sigma = sigma
+        if noise not in SUPPORTED_NOISES:
+            raise ValueError(
+                f"{noise} noise not supported. Use one of {SUPPORTED_NOISES}"
+            )
+        self.noise = noise
+        self.rnd = np.random.RandomState(seed)
+        n_vars = ptoSolver.num_vars
+        self.solpool = np.empty((0, n_vars), dtype=np.float64)
+
+        # Output activation
+        _act_map = {
+            "none": lambda x: x,
+            "sigmoid": torch.sigmoid,
+            "tanh": torch.tanh,
+            "softplus": torch.nn.functional.softplus,
+        }
+        if output_activation not in _act_map:
+            raise ValueError(
+                f"Unknown output_activation '{output_activation}'. "
+                f"Choose from {list(_act_map.keys())}"
+            )
+        self.output_activation = _act_map[output_activation]
+
+        # Per-epoch scale tracking
+        self._batch_scales = []
+
+        # Sigma scheduler
+        if sigma_start is None:
+            sigma_start = sigma
+        self.sigma_scheduler = SigmaScheduler(
+            schedule=sigma_schedule,
+            sigma_start=sigma_start,
+            sigma_end=sigma_end,
+            n_epochs=sigma_n_epochs,
+            sigma_gamma=sigma_gamma,
+            sigma_step_size=sigma_step_size,
+            warmup_epochs=sigma_warmup_epochs,
+        )
+
+    def step(self, epoch):
+        """Update sigma according to the schedule. Called by ExpManager each epoch."""
+        if self._batch_scales:
+            avg_scale = sum(self._batch_scales) / len(self._batch_scales)
+            ratio = self.sigma / avg_scale if avg_scale > 0 else float('inf')
+            logger.info(
+                f"  [perturb] epoch {epoch}: "
+                f"|coeff_hat| = {avg_scale:.4f}, "
+                f"sigma = {self.sigma:.4f}, "
+                f"sigma/|coeff_hat| = {ratio:.4f}"
+            )
+            self._batch_scales = []
+        self.sigma = self.sigma_scheduler.step(epoch)
+        return self.sigma
+
+    def forward(
+        self,
+        problem,
+        coeff_hat,
+        params,
+        coeff_true=None,
+        **hyperparams,
+    ):
+        """
+        Forward pass — Berthet soft-decision formulation.
+
+        1. Compute z̄ = E_ε[z(θ̂ + σε)]  via perturbedSoftDecision  (differentiable)
+        2. Evaluate obj  = f(θ*, z̄)
+        3. Evaluate obj* = f(θ*, z*)    (detached constant)
+        4. loss = |obj − obj*|           (direction-agnostic regret)
+
+        Gradients flow: loss → obj → z̄ → perturbedSoftDecision.backward → coeff_hat
+        """
+        # Handle list inputs (e.g. Advertising — variable-size instances)
+        if isinstance(coeff_hat, list):
+            losses = []
+            for i in range(len(coeff_hat)):
+                ch_i = coeff_hat[i].unsqueeze(0)
+                ct_i = coeff_true[i].unsqueeze(0)
+                loss_i = self.forward(
+                    problem, ch_i, params, ct_i, **hyperparams
+                )
+                losses.append(loss_i)
+            return do_reduction(torch.stack(losses), hyperparams["reduction"])
+
+        # Apply output activation
+        coeff_hat = self.output_activation(coeff_hat)
+
+        # Track characteristic scale for diagnostics
+        with torch.no_grad():
+            self._batch_scales.append(coeff_hat.abs().mean().item())
+
+        # --- Soft decision z̄ = E[z(θ̂ + σε)] --- (differentiable via Berthet Jacobian)
+        z_bar = perturbedSoftDecision.apply(
+            coeff_hat,
+            self.ptoSolver,
+            problem,
+            params,
+            self.n_samples,
+            self.sigma,
+            self.noise,
+        )
+
+        # --- Objective under true coefficients ---
+        obj = problem.get_objective(coeff_true, z_bar, params)
+        if not isinstance(obj, torch.Tensor):
+            obj = torch.as_tensor(
+                obj, device=coeff_hat.device, dtype=coeff_hat.dtype
+            )
+
+        # --- Optimal objective f(θ*, z*) — constant, no gradient ---
+        coeff_true_cpu = coeff_true.detach().cpu()
+        z_star_np, _ = problem.get_decision(
+            coeff_true_cpu, params, self.ptoSolver, **problem.init_API()
+        )
+        z_star = torch.as_tensor(
+            z_star_np, device=coeff_hat.device, dtype=coeff_hat.dtype
+        )
+        obj_star = problem.get_objective(coeff_true, z_star, params)
+        if not isinstance(obj_star, torch.Tensor):
+            obj_star = torch.as_tensor(
+                obj_star, device=coeff_hat.device, dtype=coeff_hat.dtype
+            )
+        obj_star = obj_star.to(device=coeff_hat.device, dtype=coeff_hat.dtype).detach()
+
+        # --- Direction-agnostic regret ---
+        regret = torch.abs(obj - obj_star)
+
+        loss = do_reduction(regret, hyperparams["reduction"])
+        return loss
+
+
+class perturbedSoftDecision(torch.autograd.Function):
+    """
+    Autograd function for Differentiable Perturbed Optimizers (Berthet et al.).
+
+    Forward:  z̄ = (1/N) Σ_n z(θ̂ + σε_n)     — expected solution vector
+    Backward: Jacobian–vector product via the log-derivative trick:
+              g_d = (1/Nσ) Σ_n (z_n · dy) · ∇log p(ε_n)_d
+
+    This matches the reference implementation exactly.
+    """
+
+    @staticmethod
+    def forward(
+        ctx,
+        coeff_hat,
+        ptoSolver,
+        problem,
+        params,
+        n_samples,
+        sigma,
+        noise_type,
+    ):
+        """
+        Args:
+            coeff_hat:   (B, D1, ..., Dk)  predicted cost coefficients
+            ptoSolver:   combinatorial solver wrapper
+            problem:     problem instance (get_decision, init_API)
+            params:      auxiliary params for solver
+            n_samples:   number of Monte-Carlo perturbation samples
+            sigma:       perturbation amplitude
+            noise_type:  'normal' or 'gumbel'
+        Returns:
+            z_bar: (B, sol_D1, ...)  expected solution E[z(θ̂ + σε)]
+        """
+        device = coeff_hat.device
+        dtype = coeff_hat.dtype
+        original_input_shape = coeff_hat.shape          # (B, D1, ..., Dk)
+
+        # ----- Sample noise -----
+        perturbed_input_shape = [n_samples] + list(original_input_shape)
+        additive_noise, noise_gradient = sample_noise_with_gradients(
+            noise_type, perturbed_input_shape
+        )
+        additive_noise = additive_noise.to(device=device, dtype=dtype)
+        noise_gradient = noise_gradient.to(device=device, dtype=dtype)
+
+        # ----- Perturbed inputs: (N, B, D1, ..., Dk) -----
+        perturbed_input = coeff_hat.unsqueeze(0) + sigma * additive_noise
+
+        # ----- Solve each sample -----
+        # Loop over N (not flat N*B) because some problems have aux params
+        # batched at size B that cannot be expanded to N*B.
+        init_api = problem.init_API()
+        perturbed_solutions = []
+        for n in range(n_samples):
+            perturbed_n_cpu = perturbed_input[n].detach().cpu()
+            sols_n, _ = problem.get_decision(
+                perturbed_n_cpu, params, ptoSolver, **init_api
+            )
+            if not isinstance(sols_n, torch.Tensor):
+                sols_n = torch.as_tensor(sols_n, device=device, dtype=dtype)
+            else:
+                sols_n = sols_n.to(device=device, dtype=dtype)
+            perturbed_solutions.append(sols_n)
+        perturbed_solutions = torch.stack(perturbed_solutions, dim=0)  # (N, B, sol_D...)
+
+        # ----- Expected solution (soft decision) -----
+        z_bar = perturbed_solutions.mean(dim=0)                        # (B, sol_D...)
+
+        # ----- Save for backward -----
+        ctx.save_for_backward(perturbed_solutions, noise_gradient)
+        ctx.n_samples = n_samples
+        ctx.sigma = sigma
+        ctx.original_input_shape = original_input_shape
+        return z_bar
+
+    @staticmethod
+    def backward(ctx, dy):
+        """
+        Berthet et al. Jacobian–vector product via log-derivative trick.
+
+        perturbed_solutions:  (N, B, sol_D...)   solution vectors
+        noise_gradient:       (N, B, D1, ..., Dk)  ∇log p(ε)
+        dy:                   (B, sol_D...)       upstream gradient from loss
+
+        g_d = (1/Nσ) Σ_n (z_n · dy) · ∇log p(ε_n)_d
+
+        Note: solution dim and input dim may differ (e.g. BipartiteMatching).
+        The einsum bridges the two spaces via the scalar score (z_n · dy).
+        """
+        perturbed_solutions, noise_gradient = ctx.saved_tensors
+        n_samples = ctx.n_samples
+        sigma = ctx.sigma
+        original_input_shape = ctx.original_input_shape
+
+        # Flatten spatial dims for einsum
+        # solutions: (N, B, D_sol_flat),  noise_grad: (N, B, D_in_flat)
+        flatten = lambda t: t.reshape(t.shape[0], t.shape[1], -1)
+        sol_flat = flatten(perturbed_solutions)     # (N, B, D_sol)
+        noise_grad_flat = flatten(noise_gradient)   # (N, B, D_in)
+        dy_flat = dy.reshape(dy.shape[0], -1)       # (B, D_sol)
+
+        # Score each sample: how much does z_n align with the upstream gradient?
+        scores = torch.einsum("nbd,bd->nb", sol_flat, dy_flat)  # (N, B)
+
+        # Weight noise gradients by scores → gradient w.r.t. input
+        g = torch.einsum("nbd,nb->bd", noise_grad_flat, scores)  # (B, D_in)
+        g /= sigma * n_samples
+
+        g = g.reshape(original_input_shape)
+        # 7 inputs to forward: coeff_hat + 6 non-tensor args
+        return g, None, None, None, None, None, None
+
+
+# ===================================================================
+# Legacy: REINFORCE-on-scalar-objective formulation
+# ===================================================================
+
+class perturbed_reinforce(optModel):
+    """
+    Legacy perturbation method using REINFORCE on scalar objectives.
+
+    This is the OLD implementation kept for reproducibility.  It differs from
+    Berthet et al. in that the backward pass differentiates through the
+    *scalar objective* E[f(z)] rather than the *solution map* E[z].
+
+    For new experiments, use ``perturbed`` instead.
     """
 
     def __init__(
@@ -290,8 +601,8 @@ class perturbed(optModel):
         with torch.no_grad():
             self._batch_scales.append(coeff_hat.abs().mean().item())
 
-        # E[obj(z_n)] via perturbedOptFunc — (B,)
-        e_obj = perturbedOptFunc.apply(
+        # E[obj(z_n)] via perturbedOptFunc_reinforce — (B,)
+        e_obj = perturbedOptFunc_reinforce.apply(
             coeff_hat,
             self.ptoSolver,
             problem,
@@ -324,18 +635,15 @@ class perturbed(optModel):
         return loss
 
 
-class perturbedOptFunc(torch.autograd.Function):
+class perturbedOptFunc_reinforce(torch.autograd.Function):
     """
-    Autograd function for perturbed optimization  (Berthet et al.).
+    Legacy autograd function — REINFORCE on scalar objectives.
 
-    Follows the reference implementation from:
-    https://github.com/tuero/perturbations-differential-pytorch
+    Forward:  sample N perturbations, solve each, evaluate scalar objective
+              under coeff_true, return E[obj].
+    Backward: REINFORCE  ∂E[obj]/∂θ  using per-sample objectives as scores.
 
-    Forward:  sample N perturbations of the cost vector, solve each perturbed
-              problem, evaluate the objective on each *feasible discrete*
-              solution using coeff_true, and return E[obj].
-    Backward: REINFORCE-style gradient  ∂E[obj]/∂θ  using per-sample
-              objectives as scalar scores.
+    For the correct Berthet et al. approach, use ``perturbedSoftDecision``.
     """
 
     @staticmethod
@@ -453,218 +761,3 @@ class perturbedOptFunc(torch.autograd.Function):
         # 8 inputs to forward: coeff_hat + 7 non-tensor args
         return g, None, None, None, None, None, None, None
 
-
-# class perturbedFenchelYoung(optModel):
-#     """
-#     An autograd module for Fenchel-Young loss using perturbation techniques. The
-#     use of the loss improves the algorithmic by the specific expression of the
-#     gradients of the loss.
-
-#     For the perturbed optimizer, the cost vector need to be predicted from
-#     contextual data and are perturbed with Gaussian noise.
-
-#     The Fenchel-Young loss allows to directly optimize a loss between the features
-#     and solutions with less computation. Thus, allows us to design an algorithm
-#     based on stochastic gradient descent.
-
-#     Reference:
-#     """
-
-#     def __init__(
-#         self,
-#         ptoSolver,
-#         n_samples=10,
-#         sigma=1.0,
-#         seed=135,
-#         dataset=None,
-#     ):
-#         """
-#         Args:
-#             ptoSolver (optModel): an  optimization model
-#             n_samples (int): number of Monte-Carlo samples
-#             sigma (float): the amplitude of the perturbation
-#             seed (int): random state seed
-#
-#             dataset (None/optDataset): the training data
-#         """
-#         super().__init__(ptoSolver)
-#         # number of samples
-#         self.n_samples = n_samples
-#         # perturbation amplitude
-#         self.sigma = sigma
-#         # random state
-#         self.rnd = np.random.RandomState(seed)
-#         # build optimizer
-#         self.pfy = perturbedFenchelYoungFunc()
-
-#     def forward(self, coeff_hat, true_sol, reduction="mean"):
-#         """
-#         Forward pass
-#         """
-#         loss = self.pfy.apply(
-#             coeff_hat,
-#             true_sol,
-#             self.ptoSolver,
-#             self.n_samples,
-#             self.sigma,
-#             self.pool,
-#             self.rnd,
-#             self,
-#         )
-#         # reduction
-#         loss = do_reduction(loss, hyperparams["reduction"])
-#         return loss
-
-
-# class perturbedFenchelYoungFunc(torch.autograd.Function):
-#     """
-#     A autograd function for Fenchel-Young loss using perturbation techniques.
-#     """
-
-#     @staticmethod
-#     def forward(
-#         ctx,
-#         coeff_hat,
-#         true_sol,
-#         ptoSolver,
-#         n_samples,
-#         sigma,
-#         pool,
-#         rnd,
-#         module,
-#     ):
-#         """
-#         Forward pass for perturbed Fenchel-Young loss
-
-#         Args:
-#             coeff_hat (torch.tensor): a batch of predicted values of the cost
-#             true_sol (torch.tensor): a batch of true optimal solutions
-#             ptoSolver (optModel): an  optimization model
-#             n_samples (int): number of Monte-Carlo samples
-#             sigma (float): the amplitude of the perturbation
-#             pool (ProcessPool): process pool object
-#             rnd (RondomState): numpy random state
-#
-#             module (optModel): perturbedFenchelYoung module
-
-#         Returns:
-#             torch.tensor: solution expectations with perturbation
-#         """
-#         # get device
-#         device = coeff_hat.device
-#         # convert tenstor
-#         cp = coeff_hat.detach().cpu().numpy()
-#         w = true_sol.detach().cpu().numpy()
-#         # sample perturbations
-#         noises = rnd.normal(0, 1, size=(n_samples, *cp.shape))
-#         ptb_c = cp + sigma * noises
-#         # solve with perturbation
-#         rand_sigma = np.random.uniform()
-#         ptb_sols = _solve_in_pass(ptb_c, ptoSolver, pool)
-#         sols = ptb_sols.reshape(-1, cp.shape[1])
-#         # add into solpool
-#         module.solpool = np.concatenate((module.solpool, sols))
-#         # remove duplicate
-#         module.solpool = np.unique(module.solpool, axis=0)
-#         # solution expectation
-#         e_sol = ptb_sols.mean(axis=1)
-#         # difference
-#         if ptoSolver.modelSense == GRB.MINIMIZE:
-#             diff = w - e_sol
-#         if ptoSolver.modelSense == GRB.MAXIMIZE:
-#             diff = e_sol - w
-#         # loss
-#         loss = np.sum(diff**2, axis=1)
-#         # convert to tensor
-#         diff = torch.FloatTensor(diff).to(device)
-#         loss = torch.FloatTensor(loss).to(device)
-#         # save solutions
-#         ctx.save_for_backward(diff)
-#         return loss
-
-#     @staticmethod
-#     def backward(ctx, grad_output):
-#         """
-#         Backward pass for perturbed Fenchel-Young loss
-#         """
-#         (grad,) = ctx.saved_tensors
-#         grad_output = torch.unsqueeze(grad_output, dim=-1)
-#         return grad * grad_output, None, None, None, None, None, None, None, None, None
-
-
-# def _solve_in_pass(ptb_c, ptoSolver, pool):
-#     """
-#     A function to solve optimization in the forward pass
-#     """
-#     # number of instance
-#     n_samples, ins_num = ptb_c.shape[0], ptb_c.shape[1]
-#     # single-core
-#     if processes == 1:
-#         ptb_sols = []
-#         for i in range(ins_num):
-#             sols = []
-#             # per sample
-#             for j in range(n_samples):
-#                 # solve
-#                 ptoSolver.setObj(ptb_c[j, i])
-#                 sol, _ = ptoSolver.solve()
-#                 sols.append(sol)
-#             ptb_sols.append(sols)
-#     # multi-core
-#     else:
-#         # get class
-#         model_type = type(ptoSolver)
-#         # get args
-#         args = getArgs(ptoSolver)
-#         # parallel computing
-#         ptb_sols = pool.amap(
-#             _solveWithObj4Par,
-#             ptb_c.transpose(1, 0, 2),
-#             [args] * ins_num,
-#             [model_type] * ins_num,
-#         ).get()
-#     return np.array(ptb_sols)
-
-
-# def _cache_in_pass(ptb_c, ptoSolver, solpool):
-#     """
-#     A function to use solution pool in the forward/backward pass
-#     """
-#     # number of samples & instance
-#     n_samples, ins_num, _ = ptb_c.shape
-#     # init sols
-#     ptb_sols = []
-#     for j in range(n_samples):
-#         # best solution in pool
-#         solpool_obj = ptb_c[j] @ solpool.T
-#         if ptoSolver.modelSense == GRB.MINIMIZE:
-#             ind = np.argmin(solpool_obj, axis=1)
-#         if ptoSolver.modelSense == GRB.MAXIMIZE:
-#             ind = np.argmax(solpool_obj, axis=1)
-#         ptb_sols.append(solpool[ind])
-#     return np.array(ptb_sols).transpose(1, 0, 2)
-
-
-# def _solveWithObj4Par(perturbed_costs, args, model_type):
-#     """
-#     A global function to solve function in parallel processors
-
-#     Args:
-#         perturbed_costs (np.ndarray): costsof objective function with perturbation
-#         args (dict): optModel args
-#         model_type (ABCMeta): optModel class type
-
-#     Returns:
-#         list: optimal solution
-#     """
-#     # rebuild model
-#     ptoSolver = model_type(**args)
-#     # per sample
-#     sols = []
-#     for cost in perturbed_costs:
-#         # set obj
-#         ptoSolver.setObj(cost)
-#         # solve
-#         sol, _ = ptoSolver.solve()
-#         sols.append(sol)
-#     return sols

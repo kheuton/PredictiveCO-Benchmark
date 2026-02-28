@@ -82,6 +82,10 @@ def get_loss_fn(args, ptoSolver, conf):
         from openpto.method.Models.perturbed import perturbed
 
         ModelCalss = perturbed
+    elif name == "perturb_reinforce":
+        from openpto.method.Models.perturbed import perturbed_reinforce
+
+        ModelCalss = perturbed_reinforce
     elif name == "cpLayer":
         from openpto.method.Models.cpLayer import cpLayer
 
