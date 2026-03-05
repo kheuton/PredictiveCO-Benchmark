@@ -5,7 +5,7 @@
 # Grid:
 #   σ  ∈ {0.05, 0.1, 0.5}
 #   lr ∈ {1e-3, 5e-3, 1e-2}
-#   n_samples = 25,  noise = normal,  no schedule,  no activation
+#   n_samples = 25 (default; 1 for energy),  noise = normal,  no schedule,  no activation
 #
 # 8 problems × 9 HP combos = 72 experiments (144 SLURM jobs with backup)
 #
@@ -14,6 +14,7 @@
 #   bash shells/slurm/submit_softdec_wave1.sh
 #   bash shells/slurm/submit_softdec_wave1.sh --problem portfolio
 #   bash shells/slurm/submit_softdec_wave1.sh --no-backup
+#   bash shells/slurm/submit_softdec_wave1.sh --n-samples 1   # override default n_samples
 # =============================================================================
 
 set -e
@@ -30,6 +31,7 @@ GRES="gpu:1"
 GPU_ID="0"
 CONDA_ENV="pco_bench_rhel7"
 SKIP_COMPLETED=true
+N_SAMPLES=""  # empty = use per-problem defaults
 
 # ---- Parse arguments ----
 while [[ $# -gt 0 ]]; do
@@ -45,6 +47,7 @@ while [[ $# -gt 0 ]]; do
         --gpu)                    GPU_ID="$2"; shift 2 ;;
         --conda-env)              CONDA_ENV="$2"; shift 2 ;;
         --no-skip-completed)      SKIP_COMPLETED=false; shift ;;
+        --n-samples)              N_SAMPLES="$2"; shift 2 ;;
         *) echo "Unknown arg: $1"; exit 1 ;;
     esac
 done
@@ -170,11 +173,31 @@ echo '=============================================='
 
 EXPERIMENTS=()
 
-# Sigma → yaml mapping
-declare -A SIGMA_YAML
-SIGMA_YAML[005]="${CFGDIR}/perturb_s005.yaml"   # σ=0.05
-SIGMA_YAML[01]="${CFGDIR}/perturb_s01.yaml"     # σ=0.1
-SIGMA_YAML[05]="${CFGDIR}/perturb_s05.yaml"     # σ=0.5
+# ---- Per-problem default n_samples ----
+# Energy is very slow per sample; default to 1.
+get_n_samples() {
+    local problem_key="$1"
+    if [[ -n "$N_SAMPLES" ]]; then
+        echo "$N_SAMPLES"  # CLI override
+        return
+    fi
+    case "$problem_key" in
+        energy) echo 1 ;;
+        *)      echo 25 ;;
+    esac
+}
+
+# ---- Resolve YAML for (sigma_tag, n_samples) ----
+# Uses _n{N} suffix when n_samples != 25 (default)
+get_yaml() {
+    local sigma_tag="$1"
+    local n_samples="$2"
+    if [[ "$n_samples" -eq 25 ]]; then
+        echo "${CFGDIR}/perturb_s${sigma_tag}.yaml"
+    else
+        echo "${CFGDIR}/perturb_s${sigma_tag}_n${n_samples}.yaml"
+    fi
+}
 
 # LR → tag mapping
 declare -A LR_TAG
@@ -202,8 +225,16 @@ PROBLEMS=(
 for prob_entry in "${PROBLEMS[@]}"; do
     IFS='|' read -r problem_arg problem_key solver epochs extra_args <<< "$prob_entry"
 
+    local_n_samples=$(get_n_samples "$problem_key")
+
     for sigma_tag in "${SIGMAS[@]}"; do
-        yaml="${SIGMA_YAML[$sigma_tag]}"
+        yaml=$(get_yaml "$sigma_tag" "$local_n_samples")
+
+        # Verify YAML exists
+        if [[ ! -f "$yaml" ]]; then
+            echo "WARNING: Missing config $yaml — skipping ${problem_key} s${sigma_tag} (n_samples=${local_n_samples})"
+            continue
+        fi
 
         for lr in "${LRS[@]}"; do
             lr_tag="${LR_TAG[$lr]}"

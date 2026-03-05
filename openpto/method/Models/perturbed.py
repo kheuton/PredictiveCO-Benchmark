@@ -290,23 +290,39 @@ class perturbed(optModel):
         with torch.no_grad():
             self._batch_scales.append(coeff_hat.abs().mean().item())
 
-        # --- Soft decision z̄ = E[z(θ̂ + σε)] --- (differentiable via Berthet Jacobian)
-        z_bar = perturbedSoftDecision.apply(
-            coeff_hat,
-            self.ptoSolver,
-            problem,
-            params,
-            self.n_samples,
-            self.sigma,
-            self.noise,
-        )
+        if self.sigma == 0:
+            # --- σ=0 shortcut: direct differentiable solve (no perturbation) ---
+            # For solvers backed by CvxpyLayer (e.g. Portfolio), gradients flow
+            # through the QP's KKT conditions via implicit differentiation.
+            # This is the exact σ→0 limit of the Berthet soft decision.
+            # NOTE: only works for differentiable solvers; Gurobi-backed solvers
+            # will produce zero gradients.
+            z_bar, _ = problem.get_decision(
+                coeff_hat, params, self.ptoSolver, **problem.init_API()
+            )
+            if not isinstance(z_bar, torch.Tensor):
+                z_bar = torch.as_tensor(
+                    z_bar, device=coeff_hat.device, dtype=coeff_hat.dtype
+                )
+            else:
+                z_bar = z_bar.to(device=coeff_hat.device, dtype=coeff_hat.dtype)
+        else:
+            # --- Soft decision z̄ = E[z(θ̂ + σε)] --- (differentiable via Berthet Jacobian)
+            z_bar = perturbedSoftDecision.apply(
+                coeff_hat,
+                self.ptoSolver,
+                problem,
+                params,
+                self.n_samples,
+                self.sigma,
+                self.noise,
+            )
 
         # --- Objective under true coefficients ---
         obj = problem.get_objective(coeff_true, z_bar, params)
         if not isinstance(obj, torch.Tensor):
-            obj = torch.as_tensor(
-                obj, device=coeff_hat.device, dtype=coeff_hat.dtype
-            )
+            obj = torch.as_tensor(obj, dtype=coeff_hat.dtype)
+        obj = obj.to(device=coeff_hat.device, dtype=coeff_hat.dtype)
 
         # --- Optimal objective f(θ*, z*) — constant, no gradient ---
         coeff_true_cpu = coeff_true.detach().cpu()
@@ -318,15 +334,23 @@ class perturbed(optModel):
         )
         obj_star = problem.get_objective(coeff_true, z_star, params)
         if not isinstance(obj_star, torch.Tensor):
-            obj_star = torch.as_tensor(
-                obj_star, device=coeff_hat.device, dtype=coeff_hat.dtype
-            )
+            obj_star = torch.as_tensor(obj_star, dtype=coeff_hat.dtype)
         obj_star = obj_star.to(device=coeff_hat.device, dtype=coeff_hat.dtype).detach()
 
         # --- Direction-agnostic regret ---
         regret = torch.abs(obj - obj_star)
 
         loss = do_reduction(regret, hyperparams["reduction"])
+
+        # --- Optional prediction-loss regularization ---
+        # λ · MSE(θ̂, θ*) penalises the predictor for drifting away from the
+        # true coefficients, which keeps |θ̂| in check and mitigates the
+        # soft-to-hard gap observed on portfolio.
+        pred_loss_weight = float(hyperparams.get("pred_loss_weight", 0.0))
+        if pred_loss_weight > 0.0 and coeff_true is not None:
+            pred_mse = torch.nn.functional.mse_loss(coeff_hat, coeff_true)
+            loss = loss + pred_loss_weight * pred_mse
+
         return loss
 
 
