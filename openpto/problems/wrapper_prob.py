@@ -50,6 +50,7 @@ def prob2args(args, conf):
         "num_train_instances": args.instances,
         "num_test_instances": args.testinstances,
         "rand_seed": args.seed,
+        "val_frac": args.val_frac,
     }
     problem_kwargs = {}
     return {**conf["dataset"], **common_kwargs, **problem_kwargs}
@@ -124,6 +125,9 @@ def find_saved_problem(
             relevant_models = relevant_models.loc[
                 relevant_models[col] == val
             ]  # filtering models by parameters
+        else:
+            # Column not in CSV — no saved problem can match
+            relevant_models = relevant_models.iloc[0:0]
     # If it has, find the relevant filename
     filename = None
     if not relevant_models.empty:

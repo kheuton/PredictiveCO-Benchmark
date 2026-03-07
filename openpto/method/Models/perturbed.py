@@ -168,6 +168,7 @@ class perturbed(optModel):
         noise="normal",
         seed=135,
         output_activation="none",
+        loss_type="regret",
         # Sigma scheduler params (optional)
         sigma_schedule="constant",
         sigma_start=None,
@@ -197,6 +198,13 @@ class perturbed(optModel):
                 before starting the decay schedule (default: 0)
         """
         super().__init__(ptoSolver)
+        # Loss type: "regret" (default — extra solver call) or "objective" (direct objective)
+        if loss_type not in ("regret", "objective"):
+            raise ValueError(
+                f"Unknown loss_type '{loss_type}'. Choose 'regret' or 'objective'."
+            )
+        self.loss_type = loss_type
+        self.model_sense = ptoSolver.modelSense  # GRB.MAXIMIZE or GRB.MINIMIZE
         self.n_samples = n_samples
         self.sigma = sigma
         if noise not in SUPPORTED_NOISES:
@@ -324,23 +332,32 @@ class perturbed(optModel):
             obj = torch.as_tensor(obj, dtype=coeff_hat.dtype)
         obj = obj.to(device=coeff_hat.device, dtype=coeff_hat.dtype)
 
-        # --- Optimal objective f(θ*, z*) — constant, no gradient ---
-        coeff_true_cpu = coeff_true.detach().cpu()
-        z_star_np, _ = problem.get_decision(
-            coeff_true_cpu, params, self.ptoSolver, **problem.init_API()
-        )
-        z_star = torch.as_tensor(
-            z_star_np, device=coeff_hat.device, dtype=coeff_hat.dtype
-        )
-        obj_star = problem.get_objective(coeff_true, z_star, params)
-        if not isinstance(obj_star, torch.Tensor):
-            obj_star = torch.as_tensor(obj_star, dtype=coeff_hat.dtype)
-        obj_star = obj_star.to(device=coeff_hat.device, dtype=coeff_hat.dtype).detach()
+        if self.loss_type == "objective":
+            # --- Direct objective loss (no extra solver call) ---
+            # For maximization: loss = -obj (we want to maximize obj)
+            # For minimization: loss =  obj (we want to minimize obj)
+            if self.model_sense == GRB.MAXIMIZE:
+                loss = do_reduction(-obj, hyperparams["reduction"])
+            else:
+                loss = do_reduction(obj, hyperparams["reduction"])
+        else:
+            # --- Optimal objective f(θ*, z*) — constant, no gradient ---
+            coeff_true_cpu = coeff_true.detach().cpu()
+            z_star_np, _ = problem.get_decision(
+                coeff_true_cpu, params, self.ptoSolver, **problem.init_API()
+            )
+            z_star = torch.as_tensor(
+                z_star_np, device=coeff_hat.device, dtype=coeff_hat.dtype
+            )
+            obj_star = problem.get_objective(coeff_true, z_star, params)
+            if not isinstance(obj_star, torch.Tensor):
+                obj_star = torch.as_tensor(obj_star, dtype=coeff_hat.dtype)
+            obj_star = obj_star.to(device=coeff_hat.device, dtype=coeff_hat.dtype).detach()
 
-        # --- Direction-agnostic regret ---
-        regret = torch.abs(obj - obj_star)
+            # --- Direction-agnostic regret ---
+            regret = torch.abs(obj - obj_star)
 
-        loss = do_reduction(regret, hyperparams["reduction"])
+            loss = do_reduction(regret, hyperparams["reduction"])
 
         # --- Optional prediction-loss regularization ---
         # λ · MSE(θ̂, θ*) penalises the predictor for drifting away from the

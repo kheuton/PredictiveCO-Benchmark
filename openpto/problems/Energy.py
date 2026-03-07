@@ -23,12 +23,14 @@ class Energy(PTOProblem):
         num_test_instances=0,
         rand_seed=0,
         data_dir="./openpto/data/",
+        val_frac=None,
         **kwargs,
     ):
         super(Energy, self).__init__(data_dir)
         self.prob_version = prob_version
         self._set_seed(rand_seed)
         self.rand_seed = rand_seed
+        self.val_frac = val_frac
         # Obtain data
         if prob_version == "energy":
             self.get_energy_data()
@@ -52,9 +54,18 @@ class Energy(PTOProblem):
         x = np.concatenate((x_train, x_test), axis=0)
         y = np.concatenate((y_train, y_test), axis=0)
         x, y = sklearn.utils.shuffle(x, y, random_state=self.rand_seed)
-        self.train_idxs = range(0, 550)
-        self.val_idxs = range(550, 650)
+        # Test set is always fixed at index 650 onward
         self.test_idxs = range(650, x.shape[0])
+        if self.val_frac is not None:
+            # Split [0, 650) into val / train by val_frac
+            n_pretrain = 650
+            n_val = int(self.val_frac * n_pretrain)
+            self.val_idxs = range(0, n_val)
+            self.train_idxs = range(n_val, n_pretrain)
+        else:
+            # Legacy hardcoded splits (backward compatible)
+            self.train_idxs = range(0, 550)
+            self.val_idxs = range(550, 650)
 
         self.Xs = torch.from_numpy(x).to(torch.float32)
         self.Ys = torch.from_numpy(y).to(torch.float32).unsqueeze(-1)

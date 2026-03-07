@@ -112,6 +112,7 @@ def get_args():
     parser.add_argument("--do_debug", action="store_true")
     parser.add_argument("--instances", type=int, default=400)
     parser.add_argument("--testinstances", type=int, default=200)
+    parser.add_argument("--val_frac", type=float, default=0.2)
     # debug
     parser.add_argument("--valfreq", type=int, default=1)
     parser.add_argument("--savefreq", type=int, default=-1)
