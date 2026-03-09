@@ -216,6 +216,7 @@ def run_one(
     X_val,   Y_val,   Y_aux_val,
     opt_obj_train, opt_obj_val,
     X_test=None, Y_test=None, Y_aux_test=None, opt_obj_test=None,
+    ckpt_path=None,
 ):
     """
     Train a pred model from random init with AdaptiveSigmaPerturb (or
@@ -409,6 +410,11 @@ def run_one(
         else:
             result[k] = np.array(v)
     result["test_regret"] = np.float64(test_regret)
+
+    if ckpt_path is not None and best_state is not None:
+        torch.save(best_state, ckpt_path)
+        print(f"  Checkpoint → {ckpt_path}")
+
     return result
 
 
@@ -527,6 +533,7 @@ def main():
 
             print(f"\n[{model_type}] {label}  ({args.n_epochs} epochs)...")
 
+            ckpt_path = out_path.replace(".npz", "_best_pred.pt")
             logs = run_one(
                 ocv_target=ocv_target,
                 sigma_init=sigma_init,
@@ -542,6 +549,7 @@ def main():
                 opt_obj_val=opt_obj_val,
                 X_test=X_test,   Y_test=Y_test,   Y_aux_test=Y_aux_test,
                 opt_obj_test=opt_obj_test,
+                ckpt_path=ckpt_path,
             )
 
             np.savez(out_path, **logs)
