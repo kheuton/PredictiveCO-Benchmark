@@ -38,7 +38,9 @@ from openpto.diagnostics.perturb_metrics import (
     interiority_metrics,
     rank_change_rate,
 )
-from openpto.method.Models.perturb_diag import AdaptiveSigmaPerturb, PerInstanceAdaptiveSigma
+from openpto.method.Models.perturb_diag import (
+    AdaptiveSigmaPerturb, PerInstanceAdaptiveSigma, PerInstanceHammingPerturb,
+)
 from openpto.method.Predicts.dense import MLP
 from openpto.method.Predicts.poly_model import PolyPredModel
 from openpto.method.Solvers.wrapper_solver import solver_wrapper
@@ -126,6 +128,16 @@ def parse_args():
     p.add_argument("--sigma_ema", type=float, default=0.7,
                    help="EMA smoothing for per-instance sigma update.")
 
+    # Hamming-rate controller
+    p.add_argument("--hamming", action="store_true",
+                   help="Use PerInstanceHammingPerturb (Hamming-rate control target).")
+    p.add_argument("--hamming_targets", type=float, nargs="+", default=None,
+                   help="Explicit list of hamming_target values (overrides --prop_targets).")
+    p.add_argument("--hamming_warmup_epochs", type=int, default=0,
+                   help="Epochs to hold Hamming target constant before decaying.")
+    p.add_argument("--hamming_decay_epochs", type=int, default=0,
+                   help="Epochs over which to linearly decay Hamming target to 0 after warmup.")
+
     # Output
     p.add_argument("--prefix", type=str, default="default")
     p.add_argument("--gpu", type=str, default="-1")
@@ -203,11 +215,13 @@ def run_one(
     X_train, Y_train, Y_aux_train,
     X_val,   Y_val,   Y_aux_val,
     opt_obj_train, opt_obj_val,
+    X_test=None, Y_test=None, Y_aux_test=None, opt_obj_test=None,
 ):
     """
     Train a pred model from random init with AdaptiveSigmaPerturb (or
     PerInstanceAdaptiveSigma if args.per_instance), logging per-epoch
     diagnostics. Returns a dict of per-epoch arrays.
+    If test data is provided, evaluates test_regret at the best-val epoch.
     """
     ipdim, opdim = problem.get_model_shape()
     pred_model = build_pred_model(model_type, ipdim, opdim, args).to(device)
@@ -225,7 +239,16 @@ def run_one(
         sigma_max=args.sigma_max,
         reduction="mean",
     )
-    if args.per_instance:
+    if getattr(args, "hamming", False):
+        loss_fn = PerInstanceHammingPerturb(
+            ptoSolver,
+            hamming_target=ocv_target,
+            hamming_warmup_epochs=getattr(args, "hamming_warmup_epochs", 0),
+            hamming_decay_epochs=getattr(args, "hamming_decay_epochs", 0),
+            sigma_ema=args.sigma_ema,
+            **common_kwargs,
+        )
+    elif args.per_instance:
         loss_fn = PerInstanceAdaptiveSigma(ptoSolver, sigma_ema=args.sigma_ema, **common_kwargs)
     else:
         loss_fn = AdaptiveSigmaPerturb(ptoSolver, **common_kwargs)
@@ -238,10 +261,13 @@ def run_one(
         "coeff_norm", "adaptive_sigma",
         "grad_norm", "fd_grad_norm", "cosine_sim",
         "softness", "dist_binary", "entropy",
-        "rank_change_rate", "ocv_y", "frac_improving",
+        "rank_change_rate", "ocv_y", "frac_improving", "hamming",
     ]}
     if args.per_instance:
         logs["sigma_vec"] = []  # list of (N_train,) arrays, one per epoch
+
+    best_val = float("inf")
+    best_state = None
 
     for epoch in range(1, args.n_epochs + 1):
         pred_model.train()
@@ -287,10 +313,11 @@ def run_one(
                     coeff_hat_cpu, Y_aux_train, ptoSolver, **problem.init_API()
                 )
                 z0 = to_tensor(z0).float()
-                rcr = rank_change_rate(
-                    perturbed_sols.float(), z0,
-                    K=getattr(problem, "budget", 1),
-                )
+                _K = getattr(problem, "budget", None)
+                if _K is not None:
+                    rcr = rank_change_rate(perturbed_sols.float(), z0, K=_K)
+                else:
+                    rcr = float("nan")
             else:
                 rcr = float("nan")
 
@@ -346,15 +373,34 @@ def run_one(
         logs["rank_change_rate"].append(rcr)
         logs["ocv_y"].append(loss_fn.last_ocv_y)
         logs["frac_improving"].append(loss_fn.last_frac_improving)
+        logs["hamming"].append(getattr(loss_fn, "last_hamming", float("nan")))
         if args.per_instance and loss_fn.sigma_vec is not None:
             logs["sigma_vec"].append(loss_fn.sigma_vec.detach().numpy().copy())
 
+        if val_regret < best_val:
+            best_val = val_regret
+            best_state = {k: v.clone() for k, v in pred_model.state_dict().items()}
+
         if epoch % 10 == 0:
+            ctrl_str = (f"hamming {loss_fn.last_hamming:.4f}"
+                        if getattr(args, "hamming", False)
+                        else f"ocv_y {loss_fn.last_ocv_y:.4f}")
             print(
                 f"  epoch {epoch:3d} | loss {loss.item():.4f} | "
                 f"val_regret {val_regret:.4f} | "
-                f"ocv_y {loss_fn.last_ocv_y:.4f} | sigma {current_sigma:.4f}"
+                f"{ctrl_str} | sigma {current_sigma:.4f}"
             )
+
+    # ---- Test regret at best-val epoch ----
+    if X_test is not None and best_state is not None:
+        pred_model.load_state_dict(best_state)
+        test_regret = compute_regret(
+            problem, ptoSolver, pred_model,
+            X_test, Y_test, Y_aux_test, opt_obj_test, device,
+        )
+        print(f"  test_regret (at best val epoch): {test_regret:.4f}")
+    else:
+        test_regret = float("nan")
 
     result = {}
     for k, v in logs.items():
@@ -362,6 +408,7 @@ def run_one(
             result[k] = np.stack(v, axis=0)  # (n_epochs_with_vec, N_train)
         else:
             result[k] = np.array(v)
+    result["test_regret"] = np.float64(test_regret)
     return result
 
 
@@ -375,13 +422,18 @@ def build_sweep_grid(args):
     label is used as the filename stem.
     """
     if args.mode == "proportional":
-        if args.prop_targets is not None:
+        if getattr(args, "hamming", False):
+            targets = args.hamming_targets or [0.05, 0.10, 0.15, 0.20, 0.30]
+            decay = getattr(args, "hamming_decay_epochs", 0)
+            stem = "hamd_t" if decay > 0 else "ham_t"
+        elif args.prop_targets is not None:
             targets = args.prop_targets
+            stem = "pi_t" if getattr(args, "per_instance", False) else "prop_t"
         else:
             targets = np.logspace(
                 np.log10(args.target_min), np.log10(args.target_max), args.n_targets
             ).tolist()
-        stem = "pi_t" if getattr(args, "per_instance", False) else "prop_t"
+            stem = "pi_t" if getattr(args, "per_instance", False) else "prop_t"
         return [
             (t, args.prop_sigma_init, f"{stem}{t:.3f}_s{args.prop_sigma_init:.3g}")
             for t in targets
@@ -415,13 +467,15 @@ def main():
 
     X_train, Y_train, Y_aux_train = problem.get_train_data()
     X_val,   Y_val,   Y_aux_val   = problem.get_val_data()
+    X_test,  Y_test,  Y_aux_test  = problem.get_test_data()
 
-    print(f"Train: {X_train.shape}, Val: {X_val.shape}")
+    print(f"Train: {X_train.shape}, Val: {X_val.shape}, Test: {X_test.shape}")
 
     # ---- Precompute optimal objectives ----
     print("Precomputing optimal objectives...")
     opt_obj_train = precompute_opt(problem, ptoSolver, Y_train, Y_aux_train)
     opt_obj_val   = precompute_opt(problem, ptoSolver, Y_val,   Y_aux_val)
+    opt_obj_test  = precompute_opt(problem, ptoSolver, Y_test,  Y_aux_test)
 
     # ---- Sweep grid ----
     sweep = build_sweep_grid(args)
@@ -486,6 +540,8 @@ def main():
                 X_val=X_val,     Y_val=Y_val,     Y_aux_val=Y_aux_val,
                 opt_obj_train=opt_obj_train,
                 opt_obj_val=opt_obj_val,
+                X_test=X_test,   Y_test=Y_test,   Y_aux_test=Y_aux_test,
+                opt_obj_test=opt_obj_test,
             )
 
             np.savez(out_path, **logs)

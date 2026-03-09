@@ -30,6 +30,19 @@ from gurobipy import GRB  # pylint: disable=no-name-in-module
 logger = logging.getLogger(__name__)
 
 
+def hamming_rate_per_instance(perturbed_sols, z0):
+    """Per-instance mean fraction of items that flip between z0 and each z_n.
+
+    Args:
+        perturbed_sols: (N, B, D) float tensor
+        z0:             (B, D) float tensor
+    Returns:
+        (B,) tensor — mean hamming rate per instance, in [0, 1]
+    """
+    flips = (perturbed_sols != z0.unsqueeze(0)).float()  # (N, B, D)
+    return flips.mean(dim=(0, 2))                         # (B,)
+
+
 # ---------------------------------------------------------------------------
 # Modified autograd function — returns (z_bar, perturbed_solutions)
 # ---------------------------------------------------------------------------
@@ -531,5 +544,128 @@ class PerInstanceAdaptiveSigma(AdaptiveSigmaPerturb):
             f"sigma mean={self.sigma:.5f} min={self.sigma_vec.min():.5f} "
             f"max={self.sigma_vec.max():.5f} ocv_y={ocv_y_global:.4f} "
             f"frac={self.last_frac_improving:.4f}"
+        )
+        return self.sigma
+
+
+# ---------------------------------------------------------------------------
+# PerInstanceHammingPerturb — per-instance Hamming-rate controller
+# ---------------------------------------------------------------------------
+
+class PerInstanceHammingPerturb(PerInstanceAdaptiveSigma):
+    """
+    Per-instance sigma controller using Hamming rate as control target.
+
+    Hamming rate = mean fraction of items that flip selection status between
+    z_0 and z_n, averaged over perturbation samples.
+
+    Targets "enough noise to learn something new, but not enough to change
+    all the predictions." For a 20-item knapsack:
+        hamming_target=0.05 → ~1 item flips per perturbation
+        hamming_target=0.10 → ~2 items flip
+        hamming_target=0.20 → ~4 items flip
+
+    Unlike OCV_Y (which is objective-scale dependent), Hamming rate is
+    purely structural — it measures decision change directly, with a
+    natural [0, 1] range that's problem-scale invariant.
+
+    OCV_Y and FracImproving are still computed and logged for diagnostics.
+    """
+
+    def __init__(
+        self,
+        ptoSolver,
+        hamming_target: float = 0.10,
+        hamming_warmup_epochs: int = 0,
+        hamming_decay_epochs: int = 0,
+        **kwargs,
+    ):
+        super().__init__(ptoSolver, **kwargs)
+        self.hamming_target        = float(hamming_target)
+        self.hamming_warmup_epochs = int(hamming_warmup_epochs)
+        self.hamming_decay_epochs  = int(hamming_decay_epochs)
+        self.last_hamming: float   = float("nan")
+        self._current_hamming_target: float = float(hamming_target)
+
+    def _schedule_target(self, epoch: int) -> float:
+        """Return the Hamming target for this epoch.
+
+        Constant for epochs <= warmup_epochs, then linearly decays to 0
+        over the next decay_epochs epochs.
+        """
+        if self.hamming_decay_epochs <= 0 or epoch <= self.hamming_warmup_epochs:
+            return self.hamming_target
+        elapsed = epoch - self.hamming_warmup_epochs
+        frac    = min(elapsed / self.hamming_decay_epochs, 1.0)
+        return self.hamming_target * (1.0 - frac)
+
+    def step(self, epoch: int) -> float:
+        if not (self._epoch_perturbed_sols and self._epoch_z0):
+            mean_sigma = (
+                float(self.sigma_vec.mean()) if self.sigma_vec is not None
+                else (self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean()))
+            )
+            return mean_sigma
+
+        all_sols    = torch.cat(self._epoch_perturbed_sols, dim=1).float()  # (N, B_total, D)
+        all_z0      = torch.cat(self._epoch_z0, dim=0).float()              # (B_total, D)
+        all_indices = torch.cat(self._epoch_indices, dim=0)                 # (B_total,)
+        B_total     = all_z0.shape[0]
+
+        # Lazy init sigma_vec
+        if self.sigma_vec is None:
+            N_train = int(all_indices.max().item()) + 1
+            init_sigma = self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean())
+            self.sigma_vec = torch.full((N_train,), float(init_sigma))
+
+        with torch.no_grad():
+            # Per-instance Hamming rate (control signal)
+            hamming_per = hamming_rate_per_instance(all_sols, all_z0)  # (B_total,)
+
+            # OCV_Y and FracImproving for diagnostic logging
+            if self._epoch_coeff_true:
+                all_y  = torch.cat(self._epoch_coeff_true, dim=0)
+                y      = all_y.reshape(B_total, -1)
+                z_n    = all_sols.reshape(all_sols.shape[0], B_total, -1)
+                z_0    = all_z0.reshape(B_total, -1)
+                obj_n  = torch.einsum("nbd,bd->nb", z_n, y)
+                obj_0  = torch.einsum("bd,bd->b",   z_0, y)
+                ocv_y_per  = obj_n.std(dim=0) / (obj_0.abs() + 1e-6)
+                frac_per   = (obj_n > obj_0.unsqueeze(0)).float().mean(dim=0)
+            else:
+                ocv_y_per = torch.zeros(B_total)
+                frac_per  = torch.zeros(B_total)
+
+            # Proportional update using scheduled Hamming target
+            self._current_hamming_target = self._schedule_target(epoch)
+            ratio = (self._current_hamming_target / hamming_per.clamp(min=1e-6)).clamp(
+                1.0 / self.max_step, self.max_step
+            )
+            sigma_proposed = (self.sigma_vec[all_indices] * ratio).clamp(
+                self.sigma_min, self.sigma_max
+            )
+
+            # EMA update
+            self.sigma_vec[all_indices] = (
+                self.sigma_ema * self.sigma_vec[all_indices]
+                + (1 - self.sigma_ema) * sigma_proposed
+            )
+
+        self.last_hamming        = hamming_per.mean().item()
+        self.last_ocv_y          = ocv_y_per.mean().item()
+        self.last_frac_improving = frac_per.mean().item()
+        self.sigma               = self.sigma_vec.mean().item()
+
+        self._epoch_perturbed_sols.clear()
+        self._epoch_z0.clear()
+        self._epoch_coeff_true.clear()
+        self._epoch_indices.clear()
+
+        logger.info(
+            f"  [per_instance_hamming/prop] epoch {epoch}: "
+            f"sigma mean={self.sigma:.5f} min={self.sigma_vec.min():.5f} "
+            f"max={self.sigma_vec.max():.5f} hamming={self.last_hamming:.4f} "
+            f"ocv_y={self.last_ocv_y:.4f} frac={self.last_frac_improving:.4f} "
+            f"target={self._current_hamming_target:.4f}"
         )
         return self.sigma
