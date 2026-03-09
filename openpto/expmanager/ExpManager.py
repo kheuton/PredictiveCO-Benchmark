@@ -255,12 +255,14 @@ class ExpManager:
             losses = list()
             for batch_id, batch in enumerate(train_loader):
                 X_batch, Y_batch, Y_aux_batch = batch["X"], batch["Y"], batch["Y_aux"]
+                inst_idx = batch["idx"]
                 preds = self.pred_model(X_batch)
                 loss = loss_fn(
                     problem,
                     coeff_hat=preds,
                     coeff_true=Y_batch,
                     params=Y_aux_batch,
+                    inst_idx=inst_idx,
                     partition="train",
                     index=batch_id,
                     do_debug=do_debug,

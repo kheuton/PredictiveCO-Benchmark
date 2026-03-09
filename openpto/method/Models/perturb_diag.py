@@ -58,7 +58,12 @@ class perturbedSoftDecisionDiag(torch.autograd.Function):
         additive_noise = additive_noise.to(device=device, dtype=dtype)
         noise_gradient = noise_gradient.to(device=device, dtype=dtype)
 
-        perturbed_input = coeff_hat.unsqueeze(0) + sigma * additive_noise
+        if torch.is_tensor(sigma) and sigma.ndim >= 1:
+            n_spatial = additive_noise.ndim - 2   # dims after (N, B)
+            sigma_noise = sigma.view(1, -1, *([1] * n_spatial)).to(device=device, dtype=dtype)
+        else:
+            sigma_noise = sigma
+        perturbed_input = coeff_hat.unsqueeze(0) + sigma_noise * additive_noise
 
         # Solve each sample
         init_api = problem.init_API()
@@ -100,7 +105,10 @@ class perturbedSoftDecisionDiag(torch.autograd.Function):
 
         scores = torch.einsum("nbd,bd->nb", sol_flat, dy_flat)
         g = torch.einsum("nbd,nb->bd", noise_grad_flat, scores)
-        g /= sigma * n_samples
+        if torch.is_tensor(sigma) and sigma.ndim >= 1:
+            g /= (sigma.to(g.device).unsqueeze(-1) * n_samples)
+        else:
+            g /= sigma * n_samples
         g = g.reshape(original_input_shape)
 
         return g, None, None, None, None, None, None
@@ -209,7 +217,8 @@ class PerturbDiag(optModel):
         with torch.no_grad():
             self._batch_scales.append(coeff_hat.abs().mean().item())
 
-        if self.sigma == 0:
+        _sigma_is_zero = (not torch.is_tensor(self.sigma)) and self.sigma == 0
+        if _sigma_is_zero:
             z_bar, _ = problem.get_decision(
                 coeff_hat, params, self.ptoSolver, **problem.init_API()
             )
@@ -414,5 +423,113 @@ class AdaptiveSigmaPerturb(PerturbDiag):
             f"  [adaptive_perturb/{self.mode}] epoch {epoch}: "
             f"sigma={self.sigma:.5f}, ocv_y={ocv_y:.4f}, frac_improving={frac_improving:.4f}, "
             f"rcr={rcr:.3f}, target={self.ocv_target:.4f}"
+        )
+        return self.sigma
+
+
+# ---------------------------------------------------------------------------
+# PerInstanceAdaptiveSigma — per-instance sigma controller
+# ---------------------------------------------------------------------------
+
+class PerInstanceAdaptiveSigma(AdaptiveSigmaPerturb):
+    """
+    Per-instance sigma controller.
+
+    Each training instance gets its own sigma value, updated each epoch via the
+    proportional OCV_Y controller. Works with:
+      - ExpManager (mini-batch, shuffle=True): requires 'inst_idx' passed from DataLoader
+        (see ExpDataset.__getitem__ and ExpManager changes).
+      - Sweep script (full-batch): inst_idx defaults to torch.arange(B) since B = N_train.
+
+    Additional params:
+        sigma_ema : float — EMA smoothing for per-instance sigma (default 0.7).
+    """
+
+    def __init__(self, ptoSolver, sigma_ema: float = 0.7, **kwargs):
+        super().__init__(ptoSolver, **kwargs)
+        self.sigma_ema = float(sigma_ema)
+        self.sigma_vec: torch.Tensor | None = None   # (N_train,), lazy init
+        self._epoch_indices: list = []               # accumulated instance indices
+
+    def forward(self, problem, coeff_hat, params, coeff_true=None, inst_idx=None, **hyperparams):
+        B = coeff_hat.shape[0]
+        if self.sigma_vec is not None:
+            if inst_idx is None:
+                # Full-batch path: batch position = dataset index
+                idx = torch.arange(B)
+            else:
+                idx = inst_idx.long()
+            self.sigma = self.sigma_vec[idx].detach().to(coeff_hat.device)  # (B,) tensor, no grad
+
+        loss = super().forward(problem, coeff_hat, params, coeff_true, **hyperparams)
+
+        # Accumulate indices for step()
+        if self.last_perturbed_solutions is not None:
+            if inst_idx is None:
+                self._epoch_indices.append(torch.arange(B))
+            else:
+                self._epoch_indices.append(inst_idx.long().cpu())
+
+        return loss
+
+    def step(self, epoch: int) -> float:
+        if not (self._epoch_perturbed_sols and self._epoch_z0 and self._epoch_coeff_true):
+            mean_sigma = float(self.sigma_vec.mean()) if self.sigma_vec is not None else (
+                self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean()))
+            return mean_sigma
+
+        all_sols    = torch.cat(self._epoch_perturbed_sols, dim=1).float()  # (N, B_total, D)
+        all_z0      = torch.cat(self._epoch_z0, dim=0).float()              # (B_total, D)
+        all_y       = torch.cat(self._epoch_coeff_true, dim=0)              # (B_total, ...)
+        all_indices = torch.cat(self._epoch_indices, dim=0)                 # (B_total,)
+        B_total     = all_z0.shape[0]
+
+        # Lazy init sigma_vec using the max index seen to infer N_train
+        if self.sigma_vec is None:
+            N_train = int(all_indices.max().item()) + 1
+            init_sigma = self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean())
+            self.sigma_vec = torch.full((N_train,), float(init_sigma))
+
+        # Per-instance OCV_Y (all tensors are detached, no grad needed)
+        with torch.no_grad():
+            z_n   = all_sols.reshape(all_sols.shape[0], B_total, -1)
+            z_0   = all_z0.reshape(B_total, -1)
+            y     = all_y.reshape(B_total, -1)
+            obj_n = torch.einsum("nbd,bd->nb", z_n, y)   # (N, B_total)
+            obj_0 = torch.einsum("bd,bd->b",   z_0, y)   # (B_total,)
+
+            ocv_y_per = obj_n.std(dim=0) / (obj_0.abs() + 1e-6)          # (B_total,)
+            frac_per  = (obj_n > obj_0.unsqueeze(0)).float().mean(dim=0)  # (B_total,)
+
+            # Proportional update per instance
+            ratio = (self.ocv_target / ocv_y_per.clamp(min=1e-6)).clamp(
+                1.0 / self.max_step, self.max_step
+            )
+            sigma_proposed = (self.sigma_vec[all_indices] * ratio).clamp(
+                self.sigma_min, self.sigma_max
+            )
+
+            # EMA update (only for instances seen this epoch)
+            self.sigma_vec[all_indices] = (
+                self.sigma_ema * self.sigma_vec[all_indices]
+                + (1 - self.sigma_ema) * sigma_proposed
+            )
+
+        # Global stats
+        ocv_y_global          = ocv_y_per.mean().item()
+        self.last_ocv_y       = ocv_y_global
+        self.last_frac_improving = frac_per.mean().item()
+        self.sigma            = self.sigma_vec.mean().item()  # scalar for compat/logging
+
+        self._epoch_perturbed_sols.clear()
+        self._epoch_z0.clear()
+        self._epoch_coeff_true.clear()
+        self._epoch_indices.clear()
+
+        logger.info(
+            f"  [per_instance/prop] epoch {epoch}: "
+            f"sigma mean={self.sigma:.5f} min={self.sigma_vec.min():.5f} "
+            f"max={self.sigma_vec.max():.5f} ocv_y={ocv_y_global:.4f} "
+            f"frac={self.last_frac_improving:.4f}"
         )
         return self.sigma

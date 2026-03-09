@@ -28,6 +28,7 @@ class ExpDataset(Dataset):
             "X": self.X_train[idx],
             "Y": self.Y_train[idx],
             "Y_aux": self.Y_train_aux[idx],
+            "idx": idx,
         }
 
 

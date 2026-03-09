@@ -38,7 +38,7 @@ from openpto.diagnostics.perturb_metrics import (
     interiority_metrics,
     rank_change_rate,
 )
-from openpto.method.Models.perturb_diag import AdaptiveSigmaPerturb
+from openpto.method.Models.perturb_diag import AdaptiveSigmaPerturb, PerInstanceAdaptiveSigma
 from openpto.method.Predicts.dense import MLP
 from openpto.method.Predicts.poly_model import PolyPredModel
 from openpto.method.Solvers.wrapper_solver import solver_wrapper
@@ -120,6 +120,12 @@ def parse_args():
     p.add_argument("--val_frac", type=float, default=0.2)
     p.add_argument("--seed", type=int, default=2023)
 
+    # Per-instance sigma
+    p.add_argument("--per_instance", action="store_true",
+                   help="Use PerInstanceAdaptiveSigma (per-instance sigma vector).")
+    p.add_argument("--sigma_ema", type=float, default=0.7,
+                   help="EMA smoothing for per-instance sigma update.")
+
     # Output
     p.add_argument("--prefix", type=str, default="default")
     p.add_argument("--gpu", type=str, default="-1")
@@ -199,15 +205,15 @@ def run_one(
     opt_obj_train, opt_obj_val,
 ):
     """
-    Train a pred model from random init with AdaptiveSigmaPerturb,
-    logging per-epoch diagnostics. Returns a dict of per-epoch arrays.
+    Train a pred model from random init with AdaptiveSigmaPerturb (or
+    PerInstanceAdaptiveSigma if args.per_instance), logging per-epoch
+    diagnostics. Returns a dict of per-epoch arrays.
     """
     ipdim, opdim = problem.get_model_shape()
     pred_model = build_pred_model(model_type, ipdim, opdim, args).to(device)
     pred_model.train()
 
-    loss_fn = AdaptiveSigmaPerturb(
-        ptoSolver,
+    common_kwargs = dict(
         n_samples=args.n_samples,
         sigma=sigma_init,
         noise=args.noise,
@@ -219,6 +225,10 @@ def run_one(
         sigma_max=args.sigma_max,
         reduction="mean",
     )
+    if args.per_instance:
+        loss_fn = PerInstanceAdaptiveSigma(ptoSolver, sigma_ema=args.sigma_ema, **common_kwargs)
+    else:
+        loss_fn = AdaptiveSigmaPerturb(ptoSolver, **common_kwargs)
 
     optimizer = torch.optim.Adam(pred_model.parameters(), lr=args.lr)
     model_args = {"reduction": "mean"}
@@ -230,6 +240,8 @@ def run_one(
         "softness", "dist_binary", "entropy",
         "rank_change_rate", "ocv_y", "frac_improving",
     ]}
+    if args.per_instance:
+        logs["sigma_vec"] = []  # list of (N_train,) arrays, one per epoch
 
     for epoch in range(1, args.n_epochs + 1):
         pred_model.train()
@@ -334,6 +346,8 @@ def run_one(
         logs["rank_change_rate"].append(rcr)
         logs["ocv_y"].append(loss_fn.last_ocv_y)
         logs["frac_improving"].append(loss_fn.last_frac_improving)
+        if args.per_instance and loss_fn.sigma_vec is not None:
+            logs["sigma_vec"].append(loss_fn.sigma_vec.detach().numpy().copy())
 
         if epoch % 10 == 0:
             print(
@@ -342,7 +356,13 @@ def run_one(
                 f"ocv_y {loss_fn.last_ocv_y:.4f} | sigma {current_sigma:.4f}"
             )
 
-    return {k: np.array(v) for k, v in logs.items()}
+    result = {}
+    for k, v in logs.items():
+        if k == "sigma_vec" and v:
+            result[k] = np.stack(v, axis=0)  # (n_epochs_with_vec, N_train)
+        else:
+            result[k] = np.array(v)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -361,8 +381,9 @@ def build_sweep_grid(args):
             targets = np.logspace(
                 np.log10(args.target_min), np.log10(args.target_max), args.n_targets
             ).tolist()
+        stem = "pi_t" if getattr(args, "per_instance", False) else "prop_t"
         return [
-            (t, args.prop_sigma_init, f"prop_t{t:.3f}_s{args.prop_sigma_init:.3g}")
+            (t, args.prop_sigma_init, f"{stem}{t:.3f}_s{args.prop_sigma_init:.3g}")
             for t in targets
         ]
     else:  # feedback
