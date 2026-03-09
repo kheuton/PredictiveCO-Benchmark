@@ -150,6 +150,50 @@ def fd_gradient(
     return grad_flat.reshape(coeff_hat.shape)
 
 
+# ---------------------------------------------------------------------------
+# True-objective exploration metrics
+# ---------------------------------------------------------------------------
+
+def true_objective_metrics(
+    perturbed_solutions: torch.Tensor,  # (N, B, D) — hard decisions, any dtype
+    z0: torch.Tensor,                   # (B, D)    — unperturbed reference
+    coeff_true: torch.Tensor,           # (B, ...)  — true cost vector Y
+    eps: float = 1e-6,
+) -> dict:
+    """
+    Compute true-objective exploration metrics for the perturbed optimizer.
+
+    OCV_Y (objective coefficient of variation under true costs):
+        std_n(Y·z_n) / |Y·z_0 + ε|  — normalised spread of true objective values
+        across perturbed solutions.  Monotone in sigma; works for any CO problem.
+        → 0 as sigma → 0 (no exploration)
+        → saturates as sigma → ∞ (all solutions equally random)
+
+    FracImproving:
+        fraction of perturbed solutions z_n that beat z_0 under true costs.
+        Assumes maximisation convention (higher objective = better).
+        NOT monotone in sigma — do not use as a control target.
+        FracImproving ≈ 0 when the model is near-optimal.
+
+    All inputs expected on CPU.
+    """
+    N, B = perturbed_solutions.shape[:2]
+    z_n = perturbed_solutions.float().reshape(N, B, -1)   # (N, B, D)
+    z_0 = z0.float().reshape(B, -1)                       # (B, D)
+    y   = coeff_true.float().reshape(B, -1)               # (B, D)
+
+    obj_n = torch.einsum("nbd,bd->nb", z_n, y)            # (N, B) — true obj per sample
+    obj_0 = torch.einsum("bd,bd->b",   z_0, y)            # (B,)   — true obj of z0
+
+    # OCV_Y: normalised std of perturbed true objectives
+    ocv_y = (obj_n.std(dim=0) / (obj_0.abs() + eps)).mean().item()
+
+    # FracImproving: fraction of z_n that beat z_0 (maximisation convention)
+    frac_improving = (obj_n > obj_0.unsqueeze(0)).float().mean().item()
+
+    return {"ocv_y": ocv_y, "frac_improving": frac_improving}
+
+
 def _to_tensor(x, dtype):
     if torch.is_tensor(x):
         return x.detach().cpu().to(dtype)

@@ -23,7 +23,7 @@ from openpto.method.Models.perturbed import (
     do_reduction,
     sample_noise_with_gradients,
 )
-from openpto.diagnostics.perturb_metrics import rank_change_rate
+from openpto.diagnostics.perturb_metrics import rank_change_rate, true_objective_metrics
 
 from gurobipy import GRB  # pylint: disable=no-name-in-module
 
@@ -315,6 +315,7 @@ class AdaptiveSigmaPerturb(PerturbDiag):
         self,
         ptoSolver,
         rcr_target: float = 0.3,
+        ocv_target: float = 0.3,
         mode: str = "proportional",
         max_step: float = 10.0,
         alpha: float = 0.05,
@@ -326,6 +327,7 @@ class AdaptiveSigmaPerturb(PerturbDiag):
         if mode not in ("proportional", "feedback"):
             raise ValueError(f"Unknown mode '{mode}'. Use 'proportional' or 'feedback'.")
         self.rcr_target = rcr_target
+        self.ocv_target = ocv_target
         self.mode = mode
         self.max_step = float(max_step)
         self.alpha = float(alpha)
@@ -335,6 +337,11 @@ class AdaptiveSigmaPerturb(PerturbDiag):
         # Accumulate per-batch state across each epoch
         self._epoch_perturbed_sols: list = []
         self._epoch_z0: list = []
+        self._epoch_coeff_true: list = []
+
+        # Last computed metrics (for external inspection)
+        self.last_ocv_y: float = float("nan")
+        self.last_frac_improving: float = float("nan")
 
     def forward(self, problem, coeff_hat, params, coeff_true=None, **hyperparams):
         loss = super().forward(problem, coeff_hat, params, coeff_true, **hyperparams)
@@ -354,38 +361,58 @@ class AdaptiveSigmaPerturb(PerturbDiag):
                     z0 = torch.as_tensor(z0, dtype=torch.float32)
                 self._epoch_z0.append(z0.cpu().float())
 
+            # Accumulate true costs for OCV_Y computation
+            if coeff_true is not None:
+                self._epoch_coeff_true.append(coeff_true.detach().cpu())
+
         return loss
 
     def step(self, epoch: int) -> float:
-        """Compute epoch-level RCR, update sigma, clear buffers."""
+        """Compute epoch-level OCV_Y, update sigma, clear buffers."""
         # Discard batch-scale log (parent uses it only for SigmaScheduler path)
         self._batch_scales.clear()
 
+        ocv_y = float("nan")
+        frac_improving = float("nan")
         rcr = float("nan")
-        if self._epoch_perturbed_sols and self._epoch_z0:
+
+        if self._epoch_perturbed_sols and self._epoch_z0 and self._epoch_coeff_true:
             all_sols = torch.cat(self._epoch_perturbed_sols, dim=1).float()  # (N, B_total, D)
-            all_z0 = torch.cat(self._epoch_z0, dim=0).float()                # (B_total, D)
+            all_z0   = torch.cat(self._epoch_z0, dim=0).float()              # (B_total, D)
+            all_y    = torch.cat(self._epoch_coeff_true, dim=0)              # (B_total, ...)
 
-            # Infer K from unperturbed solutions (handles any TopK budget automatically)
-            K = max(1, round(all_z0.sum(dim=-1).mean().item()))
-            rcr = rank_change_rate(all_sols, all_z0, K)
+            # --- OCV_Y and FracImproving (primary control signal) ---
+            metrics = true_objective_metrics(all_sols, all_z0, all_y)
+            ocv_y = metrics["ocv_y"]
+            frac_improving = metrics["frac_improving"]
 
+            # --- RCR for backward-compat logging (binary problems only) ---
+            try:
+                K = max(1, round(all_z0.sum(dim=-1).mean().item()))
+                rcr = rank_change_rate(all_sols, all_z0, K)
+            except Exception:
+                rcr = float("nan")
+
+            # --- Update sigma using OCV_Y as control target ---
             if self.mode == "proportional":
-                # One-step update assuming RCR ∝ sigma.
-                # Clamped to [1/max_step, max_step] to prevent overshooting.
-                ratio = self.rcr_target / max(rcr, 1e-6)
+                ratio = self.ocv_target / max(ocv_y, 1e-6)
                 ratio = max(1.0 / self.max_step, min(self.max_step, ratio))
                 self.sigma *= ratio
             else:  # "feedback"
-                self.sigma *= math.exp(self.alpha * (rcr - self.rcr_target))
+                self.sigma *= math.exp(self.alpha * (ocv_y - self.ocv_target))
 
             self.sigma = float(max(self.sigma_min, min(self.sigma_max, self.sigma)))
 
+        self.last_ocv_y = ocv_y
+        self.last_frac_improving = frac_improving
+
         self._epoch_perturbed_sols.clear()
         self._epoch_z0.clear()
+        self._epoch_coeff_true.clear()
 
         logger.info(
             f"  [adaptive_perturb/{self.mode}] epoch {epoch}: "
-            f"sigma={self.sigma:.5f}, rcr={rcr:.3f}, target={self.rcr_target:.2f}"
+            f"sigma={self.sigma:.5f}, ocv_y={ocv_y:.4f}, frac_improving={frac_improving:.4f}, "
+            f"rcr={rcr:.3f}, target={self.ocv_target:.4f}"
         )
         return self.sigma

@@ -3,15 +3,15 @@ Adaptive sigma sweep for the perturbed optimizer.
 
 Tests AdaptiveSigmaPerturb with two controller modes:
 
-  proportional  — sigma *= clip(rcr_target / rcr, 1/max_step, max_step)
-                  Sweep: 10 rcr_target values, fixed sigma_init=1.0.
+  proportional  — sigma *= clip(ocv_target / ocv_y, 1/max_step, max_step)
+                  Sweep: ocv_target values over a log-spaced range, fixed sigma_init=1.0.
 
-  feedback      — sigma *= exp(alpha * (rcr - rcr_target))
-                  Sweep: 5 rcr_target values × 2 sigma_init values.
+  feedback      — sigma *= exp(alpha * (ocv_y - ocv_target))
+                  Sweep: 5 ocv_target values × 2 sigma_init values.
 
 Both dense and poly prediction models are tested.
 Logs the same per-epoch diagnostics as perturb_sigma_sweep.py, plus
-`adaptive_sigma` (the current sigma, which now evolves each epoch).
+`adaptive_sigma`, `ocv_y`, and `frac_improving` (which now evolve each epoch).
 
 Usage:
     python rethink_exp/perturb_adaptive_sweep.py \\
@@ -60,11 +60,11 @@ def parse_args():
 
     # Proportional sweep params
     p.add_argument("--prop_targets", type=float, nargs="+", default=None,
-                   help="Explicit list of rcr_target values. Overrides --n_targets/--target_min/--target_max.")
-    p.add_argument("--n_targets", type=int, default=10,
-                   help="Number of rcr_target values (proportional mode).")
-    p.add_argument("--target_min", type=float, default=0.10)
-    p.add_argument("--target_max", type=float, default=0.55)
+                   help="Explicit list of ocv_target values. Overrides --n_targets/--target_min/--target_max.")
+    p.add_argument("--n_targets", type=int, default=15,
+                   help="Number of ocv_target values (proportional mode).")
+    p.add_argument("--target_min", type=float, default=0.01)
+    p.add_argument("--target_max", type=float, default=2.0)
     p.add_argument("--prop_sigma_init", type=float, default=1.0,
                    help="Starting sigma for proportional mode.")
     p.add_argument("--max_step", type=float, default=10.0,
@@ -73,8 +73,8 @@ def parse_args():
     # Feedback sweep params
     p.add_argument(
         "--fb_targets", type=float, nargs="+",
-        default=[0.20, 0.25, 0.30, 0.35, 0.40],
-        help="rcr_target values to sweep (feedback mode).",
+        default=[0.10, 0.20, 0.30, 0.50, 0.80],
+        help="ocv_target values to sweep (feedback mode).",
     )
     p.add_argument(
         "--fb_sigma_inits", type=float, nargs="+",
@@ -192,7 +192,7 @@ def precompute_opt(problem, ptoSolver, Y, Y_aux):
 # ---------------------------------------------------------------------------
 
 def run_one(
-    rcr_target, sigma_init, controller_mode, model_type,
+    ocv_target, sigma_init, controller_mode, model_type,
     problem, ptoSolver, args, device,
     X_train, Y_train, Y_aux_train,
     X_val,   Y_val,   Y_aux_val,
@@ -211,7 +211,7 @@ def run_one(
         n_samples=args.n_samples,
         sigma=sigma_init,
         noise=args.noise,
-        rcr_target=rcr_target,
+        ocv_target=ocv_target,
         mode=controller_mode,
         max_step=args.max_step,
         alpha=args.alpha,
@@ -228,7 +228,7 @@ def run_one(
         "coeff_norm", "adaptive_sigma",
         "grad_norm", "fd_grad_norm", "cosine_sim",
         "softness", "dist_binary", "entropy",
-        "rank_change_rate",
+        "rank_change_rate", "ocv_y", "frac_improving",
     ]}
 
     for epoch in range(1, args.n_epochs + 1):
@@ -332,12 +332,14 @@ def run_one(
         logs["dist_binary"].append(intr["dist_binary"])
         logs["entropy"].append(intr["entropy"])
         logs["rank_change_rate"].append(rcr)
+        logs["ocv_y"].append(loss_fn.last_ocv_y)
+        logs["frac_improving"].append(loss_fn.last_frac_improving)
 
         if epoch % 10 == 0:
             print(
                 f"  epoch {epoch:3d} | loss {loss.item():.4f} | "
                 f"val_regret {val_regret:.4f} | "
-                f"rcr {rcr:.3f} | sigma {current_sigma:.4f}"
+                f"ocv_y {loss_fn.last_ocv_y:.4f} | sigma {current_sigma:.4f}"
             )
 
     return {k: np.array(v) for k, v in logs.items()}
@@ -349,14 +351,16 @@ def run_one(
 
 def build_sweep_grid(args):
     """
-    Returns a list of (rcr_target, sigma_init, label) tuples.
+    Returns a list of (ocv_target, sigma_init, label) tuples.
     label is used as the filename stem.
     """
     if args.mode == "proportional":
         if args.prop_targets is not None:
             targets = args.prop_targets
         else:
-            targets = np.linspace(args.target_min, args.target_max, args.n_targets).tolist()
+            targets = np.logspace(
+                np.log10(args.target_min), np.log10(args.target_max), args.n_targets
+            ).tolist()
         return [
             (t, args.prop_sigma_init, f"prop_t{t:.3f}_s{args.prop_sigma_init:.3g}")
             for t in targets
@@ -400,10 +404,10 @@ def main():
 
     # ---- Sweep grid ----
     sweep = build_sweep_grid(args)
-    print(f"\nMode: {args.mode} | {len(sweep)} configs × {len(args.pred_models)} models "
+    print(f"\nMode: {args.mode} | {len(sweep)} ocv_target configs × {len(args.pred_models)} models "
           f"= {len(sweep) * len(args.pred_models)} runs")
     for t, s, label in sweep:
-        print(f"  {label}")
+        print(f"  {label} (ocv_target={t:.4f})")
 
     # ---- Output directory ----
     out_dir = os.path.join(
@@ -439,7 +443,7 @@ def main():
         print(f"Model type: {model_type}")
         print(f"{'='*60}")
 
-        for rcr_target, sigma_init, label in sweep:
+        for ocv_target, sigma_init, label in sweep:
             out_path = os.path.join(out_dir, f"{label}_{model_type}.npz")
 
             if os.path.exists(out_path):
@@ -449,7 +453,7 @@ def main():
             print(f"\n[{model_type}] {label}  ({args.n_epochs} epochs)...")
 
             logs = run_one(
-                rcr_target=rcr_target,
+                ocv_target=ocv_target,
                 sigma_init=sigma_init,
                 controller_mode=args.mode,
                 model_type=model_type,
