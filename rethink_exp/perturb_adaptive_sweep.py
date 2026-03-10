@@ -138,6 +138,10 @@ def parse_args():
     p.add_argument("--hamming_decay_epochs", type=int, default=0,
                    help="Epochs over which to linearly decay Hamming target to 0 after warmup.")
 
+    # Warm-start
+    p.add_argument("--warmstart_ckpt", type=str, default=None,
+                   help="Path to a .pt checkpoint to warm-start the pred model from.")
+
     # Output
     p.add_argument("--prefix", type=str, default="default")
     p.add_argument("--gpu", type=str, default="-1")
@@ -226,6 +230,14 @@ def run_one(
     """
     ipdim, opdim = problem.get_model_shape()
     pred_model = build_pred_model(model_type, ipdim, opdim, args).to(device)
+
+    # Optionally warm-start from a saved checkpoint
+    warmstart_ckpt = getattr(args, "warmstart_ckpt", None)
+    if warmstart_ckpt:
+        sd = torch.load(warmstart_ckpt, map_location=device)
+        pred_model.load_state_dict(sd)
+        print(f"  Warm-started from: {warmstart_ckpt}")
+
     pred_model.train()
 
     common_kwargs = dict(
