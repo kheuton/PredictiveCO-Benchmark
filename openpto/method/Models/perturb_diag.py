@@ -198,6 +198,7 @@ class PerturbDiag(optModel):
         # Diagnostic outputs — populated after each forward()
         self.last_z_bar: torch.Tensor | None = None
         self.last_perturbed_solutions: torch.Tensor | None = None
+        self.last_z_star: torch.Tensor | None = None
 
         self._batch_scales: list[float] = []
 
@@ -274,6 +275,7 @@ class PerturbDiag(optModel):
             z_star = torch.as_tensor(
                 z_star_np, device=coeff_hat.device, dtype=coeff_hat.dtype
             )
+            self.last_z_star = z_star.detach().cpu()
             obj_star = problem.get_objective(coeff_true, z_star, params)
             if not torch.is_tensor(obj_star):
                 obj_star = torch.as_tensor(obj_star, dtype=coeff_hat.dtype)
@@ -667,5 +669,141 @@ class PerInstanceHammingPerturb(PerInstanceAdaptiveSigma):
             f"max={self.sigma_vec.max():.5f} hamming={self.last_hamming:.4f} "
             f"ocv_y={self.last_ocv_y:.4f} frac={self.last_frac_improving:.4f} "
             f"target={self._current_hamming_target:.4f}"
+        )
+        return self.sigma
+
+
+# ---------------------------------------------------------------------------
+# PerInstanceHammingStarPerturb — dynamic hamming(z*, z_0) target per instance
+# ---------------------------------------------------------------------------
+
+class PerInstanceHammingStarPerturb(PerInstanceHammingPerturb):
+    """
+    Per-instance sigma controller where the Hamming target is dynamic:
+        target_i = min(hamming(z*_i, z0_i) / D, hamming_target)
+
+    z*_i is the optimal decision under true costs y_i, and D is the number of
+    items (decision dimension). The cap (``hamming_target``, inherited) prevents
+    runaway sigma when z0 is far from z* early in training. As training converges,
+    hamming(z*_i, z0_i) → 0, so each instance's target → 0 and sigma
+    self-terminates per-instance.
+
+    z* is cached permanently after epoch 1 (true costs are fixed data, so z*
+    is deterministic). From epoch 2 onward there is zero extra overhead.
+
+    Before the cache is warm (epoch 0), falls back to the inherited
+    ``hamming_target`` fixed value.
+
+    Requires ``loss_type="regret"`` (the default) so that PerturbDiag.forward()
+    computes and stores ``last_z_star``.
+    """
+
+    def __init__(self, ptoSolver, **kwargs):
+        super().__init__(ptoSolver, **kwargs)
+        self.z_star_cache: torch.Tensor | None = None  # (N_train, D), filled after epoch 1
+        self._cache_warm: bool = False
+        self._epoch_z_star: list = []  # accumulates (inst_idx, z_star) pairs until warm
+
+    def forward(self, problem, coeff_hat, params, coeff_true=None, inst_idx=None, **hyperparams):
+        loss = super().forward(problem, coeff_hat, params, coeff_true, inst_idx=inst_idx, **hyperparams)
+        # Accumulate z* for cache building (only until cache is warm)
+        if not self._cache_warm and self.last_z_star is not None:
+            B = coeff_hat.shape[0]
+            idx = inst_idx.long().cpu() if inst_idx is not None else torch.arange(B)
+            self._epoch_z_star.append((idx, self.last_z_star.cpu()))
+        return loss
+
+    def step(self, epoch: int) -> float:
+        # Build z_star_cache from this epoch's accumulation
+        if not self._cache_warm and self._epoch_z_star:
+            all_idx = torch.cat([pair[0] for pair in self._epoch_z_star])
+            all_zs  = torch.cat([pair[1] for pair in self._epoch_z_star], dim=0)
+            if self.z_star_cache is None:
+                N_train = int(all_idx.max().item()) + 1
+                D = all_zs.shape[-1]
+                self.z_star_cache = torch.zeros(N_train, D)
+            self.z_star_cache[all_idx] = all_zs.float()
+            self._cache_warm = True
+        self._epoch_z_star.clear()
+
+        # Same early-exit as parent if buffers are empty
+        if not (self._epoch_perturbed_sols and self._epoch_z0):
+            mean_sigma = (
+                float(self.sigma_vec.mean()) if self.sigma_vec is not None
+                else (self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean()))
+            )
+            return mean_sigma
+
+        all_sols    = torch.cat(self._epoch_perturbed_sols, dim=1).float()  # (N, B_total, D)
+        all_z0      = torch.cat(self._epoch_z0, dim=0).float()              # (B_total, D)
+        all_indices = torch.cat(self._epoch_indices, dim=0)                 # (B_total,)
+        B_total     = all_z0.shape[0]
+
+        # Lazy init sigma_vec
+        if self.sigma_vec is None:
+            N_train = int(all_indices.max().item()) + 1
+            init_sigma = self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean())
+            self.sigma_vec = torch.full((N_train,), float(init_sigma))
+
+        with torch.no_grad():
+            # Per-instance Hamming rate (control signal, normalised by D)
+            hamming_per = hamming_rate_per_instance(all_sols, all_z0)  # (B_total,)
+
+            # OCV_Y and FracImproving for diagnostic logging
+            if self._epoch_coeff_true:
+                all_y  = torch.cat(self._epoch_coeff_true, dim=0)
+                y      = all_y.reshape(B_total, -1)
+                z_n    = all_sols.reshape(all_sols.shape[0], B_total, -1)
+                z_0    = all_z0.reshape(B_total, -1)
+                obj_n  = torch.einsum("nbd,bd->nb", z_n, y)
+                obj_0  = torch.einsum("bd,bd->b",   z_0, y)
+                ocv_y_per  = obj_n.std(dim=0) / (obj_0.abs() + 1e-6)
+                frac_per   = (obj_n > obj_0.unsqueeze(0)).float().mean(dim=0)
+            else:
+                ocv_y_per = torch.zeros(B_total)
+                frac_per  = torch.zeros(B_total)
+
+            # Dynamic per-instance Hamming target: min(hamming(z*_i, z0_i) / D, cap)
+            # Normalised by D to match the scale of hamming_rate_per_instance.
+            # Capped at hamming_target to prevent runaway sigma when z0 is far from z*.
+            if self.z_star_cache is not None:
+                z_star_batch = self.z_star_cache[all_indices].float()  # (B_total, D)
+                D = float(all_z0.shape[-1])
+                hamming_to_star = (z_star_batch != all_z0).float().sum(dim=-1)  # (B_total,)
+                dynamic_target = (hamming_to_star / D).clamp(min=1e-6, max=self.hamming_target)
+            else:
+                # Fallback before cache is warm: use fixed hamming_target
+                dynamic_target = torch.full((B_total,), self.hamming_target)
+
+            ratio = (dynamic_target / hamming_per.clamp(min=1e-6)).clamp(
+                1.0 / self.max_step, self.max_step
+            )
+            sigma_proposed = (self.sigma_vec[all_indices] * ratio).clamp(
+                self.sigma_min, self.sigma_max
+            )
+
+            # EMA update
+            self.sigma_vec[all_indices] = (
+                self.sigma_ema * self.sigma_vec[all_indices]
+                + (1 - self.sigma_ema) * sigma_proposed
+            )
+
+        self.last_hamming        = hamming_per.mean().item()
+        self.last_ocv_y          = ocv_y_per.mean().item()
+        self.last_frac_improving = frac_per.mean().item()
+        self.sigma               = self.sigma_vec.mean().item()
+        mean_dyn_target = dynamic_target.mean().item()
+
+        self._epoch_perturbed_sols.clear()
+        self._epoch_z0.clear()
+        self._epoch_coeff_true.clear()
+        self._epoch_indices.clear()
+
+        logger.info(
+            f"  [per_instance_hamming_star] epoch {epoch}: "
+            f"sigma mean={self.sigma:.5f} min={self.sigma_vec.min():.5f} "
+            f"max={self.sigma_vec.max():.5f} hamming={self.last_hamming:.4f} "
+            f"dyn_target={mean_dyn_target:.4f} cache_warm={self._cache_warm} "
+            f"ocv_y={self.last_ocv_y:.4f} frac={self.last_frac_improving:.4f}"
         )
         return self.sigma

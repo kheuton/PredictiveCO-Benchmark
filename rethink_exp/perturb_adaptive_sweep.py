@@ -40,6 +40,7 @@ from openpto.diagnostics.perturb_metrics import (
 )
 from openpto.method.Models.perturb_diag import (
     AdaptiveSigmaPerturb, PerInstanceAdaptiveSigma, PerInstanceHammingPerturb,
+    PerInstanceHammingStarPerturb,
 )
 from openpto.method.Predicts.dense import MLP
 from openpto.method.Predicts.poly_model import PolyPredModel
@@ -137,6 +138,8 @@ def parse_args():
                    help="Epochs to hold Hamming target constant before decaying.")
     p.add_argument("--hamming_decay_epochs", type=int, default=0,
                    help="Epochs over which to linearly decay Hamming target to 0 after warmup.")
+    p.add_argument("--hamming_star", action="store_true",
+                   help="Use PerInstanceHammingStarPerturb: dynamic target = hamming(z*,z0)/D per instance.")
 
     # Warm-start
     p.add_argument("--warmstart_ckpt", type=str, default=None,
@@ -252,7 +255,14 @@ def run_one(
         sigma_max=args.sigma_max,
         reduction="mean",
     )
-    if getattr(args, "hamming", False):
+    if getattr(args, "hamming_star", False):
+        loss_fn = PerInstanceHammingStarPerturb(
+            ptoSolver,
+            hamming_target=ocv_target,   # fallback for epoch 0 before cache is warm
+            sigma_ema=args.sigma_ema,
+            **common_kwargs,
+        )
+    elif getattr(args, "hamming", False):
         loss_fn = PerInstanceHammingPerturb(
             ptoSolver,
             hamming_target=ocv_target,
@@ -395,9 +405,10 @@ def run_one(
             best_state = {k: v.clone() for k, v in pred_model.state_dict().items()}
 
         if epoch % 10 == 0:
-            ctrl_str = (f"hamming {loss_fn.last_hamming:.4f}"
-                        if getattr(args, "hamming", False)
-                        else f"ocv_y {loss_fn.last_ocv_y:.4f}")
+            if getattr(args, "hamming_star", False) or getattr(args, "hamming", False):
+                ctrl_str = f"hamming {loss_fn.last_hamming:.4f}"
+            else:
+                ctrl_str = f"ocv_y {loss_fn.last_ocv_y:.4f}"
             print(
                 f"  epoch {epoch:3d} | loss {loss.item():.4f} | "
                 f"val_regret {val_regret:.4f} | "
@@ -440,7 +451,12 @@ def build_sweep_grid(args):
     label is used as the filename stem.
     """
     if args.mode == "proportional":
-        if getattr(args, "hamming", False):
+        if getattr(args, "hamming_star", False):
+            # hamming_star: no target sweep needed — target is dynamic.
+            # The ocv_target value here serves only as epoch-0 fallback sigma.
+            targets = args.hamming_targets or [args.prop_sigma_init]
+            stem = "hams_s"  # hams = hamming-star
+        elif getattr(args, "hamming", False):
             targets = args.hamming_targets or [0.05, 0.10, 0.15, 0.20, 0.30]
             decay = getattr(args, "hamming_decay_epochs", 0)
             stem = "hamd_t" if decay > 0 else "ham_t"
