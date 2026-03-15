@@ -233,6 +233,10 @@ class perturbed(optModel):
         # Per-epoch scale tracking
         self._batch_scales = []
 
+        # Per-epoch loss component tracking (for gradient scale diagnostics)
+        self._batch_perturb_losses = []   # raw perturb loss values per batch
+        self._batch_pred_mse_losses = []  # raw MSE-reg loss values per batch (before λ scaling)
+
         # Sigma scheduler
         if sigma_start is None:
             sigma_start = sigma
@@ -251,13 +255,26 @@ class perturbed(optModel):
         if self._batch_scales:
             avg_scale = sum(self._batch_scales) / len(self._batch_scales)
             ratio = self.sigma / avg_scale if avg_scale > 0 else float('inf')
-            logger.info(
+            log_msg = (
                 f"  [perturb] epoch {epoch}: "
                 f"|coeff_hat| = {avg_scale:.4f}, "
                 f"sigma = {self.sigma:.4f}, "
                 f"sigma/|coeff_hat| = {ratio:.4f}"
             )
+            if self._batch_perturb_losses:
+                avg_perturb = sum(self._batch_perturb_losses) / len(self._batch_perturb_losses)
+                log_msg += f", L_perturb = {avg_perturb:.5f}"
+            if self._batch_pred_mse_losses:
+                avg_mse = sum(self._batch_pred_mse_losses) / len(self._batch_pred_mse_losses)
+                # Retrieve pred_loss_weight from last forward call if available
+                lam = getattr(self, "_last_pred_loss_weight", 0.0)
+                log_msg += f", L_mse = {avg_mse:.5f}, lambda*L_mse = {lam * avg_mse:.5f}"
+                if avg_perturb > 0:
+                    log_msg += f", ratio(lambda*mse/perturb) = {lam * avg_mse / avg_perturb:.3f}"
+            logger.info(log_msg)
             self._batch_scales = []
+            self._batch_perturb_losses = []
+            self._batch_pred_mse_losses = []
         self.sigma = self.sigma_scheduler.step(epoch)
         return self.sigma
 
@@ -364,8 +381,12 @@ class perturbed(optModel):
         # true coefficients, which keeps |θ̂| in check and mitigates the
         # soft-to-hard gap observed on portfolio.
         pred_loss_weight = float(hyperparams.get("pred_loss_weight", 0.0))
+        self._last_pred_loss_weight = pred_loss_weight
+        # Track perturb loss value for gradient scale diagnostics
+        self._batch_perturb_losses.append(loss.item())
         if pred_loss_weight > 0.0 and coeff_true is not None:
             pred_mse = torch.nn.functional.mse_loss(coeff_hat, coeff_true)
+            self._batch_pred_mse_losses.append(pred_mse.item())
             loss = loss + pred_loss_weight * pred_mse
 
         return loss
