@@ -115,6 +115,12 @@ def get_args():
     parser.add_argument("--val_frac", type=float, default=0.2)
     # debug
     parser.add_argument("--valfreq", type=int, default=1)
+    parser.add_argument("--skip_solver_eval", action="store_true",
+                        help="Skip solver calls during training; use val MSE for early stopping. "
+                             "Solver is still called once at the end for final test evaluation.")
+    parser.add_argument("--solver_valfreq", type=int, default=0,
+                        help="With --skip_solver_eval: run solver on val every N epochs for "
+                             "real val regret checkpoint selection. 0 = use val MSE only.")
     parser.add_argument("--savefreq", type=int, default=-1)
     parser.add_argument("--prefix", type=str, default="default")
     # model
@@ -123,6 +129,14 @@ def get_args():
     parser.add_argument("--pooling", type=str, default="mean")
     parser.add_argument("--activation", type=str, default="relu")
     parser.add_argument("--kernel_size", type=int, default=1)
+    parser.add_argument("--warmstart_ckpt", type=str, default=None,
+                        help="Path to a .pt checkpoint to warm-start the pred model before fine-tuning.")
+    parser.add_argument("--grad_surgery", action="store_true",
+                        help="Gradient surgery: remove MSE-misaligned component of PnO gradient "
+                             "and inject surgery_weight * g_mse. Requires --opt_name sgd.")
+    parser.add_argument("--surgery_weight", type=float, default=1.0,
+                        help="Weight for injected MSE gradient in surgery: "
+                             "g_update = (g_p - proj_{g_m}(g_p)) + surgery_weight * g_m.")
 
     args = parser.parse_args()
 

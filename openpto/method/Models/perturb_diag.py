@@ -43,6 +43,19 @@ def hamming_rate_per_instance(perturbed_sols, z0):
     return flips.mean(dim=(0, 2))                         # (B,)
 
 
+def hamming_rate_per_item(perturbed_sols, z0):
+    """Per-item mean fraction of instances/samples that flip item i.
+
+    Args:
+        perturbed_sols: (N, B, D) float tensor
+        z0:             (B, D) float tensor
+    Returns:
+        (D,) tensor — mean hamming rate per item, averaged over N and B dims
+    """
+    flips = (perturbed_sols != z0.unsqueeze(0)).float()  # (N, B, D)
+    return flips.mean(dim=(0, 1))                         # (D,)
+
+
 # ---------------------------------------------------------------------------
 # Modified autograd function — returns (z_bar, perturbed_solutions)
 # ---------------------------------------------------------------------------
@@ -73,7 +86,17 @@ class perturbedSoftDecisionDiag(torch.autograd.Function):
 
         if torch.is_tensor(sigma) and sigma.ndim >= 1:
             n_spatial = additive_noise.ndim - 2   # dims after (N, B)
-            sigma_noise = sigma.view(1, -1, *([1] * n_spatial)).to(device=device, dtype=dtype)
+            B = original_input_shape[0]
+            D = original_input_shape[-1] if len(original_input_shape) > 1 else 1
+            if sigma.ndim == 2:
+                # (B, D) per-inst×per-item → (1, B, D)
+                sigma_noise = sigma.unsqueeze(0).to(device=device, dtype=dtype)
+            elif sigma.ndim == 1 and len(original_input_shape) > 1 and sigma.shape[0] == D and D != B:
+                # (D,) per-item → (1, 1, D)
+                sigma_noise = sigma.view(1, 1, D).to(device=device, dtype=dtype)
+            else:
+                # (B,) per-instance → (1, B, 1, ...)
+                sigma_noise = sigma.view(1, -1, *([1] * n_spatial)).to(device=device, dtype=dtype)
         else:
             sigma_noise = sigma
         perturbed_input = coeff_hat.unsqueeze(0) + sigma_noise * additive_noise
@@ -119,7 +142,19 @@ class perturbedSoftDecisionDiag(torch.autograd.Function):
         scores = torch.einsum("nbd,bd->nb", sol_flat, dy_flat)
         g = torch.einsum("nbd,nb->bd", noise_grad_flat, scores)
         if torch.is_tensor(sigma) and sigma.ndim >= 1:
-            g /= (sigma.to(g.device).unsqueeze(-1) * n_samples)
+            sigma_dev = sigma.to(g.device)
+            if sigma_dev.ndim == 2:
+                # (B, D) per-inst×per-item
+                g /= sigma_dev * n_samples
+            elif sigma_dev.ndim == 1:
+                D = original_input_shape[-1] if len(original_input_shape) > 1 else 1
+                B = original_input_shape[0]
+                if sigma_dev.shape[0] == D and D != B:
+                    # (D,) per-item → (1, D) broadcast over (B, D)
+                    g /= sigma_dev.unsqueeze(0) * n_samples
+                else:
+                    # (B,) per-instance → (B, 1) broadcast over (B, D)
+                    g /= sigma_dev.unsqueeze(-1) * n_samples
         else:
             g /= sigma * n_samples
         g = g.reshape(original_input_shape)
@@ -805,5 +840,663 @@ class PerInstanceHammingStarPerturb(PerInstanceHammingPerturb):
             f"max={self.sigma_vec.max():.5f} hamming={self.last_hamming:.4f} "
             f"dyn_target={mean_dyn_target:.4f} cache_warm={self._cache_warm} "
             f"ocv_y={self.last_ocv_y:.4f} frac={self.last_frac_improving:.4f}"
+        )
+        return self.sigma
+
+
+# ---------------------------------------------------------------------------
+# CoeffRelativeSigmaPerturb — sigma proportional to predicted cost magnitude
+# ---------------------------------------------------------------------------
+
+class CoeffRelativeSigmaPerturb(PerturbDiag):
+    """
+    Coefficient-relative sigma: sigma_{b,i} = alpha * |ĉ_{b,i}|
+
+    No controller loop. Sigma is recomputed from the current predictions every
+    forward pass, so it automatically tracks predicted-cost magnitude per item
+    and per instance.  This keeps sigma naturally bounded — it can only grow as
+    large as the predicted costs themselves.
+
+    The single hyperparameter alpha scales the relative noise level:
+        alpha = 1.0  → noise std equals the absolute predicted cost per item
+        alpha < 1.0  → smaller perturbation (tighter noise)
+        alpha > 1.0  → larger perturbation (looser noise)
+
+    Parameters
+    ----------
+    alpha : float
+        Noise-to-cost ratio (default 1.0).
+    All other kwargs forwarded to PerturbDiag.
+    """
+
+    def __init__(self, ptoSolver, alpha: float = 1.0, **kwargs):
+        super().__init__(ptoSolver, **kwargs)
+        self.alpha = float(alpha)
+        self._last_sigma_mean: float = float("nan")
+        self.last_ocv_y: float = float("nan")
+        self.last_frac_improving: float = float("nan")
+        self.last_hamming: float = float("nan")
+
+    def forward(self, problem, coeff_hat, params, coeff_true=None, **hyperparams):
+        # Detach so sigma has no gradient; shape (B, D) handled by generalised backward
+        with torch.no_grad():
+            self.sigma = self.alpha * coeff_hat.abs()
+        return super().forward(problem, coeff_hat, params, coeff_true, **hyperparams)
+
+    def step(self, epoch: int) -> float:
+        # No update — sigma is recomputed from coeff_hat each forward pass.
+        # Just return the last mean sigma for external logging.
+        if torch.is_tensor(self.sigma):
+            self._last_sigma_mean = float(self.sigma.mean().item())
+        return self._last_sigma_mean
+
+
+# ---------------------------------------------------------------------------
+# PerItemHammingPerturb — per-item (D,) sigma controller
+# ---------------------------------------------------------------------------
+
+class PerItemHammingPerturb(AdaptiveSigmaPerturb):
+    """
+    Per-item sigma controller using Hamming rate as control target.
+
+    sigma_vec is a (D,) tensor — one sigma per item/decision-dimension.
+    Control signal: per-item Hamming rate = mean fraction of N×B perturbations
+    that flip item i (averaged over all instances and samples).
+
+    This allows items that are easy to determine (rarely flip) to use small
+    sigma, while ambiguous items (frequently flip) get larger sigma.
+
+    Parameters
+    ----------
+    hamming_target : float
+        Desired per-item Hamming rate (default 0.10).
+    sigma_ema : float
+        EMA smoothing factor for sigma_vec updates (default 0.7).
+    sigma_min : float or None
+        Minimum clamp for sigma_vec. None disables clamping.
+    All other kwargs forwarded to AdaptiveSigmaPerturb.
+    """
+
+    def __init__(
+        self,
+        ptoSolver,
+        hamming_target: float = 0.10,
+        sigma_ema: float = 0.7,
+        sigma_min=1e-4,
+        **kwargs,
+    ):
+        # Pass sigma_min=0.0 to parent (parent's step() is never called for this class)
+        super().__init__(ptoSolver, sigma_min=sigma_min if sigma_min is not None else 0.0, **kwargs)
+        self.hamming_target = float(hamming_target)
+        self.sigma_ema = float(sigma_ema)
+        self.sigma_min_item = sigma_min  # None or float
+        self.sigma_vec: torch.Tensor | None = None  # (D,), lazy init
+        self.last_hamming: float = float("nan")
+        self.last_hamming_vec: torch.Tensor | None = None   # (D,) for external inspection
+        self.last_sigma_vec_item: torch.Tensor | None = None  # (D,) snapshot after each step
+
+    def forward(self, problem, coeff_hat, params, coeff_true=None, **hyperparams):
+        if self.sigma_vec is not None:
+            # Set sigma to (D,) tensor so perturbedSoftDecisionDiag uses per-item broadcast
+            self.sigma = self.sigma_vec.to(coeff_hat.device)
+        return super().forward(problem, coeff_hat, params, coeff_true, **hyperparams)
+
+    def step(self, epoch: int) -> float:
+        self._batch_scales.clear()
+
+        if not (self._epoch_perturbed_sols and self._epoch_z0):
+            mean_sigma = (
+                float(self.sigma_vec.mean()) if self.sigma_vec is not None
+                else (self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean()))
+            )
+            self._epoch_perturbed_sols.clear()
+            self._epoch_z0.clear()
+            self._epoch_coeff_true.clear()
+            return mean_sigma
+
+        all_sols = torch.cat(self._epoch_perturbed_sols, dim=1).float()  # (N, B_total, D)
+        all_z0   = torch.cat(self._epoch_z0, dim=0).float()              # (B_total, D)
+        B_total  = all_z0.shape[0]
+        D        = all_z0.shape[-1]
+
+        # Lazy init sigma_vec
+        if self.sigma_vec is None:
+            init_sigma = self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean())
+            self.sigma_vec = torch.full((D,), float(init_sigma))
+
+        with torch.no_grad():
+            # Per-item Hamming rate (mean over N and B dims)
+            hamming_item = hamming_rate_per_item(all_sols, all_z0)  # (D,)
+
+            # Proportional update
+            ratio = (self.hamming_target / hamming_item.clamp(min=1e-6)).clamp(
+                1.0 / self.max_step, self.max_step
+            )
+            sigma_proposed = self.sigma_vec * ratio  # (D,)
+            if self.sigma_min_item is not None:
+                sigma_proposed = sigma_proposed.clamp(min=self.sigma_min_item)
+
+            # EMA update
+            self.sigma_vec = (
+                self.sigma_ema * self.sigma_vec
+                + (1 - self.sigma_ema) * sigma_proposed
+            )
+
+        self.last_hamming = hamming_item.mean().item()
+        self.last_hamming_vec = hamming_item.clone()
+        self.last_sigma_vec_item = self.sigma_vec.clone()  # (D,) snapshot for logging
+        self.sigma = float(self.sigma_vec.mean().item())
+
+        # Diagnostic OCV_Y
+        if self._epoch_coeff_true:
+            all_y = torch.cat(self._epoch_coeff_true, dim=0)
+            with torch.no_grad():
+                z_n = all_sols.reshape(all_sols.shape[0], B_total, -1)
+                z_0 = all_z0.reshape(B_total, -1)
+                y   = all_y.reshape(B_total, -1)
+                obj_n = torch.einsum("nbd,bd->nb", z_n, y)
+                obj_0 = torch.einsum("bd,bd->b",   z_0, y)
+                ocv_y_per = obj_n.std(dim=0) / (obj_0.abs() + 1e-6)
+                frac_per  = (obj_n > obj_0.unsqueeze(0)).float().mean(dim=0)
+            self.last_ocv_y          = ocv_y_per.mean().item()
+            self.last_frac_improving = frac_per.mean().item()
+
+        self._epoch_perturbed_sols.clear()
+        self._epoch_z0.clear()
+        self._epoch_coeff_true.clear()
+
+        logger.info(
+            f"  [per_item_hamming] epoch {epoch}: "
+            f"sigma mean={self.sigma:.5f} min={self.sigma_vec.min():.5f} "
+            f"max={self.sigma_vec.max():.5f} hamming_mean={self.last_hamming:.4f} "
+            f"hamming_std={self.last_hamming_vec.std().item():.4f} "
+            f"ocv_y={self.last_ocv_y:.4f} frac={self.last_frac_improving:.4f} "
+            f"target={self.hamming_target:.4f}"
+        )
+        return self.sigma
+
+
+# ---------------------------------------------------------------------------
+# PerInstItemHammingPerturb — per-instance × per-item (B, D) sigma controller
+# ---------------------------------------------------------------------------
+
+class PerInstItemHammingPerturb(AdaptiveSigmaPerturb):
+    """
+    Per-instance × per-item sigma controller.
+
+    sigma_mat is an (N_train, D) tensor — one sigma per (instance, item) pair.
+    Control signal: per-instance × per-item Hamming rate =
+        flips.mean(dim=0) → (B_total, D)  (mean over N perturbation samples).
+
+    Parameters
+    ----------
+    hamming_target : float
+        Desired per-instance×per-item Hamming rate (default 0.10).
+    sigma_ema : float
+        EMA smoothing factor for sigma_mat updates (default 0.7).
+    sigma_min : float or None
+        Minimum clamp for sigma_mat. None disables clamping.
+    All other kwargs forwarded to AdaptiveSigmaPerturb.
+    """
+
+    def __init__(
+        self,
+        ptoSolver,
+        hamming_target: float = 0.10,
+        sigma_ema: float = 0.7,
+        sigma_min=1e-4,
+        **kwargs,
+    ):
+        super().__init__(ptoSolver, sigma_min=sigma_min if sigma_min is not None else 0.0, **kwargs)
+        self.hamming_target = float(hamming_target)
+        self.sigma_ema = float(sigma_ema)
+        self.sigma_min_item = sigma_min  # None or float
+        self.sigma_mat: torch.Tensor | None = None  # (N_train, D), lazy init
+        self._epoch_indices: list = []
+        self.last_hamming: float = float("nan")
+        self.last_hamming_vec: torch.Tensor | None = None   # (D,) mean over instances
+        self.last_sigma_vec_item: torch.Tensor | None = None  # (D,) mean over instances, snapshot
+
+    def forward(self, problem, coeff_hat, params, coeff_true=None, inst_idx=None, **hyperparams):
+        B = coeff_hat.shape[0]
+        if self.sigma_mat is not None:
+            if inst_idx is None:
+                idx = torch.arange(B)
+            else:
+                idx = inst_idx.long()
+            self.sigma = self.sigma_mat[idx].detach().to(coeff_hat.device)  # (B, D)
+
+        loss = super().forward(problem, coeff_hat, params, coeff_true, **hyperparams)
+
+        # Accumulate indices for step()
+        if self.last_perturbed_solutions is not None:
+            if inst_idx is None:
+                self._epoch_indices.append(torch.arange(B))
+            else:
+                self._epoch_indices.append(inst_idx.long().cpu())
+
+        return loss
+
+    def step(self, epoch: int) -> float:
+        self._batch_scales.clear()
+
+        if not (self._epoch_perturbed_sols and self._epoch_z0):
+            mean_sigma = (
+                float(self.sigma_mat.mean()) if self.sigma_mat is not None
+                else (self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean()))
+            )
+            self._epoch_perturbed_sols.clear()
+            self._epoch_z0.clear()
+            self._epoch_coeff_true.clear()
+            self._epoch_indices.clear()
+            return mean_sigma
+
+        all_sols    = torch.cat(self._epoch_perturbed_sols, dim=1).float()  # (N, B_total, D)
+        all_z0      = torch.cat(self._epoch_z0, dim=0).float()              # (B_total, D)
+        all_indices = torch.cat(self._epoch_indices, dim=0)                 # (B_total,)
+        B_total     = all_z0.shape[0]
+        D           = all_z0.shape[-1]
+
+        # Lazy init sigma_mat
+        if self.sigma_mat is None:
+            N_train = int(all_indices.max().item()) + 1
+            init_sigma = self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean())
+            self.sigma_mat = torch.full((N_train, D), float(init_sigma))
+
+        with torch.no_grad():
+            # Per-instance × per-item Hamming rate: (N, B_total, D) → (B_total, D)
+            flips = (all_sols != all_z0.unsqueeze(0)).float()  # (N, B_total, D)
+            hamming_per = flips.mean(dim=0)                     # (B_total, D)
+
+            # Proportional update
+            ratio = (self.hamming_target / hamming_per.clamp(min=1e-6)).clamp(
+                1.0 / self.max_step, self.max_step
+            )
+            sigma_proposed = self.sigma_mat[all_indices] * ratio  # (B_total, D)
+            if self.sigma_min_item is not None:
+                sigma_proposed = sigma_proposed.clamp(min=self.sigma_min_item)
+
+            # EMA update (only for instances seen this epoch)
+            self.sigma_mat[all_indices] = (
+                self.sigma_ema * self.sigma_mat[all_indices]
+                + (1 - self.sigma_ema) * sigma_proposed
+            )
+
+        self.last_hamming = hamming_per.mean().item()
+        self.last_hamming_vec = hamming_per.mean(dim=0).clone()  # (D,) mean over instances
+        self.last_sigma_vec_item = self.sigma_mat.mean(dim=0).clone()  # (D,) snapshot for logging
+        self.sigma = float(self.sigma_mat.mean().item())
+
+        # Diagnostic OCV_Y
+        if self._epoch_coeff_true:
+            all_y = torch.cat(self._epoch_coeff_true, dim=0)
+            with torch.no_grad():
+                z_n = all_sols.reshape(all_sols.shape[0], B_total, -1)
+                z_0 = all_z0.reshape(B_total, -1)
+                y   = all_y.reshape(B_total, -1)
+                obj_n = torch.einsum("nbd,bd->nb", z_n, y)
+                obj_0 = torch.einsum("bd,bd->b",   z_0, y)
+                ocv_y_per = obj_n.std(dim=0) / (obj_0.abs() + 1e-6)
+                frac_per  = (obj_n > obj_0.unsqueeze(0)).float().mean(dim=0)
+            self.last_ocv_y          = ocv_y_per.mean().item()
+            self.last_frac_improving = frac_per.mean().item()
+
+        self._epoch_perturbed_sols.clear()
+        self._epoch_z0.clear()
+        self._epoch_coeff_true.clear()
+        self._epoch_indices.clear()
+
+        logger.info(
+            f"  [per_inst_item_hamming] epoch {epoch}: "
+            f"sigma mean={self.sigma:.5f} min={self.sigma_mat.min():.5f} "
+            f"max={self.sigma_mat.max():.5f} hamming_mean={self.last_hamming:.4f} "
+            f"hamming_item_std={self.last_hamming_vec.std().item():.4f} "
+            f"ocv_y={self.last_ocv_y:.4f} frac={self.last_frac_improving:.4f} "
+            f"target={self.hamming_target:.4f}"
+        )
+        return self.sigma
+
+
+# ---------------------------------------------------------------------------
+# FlipMarginSigmaPerturb — per-(instance, item) sigma guided by flip margin
+# ---------------------------------------------------------------------------
+
+class FlipMarginSigmaPerturb(PerInstItemHammingPerturb):
+    """
+    Per-instance × per-item sigma controller guided by whether the model's
+    current decision z0 agrees with the oracle optimal decision z* item-by-item.
+
+    Target assignment for each (instance b, item i):
+        target_{b,i} = error_target   if  z*_{b,i} ≠ z0_{b,i}  (model wrong → more flips)
+                       correct_target if  z*_{b,i} = z0_{b,i}  (model right → fewer flips)
+
+    Instances with regret < regret_threshold are blended toward the inherited
+    hamming_target so sigma doesn't move much for already-solved instances.
+
+    A hard per-item ceiling  σ_{b,i} ≤ sigma_coeff_max × |ĉ_{b,i}|  prevents
+    the coeff-relative runaway seen in CoeffRelativeSigmaPerturb.
+
+    z* is cached permanently after epoch 1 (true costs are fixed data).
+    Before the cache is warm, falls back to the parent proportional controller.
+
+    Requires ``loss_type="regret"`` (default in PerturbDiag) so that
+    ``self.last_z_star`` is populated by each forward pass.
+
+    Parameters
+    ----------
+    error_target : float
+        Hamming rate target for items where the model is wrong (default 0.20).
+    correct_target : float
+        Hamming rate target for items where the model is correct (default 0.01).
+    regret_threshold : float
+        Regret level above which the full error/correct split applies (default 0.01).
+    sigma_coeff_max : float or None
+        Hard ceiling: σ_{b,i} ≤ sigma_coeff_max × |ĉ_{b,i}|. None disables (default 5.0).
+    All other kwargs forwarded to PerInstItemHammingPerturb.
+    """
+
+    def __init__(
+        self,
+        ptoSolver,
+        error_target: float = 0.20,
+        correct_target: float = 0.01,
+        regret_threshold: float = 0.01,
+        sigma_coeff_max: float | None = 5.0,
+        **kwargs,
+    ):
+        super().__init__(ptoSolver, **kwargs)
+        self.error_target     = float(error_target)
+        self.correct_target   = float(correct_target)
+        self.regret_threshold = float(regret_threshold)
+        self.sigma_coeff_max  = sigma_coeff_max
+        # z* cache — filled after epoch 1 (same mechanism as PerInstanceHammingStarPerturb)
+        self.z_star_cache: torch.Tensor | None = None  # (N_train, D), lazy init
+        self._cache_warm: bool = False
+        self._epoch_z_star: list = []     # (idx, z_star) pairs until cache warm
+        self._epoch_coeff_hat: list = []  # coeff_hat (B, D) for sigma ceiling
+
+    def forward(self, problem, coeff_hat, params, coeff_true=None, inst_idx=None, **hyperparams):
+        loss = super().forward(
+            problem, coeff_hat, params, coeff_true, inst_idx=inst_idx, **hyperparams
+        )
+        # Accumulate z* until cache is warm
+        if not self._cache_warm and self.last_z_star is not None:
+            B   = coeff_hat.shape[0]
+            idx = inst_idx.long().cpu() if inst_idx is not None else torch.arange(B)
+            self._epoch_z_star.append((idx, self.last_z_star.cpu()))
+        # Accumulate coeff_hat for the per-item sigma ceiling
+        if self.sigma_coeff_max is not None and self.last_perturbed_solutions is not None:
+            self._epoch_coeff_hat.append(coeff_hat.detach().cpu())
+        return loss
+
+    def step(self, epoch: int) -> float:
+        # Build z_star_cache (same logic as PerInstanceHammingStarPerturb)
+        if not self._cache_warm and self._epoch_z_star:
+            all_idx = torch.cat([pair[0] for pair in self._epoch_z_star])
+            all_zs  = torch.cat([pair[1] for pair in self._epoch_z_star], dim=0)
+            if self.z_star_cache is None:
+                N_train = int(all_idx.max().item()) + 1
+                D       = all_zs.shape[-1]
+                self.z_star_cache = torch.zeros(N_train, D)
+            self.z_star_cache[all_idx] = all_zs.float()
+            self._cache_warm = True
+        self._epoch_z_star.clear()
+
+        # Collect coeff_hat before any clearing
+        coeff_hat_epoch = (
+            torch.cat(self._epoch_coeff_hat, dim=0).float()
+            if self._epoch_coeff_hat else None
+        )
+        self._epoch_coeff_hat.clear()
+
+        # Fall back to parent if z* not yet cached or epoch buffers empty
+        if self.z_star_cache is None or not (self._epoch_perturbed_sols and self._epoch_z0):
+            return super().step(epoch)
+
+        # ---- Gather epoch tensors ----
+        all_sols    = torch.cat(self._epoch_perturbed_sols, dim=1).float()  # (N, B_total, D)
+        all_z0      = torch.cat(self._epoch_z0, dim=0).float()              # (B_total, D)
+        all_indices = torch.cat(self._epoch_indices, dim=0)                 # (B_total,)
+        B_total     = all_z0.shape[0]
+        D           = all_z0.shape[-1]
+
+        # Lazy init sigma_mat
+        if self.sigma_mat is None:
+            N_train    = int(all_indices.max().item()) + 1
+            init_sigma = self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean())
+            self.sigma_mat = torch.full((N_train, D), float(init_sigma))
+
+        with torch.no_grad():
+            # Per-(instance, item) Hamming rate: (N, B_total, D) → (B_total, D)
+            flips       = (all_sols != all_z0.unsqueeze(0)).float()
+            hamming_per = flips.mean(dim=0)  # (B_total, D)
+
+            # Oracle decisions for this batch
+            z_star_batch = self.z_star_cache[all_indices].float()  # (B_total, D)
+
+            # Per-instance normalised regret using true costs
+            if self._epoch_coeff_true:
+                all_y   = torch.cat(self._epoch_coeff_true, dim=0).float()  # (B_total, D)
+                opt_obj = (all_y * z_star_batch).sum(dim=-1)                 # (B_total,)
+                cur_obj = (all_y * all_z0).sum(dim=-1)                       # (B_total,)
+                regret_i = ((opt_obj - cur_obj) / (opt_obj.abs() + 1e-8)).clamp(0)
+            else:
+                regret_i = torch.ones(B_total)
+
+            # Regret-based blending weight: 0 = low regret (ignore), 1 = high regret (full split)
+            w_i = (regret_i / (self.regret_threshold + 1e-8)).clamp(0.0, 1.0)  # (B_total,)
+
+            # Per-(instance, item) differentiated Hamming target
+            wrong_bij    = (z_star_batch != all_z0).float()       # (B_total, D)
+            correct_bij  = 1.0 - wrong_bij
+            split_target = (
+                self.error_target * wrong_bij + self.correct_target * correct_bij
+            )  # (B_total, D)
+            target_bij = (
+                w_i.unsqueeze(-1) * split_target
+                + (1.0 - w_i.unsqueeze(-1)) * self.hamming_target
+            )  # (B_total, D)
+
+            # Proportional update
+            ratio = (target_bij / hamming_per.clamp(min=1e-6)).clamp(
+                1.0 / self.max_step, self.max_step
+            )
+            sigma_proposed = self.sigma_mat[all_indices] * ratio  # (B_total, D)
+
+            # Per-item coeff-relative hard ceiling
+            if self.sigma_coeff_max is not None and coeff_hat_epoch is not None:
+                sigma_hard_max = (self.sigma_coeff_max * coeff_hat_epoch.abs()).clamp(min=1e-6)
+                sigma_proposed = sigma_proposed.clamp(max=sigma_hard_max)
+
+            if self.sigma_min_item is not None:
+                sigma_proposed = sigma_proposed.clamp(min=self.sigma_min_item)
+
+            # EMA update for seen instances
+            self.sigma_mat[all_indices] = (
+                self.sigma_ema * self.sigma_mat[all_indices]
+                + (1.0 - self.sigma_ema) * sigma_proposed
+            )
+
+        self.last_hamming        = hamming_per.mean().item()
+        self.last_hamming_vec    = hamming_per.mean(dim=0).clone()  # (D,)
+        self.last_sigma_vec_item = self.sigma_mat.mean(dim=0).clone()  # (D,)
+        self.sigma               = float(self.sigma_mat.mean().item())
+
+        mean_regret    = regret_i.mean().item()
+        mean_wrong_frac = wrong_bij.mean().item()
+
+        # OCV_Y diagnostic
+        if self._epoch_coeff_true:
+            all_y = torch.cat(self._epoch_coeff_true, dim=0).float()
+            z_n   = all_sols.reshape(all_sols.shape[0], B_total, -1)
+            y     = all_y.reshape(B_total, -1)
+            z_0   = all_z0.reshape(B_total, -1)
+            obj_n = torch.einsum("nbd,bd->nb", z_n, y)
+            obj_0 = torch.einsum("bd,bd->b",   z_0, y)
+            self.last_ocv_y          = (obj_n.std(dim=0) / (obj_0.abs() + 1e-6)).mean().item()
+            self.last_frac_improving = (obj_n > obj_0.unsqueeze(0)).float().mean().item()
+
+        self._epoch_perturbed_sols.clear()
+        self._epoch_z0.clear()
+        self._epoch_coeff_true.clear()
+        self._epoch_indices.clear()
+
+        logger.info(
+            f"  [flip_margin] epoch {epoch}: "
+            f"sigma mean={self.sigma:.5f} min={self.sigma_mat.min():.5f} "
+            f"max={self.sigma_mat.max():.5f} hamming_mean={self.last_hamming:.4f} "
+            f"wrong_frac={mean_wrong_frac:.4f} regret_mean={mean_regret:.4f} "
+            f"ocv_y={self.last_ocv_y:.4f} frac={self.last_frac_improving:.4f} "
+            f"cache_warm={self._cache_warm}"
+        )
+        return self.sigma
+
+
+# ---------------------------------------------------------------------------
+# HammingProportionalSigmaPerturb — no-setpoint per-item sigma controller
+# ---------------------------------------------------------------------------
+
+class HammingProportionalSigmaPerturb(PerItemHammingPerturb):
+    """
+    Per-item sigma controller with NO feedback setpoint.
+
+    sigma_i is assigned proportionally to the empirical flip rate:
+        sigma_i = sigma_scale × (hamming_ema_i ** alpha)   (normalized to mean = sigma_scale)
+
+    Key insight: all prior Hamming controllers fail because they have a setpoint.
+    When rigid items can't reach the target flip rate, sigma escalates without
+    bound. Removing the setpoint entirely prevents ballooning:
+      - rigid items (hamming → 0): sigma → 0 (no wasted perturbation)
+      - boundary items (hamming ≈ 0.05–0.15): sigma ∝ their natural flip rate
+      - alpha controls the shape of the mapping
+
+    Parameters
+    ----------
+    alpha : float
+        Exponent in sigma ∝ hamming^alpha.
+        alpha=1.0 → linear (emphasizes boundary items)
+        alpha=0.5 → sqrt (compresses dynamic range, gentler)
+        alpha=0.0 → uniform sigma = plain perturb (sanity check)
+    sigma_scale : float
+        Overall magnitude multiplier; mean(sigma_vec) ≈ sigma_scale after update.
+    warmup_epochs : int
+        Number of epochs to collect hamming stats before first assignment.
+    update_freq : int
+        Re-estimate sigma every N epochs.
+    sigma_ema : float
+        EMA for hamming accumulation AND sigma update. High = slow change.
+    sigma_min : float or None
+        Floor for sigma_vec entries.
+    sigma_max : float
+        Ceiling for sigma_vec entries.
+    All other kwargs forwarded to PerItemHammingPerturb / AdaptiveSigmaPerturb.
+    """
+
+    def __init__(
+        self,
+        ptoSolver,
+        hp_alpha: float = 0.5,
+        sigma_scale: float = 1.0,
+        warmup_epochs: int = 10,
+        update_freq: int = 20,
+        sigma_ema: float = 0.9,
+        sigma_min: float = 1e-4,
+        **kwargs,
+    ):
+        # sigma_max from kwargs sets the per-item ceiling; also forwarded to parent.
+        sigma_max_hp = float(kwargs.get("sigma_max", 10.0))
+        # hamming_target=0 passed to parent — not used (no setpoint)
+        super().__init__(
+            ptoSolver,
+            hamming_target=0.0,
+            sigma_ema=sigma_ema,
+            sigma_min=sigma_min,
+            **kwargs,
+        )
+        self.alpha         = float(hp_alpha)   # stored as self.alpha (exponent)
+        self.sigma_scale   = float(sigma_scale)
+        self.sigma_max_hp  = sigma_max_hp      # per-item ceiling
+        self.warmup_epochs = int(warmup_epochs)
+        self.update_freq   = int(update_freq)
+        self.hamming_ema: torch.Tensor | None = None  # (D,), lazy init
+
+    def step(self, epoch: int) -> float:
+        self._batch_scales.clear()
+
+        if not (self._epoch_perturbed_sols and self._epoch_z0):
+            mean_sigma = (
+                float(self.sigma_vec.mean()) if self.sigma_vec is not None
+                else (self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean()))
+            )
+            self._epoch_perturbed_sols.clear()
+            self._epoch_z0.clear()
+            self._epoch_coeff_true.clear()
+            return mean_sigma
+
+        all_sols = torch.cat(self._epoch_perturbed_sols, dim=1).float()  # (N, B_total, D)
+        all_z0   = torch.cat(self._epoch_z0, dim=0).float()              # (B_total, D)
+        B_total  = all_z0.shape[0]
+        D        = all_z0.shape[-1]
+
+        # Lazy init sigma_vec and hamming_ema
+        if self.sigma_vec is None:
+            init_sigma = self.sigma if not torch.is_tensor(self.sigma) else float(self.sigma.mean())
+            self.sigma_vec = torch.full((D,), float(init_sigma))
+        if self.hamming_ema is None:
+            # Init to uniform (neutral: no item favored over another)
+            self.hamming_ema = torch.full((D,), float(self.sigma_scale))
+
+        with torch.no_grad():
+            # Per-item Hamming rate (mean over N and B dims)
+            hamming_item = hamming_rate_per_item(all_sols, all_z0)  # (D,)
+
+            # Update hamming EMA (high sigma_ema = slow change)
+            ema = self.sigma_ema
+            self.hamming_ema = ema * self.hamming_ema + (1.0 - ema) * hamming_item
+
+            # Diagnostic OCV_Y
+            if self._epoch_coeff_true:
+                all_y = torch.cat(self._epoch_coeff_true, dim=0)
+                z_n = all_sols.reshape(all_sols.shape[0], B_total, -1)
+                z_0 = all_z0.reshape(B_total, -1)
+                y   = all_y.reshape(B_total, -1)
+                obj_n = torch.einsum("nbd,bd->nb", z_n, y)
+                obj_0 = torch.einsum("bd,bd->b",   z_0, y)
+                ocv_y_per = obj_n.std(dim=0) / (obj_0.abs() + 1e-6)
+                frac_per  = (obj_n > obj_0.unsqueeze(0)).float().mean(dim=0)
+                self.last_ocv_y          = ocv_y_per.mean().item()
+                self.last_frac_improving = frac_per.mean().item()
+
+            # Proportional sigma assignment (no setpoint)
+            # Only update after warmup and at update_freq intervals
+            if epoch >= self.warmup_epochs and epoch % self.update_freq == 0:
+                raw = self.hamming_ema.clamp(min=1e-6) ** self.alpha  # (D,)
+                raw_mean = raw.mean()
+                if raw_mean > 1e-12:
+                    sigma_target = raw / raw_mean * self.sigma_scale
+                else:
+                    sigma_target = torch.full((D,), self.sigma_scale)
+
+                smin = self.sigma_min_item if self.sigma_min_item is not None else 0.0
+                sigma_target = sigma_target.clamp(min=smin, max=self.sigma_max_hp)
+
+                # EMA update (high ema = slow change → stable sigma)
+                self.sigma_vec = ema * self.sigma_vec + (1.0 - ema) * sigma_target
+
+        self.last_hamming        = hamming_item.mean().item()
+        self.last_hamming_vec    = hamming_item.clone()
+        self.last_sigma_vec_item = self.sigma_vec.clone()
+        self.sigma = float(self.sigma_vec.mean().item())
+
+        self._epoch_perturbed_sols.clear()
+        self._epoch_z0.clear()
+        self._epoch_coeff_true.clear()
+
+        logger.info(
+            f"  [hamming_proportional] epoch {epoch}: "
+            f"sigma mean={self.sigma:.5f} min={self.sigma_vec.min():.5f} "
+            f"max={self.sigma_vec.max():.5f} hamming_mean={self.last_hamming:.4f} "
+            f"alpha={self.alpha:.2f} sigma_scale={self.sigma_scale:.3f} "
+            f"ocv_y={self.last_ocv_y:.4f}"
         )
         return self.sigma

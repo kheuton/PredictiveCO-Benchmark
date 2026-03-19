@@ -5,6 +5,7 @@ from copy import deepcopy
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from torch.utils.data import DataLoader
 
@@ -253,41 +254,111 @@ class ExpManager:
         for iter_idx in range(1, n_epochs + 1):
             time_train_start = time.time()
             losses = list()
-            for batch_id, batch in enumerate(train_loader):
-                X_batch, Y_batch, Y_aux_batch = batch["X"], batch["Y"], batch["Y_aux"]
-                inst_idx = batch["idx"]
-                preds = self.pred_model(X_batch)
-                loss = loss_fn(
-                    problem,
-                    coeff_hat=preds,
-                    coeff_true=Y_batch,
-                    params=Y_aux_batch,
-                    inst_idx=inst_idx,
-                    partition="train",
-                    index=batch_id,
-                    do_debug=do_debug,
-                    **self.model_args,
-                )
-                if self.args.opt_name == "sgd":
-                    loss = do_reduction(loss, self.model_args["reduction"])
-                    # add penalty
-                    if self.args.l1_weight > 0:
-                        loss += self.args.l1_weight * l1_penalty(self.pred_model)
-                    if self.args.l2_weight > 0:
-                        loss += self.args.l2_weight * l2_penalty(self.pred_model)
 
+            # Surgery: minibatch (--opt_name sgd) or full-batch (default/gd).
+            if getattr(self.args, "grad_surgery", False):
+                if self.args.opt_name == "sgd":
+                    # --- Minibatch surgery: one optimizer step per batch ---
+                    for batch_id, batch in enumerate(train_loader):
+                        X_batch = batch["X"].to(self.device)
+                        Y_batch = batch["Y"].to(self.device)
+                        Y_aux_batch = batch["Y_aux"]
+                        inst_idx = batch["idx"]
+                        preds = self.pred_model(X_batch)
+                        loss = loss_fn(
+                            problem,
+                            coeff_hat=preds,
+                            coeff_true=Y_batch,
+                            params=Y_aux_batch,
+                            inst_idx=inst_idx,
+                            partition="train",
+                            index=batch_id,
+                            do_debug=do_debug,
+                            **self.model_args,
+                        )
+                        loss = do_reduction(loss, self.model_args["reduction"])
+                        self.optimizer.zero_grad()
+                        g_p = torch.autograd.grad(loss, preds, retain_graph=True)[0]
+                        g_m = torch.autograd.grad(
+                            F.mse_loss(preds, Y_batch), preds
+                        )[0]
+                        gp_flat = g_p.reshape(-1).float()
+                        gm_flat = g_m.reshape(-1).float()
+                        dot = (gp_flat * gm_flat).sum()
+                        norm_sq = (gm_flat * gm_flat).sum() + 1e-12
+                        g_proj = (dot / norm_sq) * gm_flat
+                        g_update = (
+                            gp_flat - g_proj + self.args.surgery_weight * gm_flat
+                        ).reshape(g_p.shape)
+                        preds.backward(g_update)
+                        self.optimizer.step()
+                        if self.args.use_lr_scheduling:
+                            self.scheduler.step()
+                else:
+                    # --- Full-batch surgery: single forward pass over all training data ---
+                    preds = self.pred_model(X_train.to(self.device))
+                    loss = loss_fn(
+                        problem,
+                        coeff_hat=preds,
+                        coeff_true=Y_train.to(self.device),
+                        params=Y_train_aux,
+                        inst_idx=torch.arange(len(X_train)),
+                        partition="train",
+                        index=0,
+                        do_debug=do_debug,
+                        **self.model_args,
+                    )
+                    loss = do_reduction(loss, self.model_args["reduction"])
                     self.optimizer.zero_grad()
-                    loss.backward()
+                    g_p = torch.autograd.grad(loss, preds, retain_graph=True)[0]
+                    g_m = torch.autograd.grad(
+                        F.mse_loss(preds, Y_train.to(preds.device)), preds
+                    )[0]
+                    gp_flat = g_p.reshape(-1).float()
+                    gm_flat = g_m.reshape(-1).float()
+                    dot = (gp_flat * gm_flat).sum()
+                    norm_sq = (gm_flat * gm_flat).sum() + 1e-12
+                    g_proj = (dot / norm_sq) * gm_flat
+                    g_update = (gp_flat - g_proj + self.args.surgery_weight * gm_flat
+                                ).reshape(g_p.shape)
+                    preds.backward(g_update)
                     self.optimizer.step()
-                    # losses.append(loss_idx)
                     if self.args.use_lr_scheduling:
                         self.scheduler.step()
-                elif self.args.opt_name == "gd":
-                    losses.append(loss)
-                else:
-                    raise NotImplementedError
+            else:
+                for batch_id, batch in enumerate(train_loader):
+                    X_batch, Y_batch, Y_aux_batch = batch["X"], batch["Y"], batch["Y_aux"]
+                    inst_idx = batch["idx"]
+                    preds = self.pred_model(X_batch)
+                    loss = loss_fn(
+                        problem,
+                        coeff_hat=preds,
+                        coeff_true=Y_batch,
+                        params=Y_aux_batch,
+                        inst_idx=inst_idx,
+                        partition="train",
+                        index=batch_id,
+                        do_debug=do_debug,
+                        **self.model_args,
+                    )
+                    if self.args.opt_name == "sgd":
+                        loss = do_reduction(loss, self.model_args["reduction"])
+                        # add penalty
+                        if self.args.l1_weight > 0:
+                            loss += self.args.l1_weight * l1_penalty(self.pred_model)
+                        if self.args.l2_weight > 0:
+                            loss += self.args.l2_weight * l2_penalty(self.pred_model)
+                        self.optimizer.zero_grad()
+                        loss.backward()
+                        self.optimizer.step()
+                        if self.args.use_lr_scheduling:
+                            self.scheduler.step()
+                    elif self.args.opt_name == "gd":
+                        losses.append(loss)
+                    else:
+                        raise NotImplementedError
 
-            if self.args.opt_name == "gd":
+            if self.args.opt_name == "gd" and not getattr(self.args, "grad_surgery", False):
                 losses = do_reduction(torch.stack(losses), self.model_args["reduction"])
                 self.optimizer.zero_grad()
                 losses.backward()
@@ -310,7 +381,72 @@ class ExpManager:
             self.logger.info(
                 f"Previous best epoch: {best_epoch}, time since best: {time_since_best}"
             )
-            if iter_idx % self.args.valfreq != 0:
+            if getattr(self.args, "skip_solver_eval", False):
+                # Cheap path: skip train solver eval entirely.
+                # Val MSE is computed every epoch for logging.
+                # If solver_valfreq > 0, real val regret is computed every N epochs
+                # and used for checkpoint selection / early stopping.
+                # If solver_valfreq == 0, val MSE is used for checkpoint selection.
+                self.pred_model.eval()
+                with torch.no_grad():
+                    preds_val = self.pred_model(X_val)
+                    val_mse_losses = twostage_criterion(
+                        problem, preds_val, Y_val, **self.model_args
+                    )
+                    val_mse = float(do_reduction(val_mse_losses, "mean").item())
+                self.pred_model.train()
+                self.logger.info(f"Iter {iter_idx}, val MSE (no solver): {val_mse:.6f}")
+
+                solver_valfreq = getattr(self.args, "solver_valfreq", 0)
+                if solver_valfreq > 0 and iter_idx % solver_valfreq == 0:
+                    # Run solver on val set to get real val regret.
+                    val_metrics = print_metrics(
+                        [(X_val, Y_val, Y_val_aux, "val")],
+                        self.pred_model,
+                        problem,
+                        loss_fn,
+                        twostage_criterion,
+                        ptoSolver,
+                        f"Iter {iter_idx},",
+                        self.logger,
+                        do_debug=do_debug,
+                        batch_size=self.args.batch_size,
+                        **self.model_args,
+                    )
+                    add_log(val_logs, "Tr-" + str(iter_idx), val_metrics, "val")
+                    if best[1] is None or compare_result(val_metrics["val"], best):
+                        best = (val_metrics["val"]["eval"]["value"], deepcopy(self.pred_model))
+                        time_since_best = 0
+                        best_epoch = iter_idx
+                        torch.save(
+                            self.pred_model.state_dict(),
+                            os.path.join(self.args.log_dir, "checkpoints", "tr_pred_best.pt"),
+                        )
+                        torch.save(
+                            self.pred_model.state_dict(),
+                            os.path.join(
+                                self.args.bkup_log_dir, "checkpoints", "tr_pred_best.pt"
+                            ),
+                        )
+                elif solver_valfreq == 0:
+                    # No solver valfreq: use val MSE for checkpoint selection.
+                    if best[1] is None or val_mse < best[0]:
+                        best = (val_mse, deepcopy(self.pred_model))
+                        time_since_best = 0
+                        best_epoch = iter_idx
+                        torch.save(
+                            self.pred_model.state_dict(),
+                            os.path.join(self.args.log_dir, "checkpoints", "tr_pred_best.pt"),
+                        )
+                        torch.save(
+                            self.pred_model.state_dict(),
+                            os.path.join(
+                                self.args.bkup_log_dir, "checkpoints", "tr_pred_best.pt"
+                            ),
+                        )
+                if self.args.earlystopping and time_since_best > self.args.patience:
+                    break
+            elif iter_idx % self.args.valfreq != 0:
                 datasets = [
                     (X_train, Y_train, Y_train_aux, "train"),
                 ]

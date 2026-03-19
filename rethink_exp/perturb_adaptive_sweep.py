@@ -40,7 +40,8 @@ from openpto.diagnostics.perturb_metrics import (
 )
 from openpto.method.Models.perturb_diag import (
     AdaptiveSigmaPerturb, PerInstanceAdaptiveSigma, PerInstanceHammingPerturb,
-    PerInstanceHammingStarPerturb,
+    PerInstanceHammingStarPerturb, PerItemHammingPerturb, PerInstItemHammingPerturb,
+    CoeffRelativeSigmaPerturb, FlipMarginSigmaPerturb, HammingProportionalSigmaPerturb,
 )
 from openpto.method.Predicts.dense import MLP
 from openpto.method.Predicts.poly_model import PolyPredModel
@@ -140,6 +141,53 @@ def parse_args():
                    help="Epochs over which to linearly decay Hamming target to 0 after warmup.")
     p.add_argument("--hamming_star", action="store_true",
                    help="Use PerInstanceHammingStarPerturb: dynamic target = hamming(z*,z0)/D per instance.")
+
+    # Per-item sigma
+    p.add_argument("--per_item", action="store_true",
+                   help="Use PerItemHammingPerturb (per-item sigma vector, shape (D,)).")
+    p.add_argument("--per_inst_item", action="store_true",
+                   help="Use PerInstItemHammingPerturb (per-instance×per-item sigma matrix, shape (N,D)).")
+    p.add_argument("--no_sigma_min", action="store_true",
+                   help="Disable sigma_min clamping (sigma_min=None) for per-item controllers.")
+
+    # Coefficient-relative sigma
+    p.add_argument("--coeff_relative", action="store_true",
+                   help="Use CoeffRelativeSigmaPerturb: sigma_{b,i} = alpha * |coeff_hat_{b,i}|.")
+    p.add_argument("--cr_alphas", type=float, nargs="+", default=None,
+                   help="Alpha values to sweep for coeff_relative mode.")
+
+    # Flip-margin controller
+    p.add_argument("--flip_margin", action="store_true",
+                   help="Use FlipMarginSigmaPerturb: per-(instance,item) sigma guided by z* vs z0 agreement.")
+    p.add_argument("--fm_error_target", type=float, default=0.20,
+                   help="Hamming target for items where the model is wrong (flip_margin mode).")
+    p.add_argument("--fm_correct_target", type=float, default=0.01,
+                   help="Hamming target for items where the model is correct (flip_margin mode).")
+    p.add_argument("--fm_regret_threshold", type=float, default=0.01,
+                   help="Regret above which the error/correct split has full weight (flip_margin).")
+    p.add_argument("--fm_sigma_coeff_max", type=float, default=5.0,
+                   help="Hard ceiling sigma_{b,i} <= fm_sigma_coeff_max * |coeff_hat_{b,i}|. "
+                        "Set 0 to disable.")
+
+    # Hamming-proportional controller (no setpoint)
+    p.add_argument("--hamming_proportional", action="store_true",
+                   help="Use HammingProportionalSigmaPerturb: sigma_i ∝ hamming_i^alpha, no setpoint.")
+    p.add_argument("--hp_alpha", type=float, default=0.5,
+                   help="Exponent alpha in sigma ∝ hamming^alpha (hamming_proportional mode).")
+    p.add_argument("--hp_scale", type=float, default=1.0,
+                   help="Overall sigma_scale for hamming_proportional; swept via --prop_targets.")
+    p.add_argument("--hp_warmup", type=int, default=10,
+                   help="Warm-up epochs before first sigma assignment (hamming_proportional).")
+    p.add_argument("--hp_update_freq", type=int, default=20,
+                   help="Re-estimate sigma every N epochs (hamming_proportional).")
+
+    # Gradient surgery
+    p.add_argument("--grad_surgery", action="store_true",
+                   help="Enable gradient surgery: remove MSE-misaligned component of perturbed "
+                        "gradient and inject clean MSE gradient direction.")
+    p.add_argument("--surgery_weight", type=float, default=1.0,
+                   help="Weight for injected MSE gradient in surgery: "
+                        "g_update = (g_p - proj) + surgery_weight * g_m.")
 
     # Warm-start
     p.add_argument("--warmstart_ckpt", type=str, default=None,
@@ -243,6 +291,9 @@ def run_one(
 
     pred_model.train()
 
+    no_sigma_min = getattr(args, "no_sigma_min", False)
+    item_sigma_min = None if no_sigma_min else args.sigma_min
+
     common_kwargs = dict(
         n_samples=args.n_samples,
         sigma=sigma_init,
@@ -255,7 +306,59 @@ def run_one(
         sigma_max=args.sigma_max,
         reduction="mean",
     )
-    if getattr(args, "hamming_star", False):
+    # common_kwargs minus sigma_min, for classes that take sigma_min explicitly
+    common_kwargs_no_smin = {k: v for k, v in common_kwargs.items() if k != "sigma_min"}
+
+    if getattr(args, "hamming_proportional", False):
+        loss_fn = HammingProportionalSigmaPerturb(
+            ptoSolver,
+            hp_alpha=getattr(args, "hp_alpha", 0.5),
+            sigma_scale=ocv_target,   # ocv_target reused as sigma_scale in sweep grid
+            warmup_epochs=getattr(args, "hp_warmup", 10),
+            update_freq=getattr(args, "hp_update_freq", 20),
+            sigma_ema=args.sigma_ema,
+            sigma_min=item_sigma_min,
+            **common_kwargs_no_smin,  # includes sigma_max=args.sigma_max
+        )
+    elif getattr(args, "coeff_relative", False):
+        loss_fn = CoeffRelativeSigmaPerturb(
+            ptoSolver,
+            alpha=ocv_target,   # ocv_target reused as alpha in the sweep grid
+            n_samples=args.n_samples,
+            sigma=sigma_init,
+            noise=args.noise,
+            reduction="mean",
+        )
+    elif getattr(args, "flip_margin", False):
+        fm_sigma_coeff_max = getattr(args, "fm_sigma_coeff_max", 5.0)
+        loss_fn = FlipMarginSigmaPerturb(
+            ptoSolver,
+            hamming_target=ocv_target,          # base fallback target before cache warm
+            error_target=args.fm_error_target,
+            correct_target=args.fm_correct_target,
+            regret_threshold=args.fm_regret_threshold,
+            sigma_coeff_max=fm_sigma_coeff_max if fm_sigma_coeff_max > 0 else None,
+            sigma_ema=args.sigma_ema,
+            sigma_min=item_sigma_min,
+            **common_kwargs_no_smin,
+        )
+    elif getattr(args, "per_inst_item", False):
+        loss_fn = PerInstItemHammingPerturb(
+            ptoSolver,
+            hamming_target=ocv_target,
+            sigma_ema=args.sigma_ema,
+            sigma_min=item_sigma_min,
+            **common_kwargs_no_smin,
+        )
+    elif getattr(args, "per_item", False):
+        loss_fn = PerItemHammingPerturb(
+            ptoSolver,
+            hamming_target=ocv_target,
+            sigma_ema=args.sigma_ema,
+            sigma_min=item_sigma_min,
+            **common_kwargs_no_smin,
+        )
+    elif getattr(args, "hamming_star", False):
         loss_fn = PerInstanceHammingStarPerturb(
             ptoSolver,
             hamming_target=ocv_target,   # fallback for epoch 0 before cache is warm
@@ -285,9 +388,21 @@ def run_one(
         "grad_norm", "fd_grad_norm", "cosine_sim",
         "softness", "dist_binary", "entropy",
         "rank_change_rate", "ocv_y", "frac_improving", "hamming",
+        "sigma_item_mean", "sigma_item_std", "sigma_item_min", "sigma_item_max",
+        "hamming_item_mean", "hamming_item_std",
+        "surgery_cos_sim", "surgery_proj_frac",
     ]}
     if args.per_instance:
         logs["sigma_vec"] = []  # list of (N_train,) arrays, one per epoch
+    _log_item_vecs = (
+        getattr(args, "per_item", False)
+        or getattr(args, "per_inst_item", False)
+        or getattr(args, "flip_margin", False)
+        or getattr(args, "hamming_proportional", False)
+    )
+    if _log_item_vecs:
+        logs["sigma_vec_item"]  = []  # list of (D,) arrays → saved as (n_epochs, D)
+        logs["hamming_vec_item"] = []  # list of (D,) arrays → saved as (n_epochs, D)
 
     best_val = float("inf")
     best_state = None
@@ -297,11 +412,14 @@ def run_one(
 
         preds = pred_model(X_train.to(device))
 
-        # Capture gradient w.r.t. preds via hook
+        # Capture gradient w.r.t. preds via hook (fires on first backward through preds)
         captured_grad = {}
+        hook_fired = [False]
         def _hook(g):
-            captured_grad["g"] = g.detach().cpu()
-        preds.register_hook(_hook)
+            if not hook_fired[0]:
+                captured_grad["g"] = g.detach().cpu()
+                hook_fired[0] = True
+        hook_handle = preds.register_hook(_hook)
 
         loss = loss_fn(
             problem,
@@ -311,8 +429,43 @@ def run_one(
             **model_args,
         )
 
+        surgery_cos_sim   = float("nan")
+        surgery_proj_frac = float("nan")
+
         optimizer.zero_grad()
-        loss.backward()
+        if getattr(args, "grad_surgery", False):
+            # --- Two-pass gradient surgery ---
+            # Pass 1: perturbed gradient w.r.t. preds
+            g_p = torch.autograd.grad(loss, preds, retain_graph=True)[0]  # (B, D)
+            captured_grad["g"] = g_p.detach().cpu()  # for diagnostics
+            hook_handle.remove()
+
+            # Pass 2: MSE gradient w.r.t. preds (cheap, no solver)
+            Y_dev = Y_train.to(device)
+            mse_loss = F.mse_loss(preds, Y_dev)
+            g_m = torch.autograd.grad(mse_loss, preds)[0]  # (B, D)
+
+            # Surgery: remove MSE-misaligned component, inject clean MSE direction
+            gp_flat = g_p.reshape(-1).float()
+            gm_flat = g_m.reshape(-1).float()
+            dot     = (gp_flat * gm_flat).sum()
+            norm_sq = (gm_flat * gm_flat).sum() + 1e-12
+            g_proj_flat   = (dot / norm_sq) * gm_flat
+            g_update_flat = (gp_flat - g_proj_flat) + args.surgery_weight * gm_flat
+            g_update      = g_update_flat.reshape(g_p.shape)
+
+            # Diagnostics
+            surgery_cos_sim   = F.cosine_similarity(
+                gp_flat.unsqueeze(0), gm_flat.unsqueeze(0)
+            ).item()
+            surgery_proj_frac = g_proj_flat.norm().item() / (gp_flat.norm().item() + 1e-12)
+
+            # Inject modified gradient into pred_model parameters
+            preds.backward(g_update)
+        else:
+            hook_handle.remove()
+            loss.backward()
+
         optimizer.step()
 
         # ---- Adaptive sigma update (computes RCR from accumulated batch data) ----
@@ -400,12 +553,64 @@ def run_one(
         if args.per_instance and loss_fn.sigma_vec is not None:
             logs["sigma_vec"].append(loss_fn.sigma_vec.detach().numpy().copy())
 
+        # Per-item sigma stats
+        _is_per_item = (
+            getattr(args, "per_item", False)
+            or getattr(args, "hamming_proportional", False)
+        )
+        _is_per_inst_item = getattr(args, "per_inst_item", False) or getattr(args, "flip_margin", False)
+        if _is_per_item and hasattr(loss_fn, "sigma_vec") and loss_fn.sigma_vec is not None:
+            sv = loss_fn.sigma_vec.detach()
+            logs["sigma_item_mean"].append(sv.mean().item())
+            logs["sigma_item_std"].append(sv.std().item())
+            logs["sigma_item_min"].append(sv.min().item())
+            logs["sigma_item_max"].append(sv.max().item())
+        elif _is_per_inst_item and hasattr(loss_fn, "sigma_mat") and loss_fn.sigma_mat is not None:
+            sm = loss_fn.sigma_mat.detach()
+            logs["sigma_item_mean"].append(sm.mean().item())
+            logs["sigma_item_std"].append(sm.std().item())
+            logs["sigma_item_min"].append(sm.min().item())
+            logs["sigma_item_max"].append(sm.max().item())
+        else:
+            logs["sigma_item_mean"].append(float("nan"))
+            logs["sigma_item_std"].append(float("nan"))
+            logs["sigma_item_min"].append(float("nan"))
+            logs["sigma_item_max"].append(float("nan"))
+
+        hv = getattr(loss_fn, "last_hamming_vec", None)
+        if hv is not None:
+            logs["hamming_item_mean"].append(hv.mean().item())
+            logs["hamming_item_std"].append(hv.std().item())
+        else:
+            logs["hamming_item_mean"].append(float("nan"))
+            logs["hamming_item_std"].append(float("nan"))
+
+        logs["surgery_cos_sim"].append(surgery_cos_sim)
+        logs["surgery_proj_frac"].append(surgery_proj_frac)
+
+        # Full per-item vectors (D,) — only when tracking is enabled
+        if _log_item_vecs:
+            sv_item = getattr(loss_fn, "last_sigma_vec_item", None)
+            hv_item = getattr(loss_fn, "last_hamming_vec", None)
+            logs["sigma_vec_item"].append(
+                sv_item.detach().numpy().copy() if sv_item is not None
+                else np.full(problem.get_model_shape()[1], float("nan"))
+            )
+            logs["hamming_vec_item"].append(
+                hv_item.detach().numpy().copy() if hv_item is not None
+                else np.full(problem.get_model_shape()[1], float("nan"))
+            )
+
         if val_regret < best_val:
             best_val = val_regret
             best_state = {k: v.clone() for k, v in pred_model.state_dict().items()}
 
         if epoch % 10 == 0:
-            if getattr(args, "hamming_star", False) or getattr(args, "hamming", False):
+            if getattr(args, "flip_margin", False):
+                wrong_frac = getattr(loss_fn, "last_hamming_vec", None)
+                wf = wrong_frac.mean().item() if wrong_frac is not None else float("nan")
+                ctrl_str = f"hamming {loss_fn.last_hamming:.4f} wrong_frac {wf:.4f}"
+            elif getattr(args, "hamming_star", False) or getattr(args, "hamming", False):
                 ctrl_str = f"hamming {loss_fn.last_hamming:.4f}"
             else:
                 ctrl_str = f"ocv_y {loss_fn.last_ocv_y:.4f}"
@@ -428,8 +633,8 @@ def run_one(
 
     result = {}
     for k, v in logs.items():
-        if k == "sigma_vec" and v:
-            result[k] = np.stack(v, axis=0)  # (n_epochs_with_vec, N_train)
+        if k in ("sigma_vec", "sigma_vec_item", "hamming_vec_item") and v:
+            result[k] = np.stack(v, axis=0)  # (n_epochs, N_train) or (n_epochs, D)
         else:
             result[k] = np.array(v)
     result["test_regret"] = np.float64(test_regret)
@@ -451,7 +656,32 @@ def build_sweep_grid(args):
     label is used as the filename stem.
     """
     if args.mode == "proportional":
-        if getattr(args, "hamming_star", False):
+        if getattr(args, "hamming_proportional", False):
+            targets = args.prop_targets or [0.5, 1.0, 2.0]
+            alpha   = getattr(args, "hp_alpha", 0.5)
+            stem    = f"hprop_a{alpha:.2g}_s"
+            return [
+                (t, args.prop_sigma_init, f"{stem}{t:.3g}_s{args.prop_sigma_init:.3g}")
+                for t in targets
+            ]
+        elif getattr(args, "coeff_relative", False):
+            targets = args.cr_alphas or [0.1, 0.5, 1.0, 2.0, 5.0]
+            stem = "cr_a"
+            return [
+                (t, args.prop_sigma_init, f"{stem}{t:.3g}_s{args.prop_sigma_init:.3g}")
+                for t in targets
+            ]
+        elif getattr(args, "flip_margin", False):
+            # ocv_target = base hamming_target (fallback before z* cache warm)
+            targets = args.hamming_targets or [0.05, 0.10, 0.20]
+            stem = "fm_t"
+        elif getattr(args, "per_inst_item", False):
+            targets = args.hamming_targets or [0.05, 0.10, 0.20]
+            stem = "piitem_t"
+        elif getattr(args, "per_item", False):
+            targets = args.hamming_targets or [0.05, 0.10, 0.20]
+            stem = "pitem_t"
+        elif getattr(args, "hamming_star", False):
             # hamming_star: no target sweep needed — target is dynamic.
             # The ocv_target value here serves only as epoch-0 fallback sigma.
             targets = args.hamming_targets or [args.prop_sigma_init]

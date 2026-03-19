@@ -38,8 +38,10 @@ from openpto.problems.Knapsack import Knapsack
 
 # ---- Checkpoints ----
 RESULTS_BASE = "saved_records/knapsack-gen/perturb"
+ADAPTIVE_BASE = "saved_records/knapsack-gen/perturb_adaptive_sweep"
 MSE_CKPT = ("saved_records/knapsack-gen/mse/"
              "kn_bench_mse_dense_lr5e-2/checkpoints/tr_pred_best.pt")
+ORACLE_SD_CACHE = os.path.join(OUT_DIR, "oracle_state_dict.pt")
 
 ENDPOINTS = [
     # (label, lambda_val, checkpoint_path, test_regret)
@@ -56,6 +58,10 @@ ENDPOINTS = [
     ("λ=50",        50,    f"{RESULTS_BASE}/kn_plain_mse_reg_w50_lr5e-3/checkpoints/tr_pred_best.pt",        0.0650),
     ("λ=100",       100,   f"{RESULTS_BASE}/kn_plain_mse_reg_w100_lr5e-3/checkpoints/tr_pred_best.pt",       0.0646),
     ("MSE (λ=∞)",   np.inf, MSE_CKPT,                                                                         0.0640),
+    # Per-instance adaptive checkpoints
+    ("pi-OCV_Y",    None,  f"{ADAPTIVE_BASE}/kn_bench_dp_per_instance_lr1e-2/pi_t0.066_s1_dense_best_pred.pt", 0.0844),
+    ("warm-start",  None,  f"{ADAPTIVE_BASE}/kn_bench_warmstart/pi_t0.066_s1_dense_best_pred.pt",               0.0640),
+    ("hstar",       None,  f"{ADAPTIVE_BASE}/kn_hstar_lr1e-2/hams_s0.100_s1_dense_best_pred.pt",                0.0970),
 ]
 
 PROBLEM_CACHE = "saved_problems/Knapsack/Knapsack_7.pkl"
@@ -89,6 +95,12 @@ def build_model():
 
 
 def train_oracle_model():
+    """Train oracle model, using cached state-dict if available."""
+    os.makedirs(OUT_DIR, exist_ok=True)
+    if os.path.exists(ORACLE_SD_CACHE):
+        print(f"Loading cached oracle model from {ORACLE_SD_CACHE}")
+        return torch.load(ORACLE_SD_CACHE, map_location="cpu")
+
     print("Training oracle model (noise_width=0, seed=2023)...")
     torch.manual_seed(0); np.random.seed(0)
     _, feats, profits = Knapsack.genKPData(
@@ -110,7 +122,10 @@ def train_oracle_model():
             with torch.no_grad():
                 mse = nn.functional.mse_loss(model(X), Y).item()
             print(f"  epoch {epoch}  train_mse={mse:.5f}")
-    return model.state_dict()
+    sd = model.state_dict()
+    torch.save(sd, ORACLE_SD_CACHE)
+    print(f"Oracle state-dict cached to {ORACLE_SD_CACHE}")
+    return sd
 
 
 def load_test_set():
@@ -223,12 +238,20 @@ def main():
         print("  %-15s  %7.3f  %7.3f  %10.4f  %10.4f" % (label, m[idx0], m[idx1], p[idx0], p[idx1]))
 
     # ---- Colour map: plain perturb (λ=0) → MSE (λ=∞) ----
-    # Map finite λ values to [0,1] on a log scale for colouring
-    finite_lams = [lam for _, lam, _, _ in ENDPOINTS if np.isfinite(lam)]
-    log_min, log_max = np.log10(max(min(finite_lams), 1e-3)), np.log10(max(finite_lams))
+    # Map finite λ values to [0,1] on a log scale for colouring.
+    # None λ (per-instance adaptive) → use tab10 palette with distinct colours.
+    finite_lams = [lam for _, lam, _, _ in ENDPOINTS if lam is not None and np.isfinite(lam)]
+    log_min = np.log10(max(min(finite_lams), 1e-3))
+    log_max = np.log10(max(finite_lams))
     cmap = matplotlib.colormaps["plasma"]
+    _tab10 = matplotlib.colormaps["tab10"]
+    _none_lam_labels = [label for label, lam, _, _ in ENDPOINTS if lam is None]
+    _none_lam_idx = {lbl: i for i, lbl in enumerate(_none_lam_labels)}
 
-    def get_color(lam):
+    def get_color(lam, label=None):
+        if lam is None:
+            # Distinct tab10 colour for per-instance adaptive endpoints
+            return _tab10(_none_lam_idx.get(label, 0) / max(len(_none_lam_labels), 1))
         if lam == 0:
             return cmap(0.0)
         if not np.isfinite(lam):
@@ -250,9 +273,9 @@ def main():
     for label, lam, _, test_r in ENDPOINTS:
         if label not in all_mse: continue
         vals  = all_mse[label]
-        color = get_color(lam)
-        ls    = "--" if (lam == 0 or not np.isfinite(lam)) else "-"
-        lw    = 2.0 if (lam == 0 or not np.isfinite(lam)) else 1.5
+        color = get_color(lam, label)
+        ls    = "--" if (lam is None or lam == 0 or (lam is not None and not np.isfinite(lam))) else "-"
+        lw    = 2.0 if (lam is None or lam == 0 or (lam is not None and not np.isfinite(lam))) else 1.5
         ax.plot(alphas, vals, color=color, ls=ls, lw=lw,
                 label=f"{label}  [test={test_r:.4f}]")
         ax.scatter([alphas[idx1]], [vals[idx1]], color=color, s=50, zorder=5)
@@ -273,17 +296,22 @@ def main():
     ax = axes[1]
     for label, lam, _, test_r in ENDPOINTS:
         if label not in all_mse: continue
-        if not np.isfinite(lam):
+        if lam is None:
+            # Per-instance adaptive: show perturbed loss alone (λ=0 interpretation)
+            raw = all_perturb[label]
+            lam_str = "adaptive"
+        elif not np.isfinite(lam):
             # Pure MSE model: regularized obj = MSE alone (λ→∞ limit, show normalised MSE)
             raw = all_mse[label]
+            lam_str = "∞ (MSE)"
         else:
             raw = all_perturb[label] + lam * all_mse[label]
+            lam_str = str(lam)
         oracle_val = raw[idx0]
         vals  = raw / oracle_val          # normalised so oracle = 1.0
-        color = get_color(lam)
-        ls    = "--" if (lam == 0 or not np.isfinite(lam)) else "-"
-        lw    = 2.0 if (lam == 0 or not np.isfinite(lam)) else 1.5
-        lam_str = "∞ (MSE)" if not np.isfinite(lam) else str(lam)
+        color = get_color(lam, label)
+        ls    = "--" if (lam is None or lam == 0 or (lam is not None and not np.isfinite(lam))) else "-"
+        lw    = 2.0 if (lam is None or lam == 0 or (lam is not None and not np.isfinite(lam))) else 1.5
         ax.plot(alphas, vals, color=color, ls=ls, lw=lw,
                 label=f"λ={lam_str}  [test={test_r:.4f}]")
         ax.scatter([alphas[idx1]], [vals[idx1]], color=color, s=50, zorder=5)

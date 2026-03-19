@@ -55,6 +55,12 @@ if __name__ == "__main__":
     }
     exp = ExpManager(pred_model_args, args=args, conf=conf, logger=logger)
 
+    # Optionally warm-start the prediction model from a saved checkpoint
+    if args.warmstart_ckpt:
+        sd = torch.load(args.warmstart_ckpt, map_location="cpu")
+        exp.pred_model.load_state_dict(sd)
+        logger.info(f" Warm-started pred model from: {args.warmstart_ckpt}")
+
     # Train neural network with a given loss function
     logger.info(
         f" Start training [{args.pred_model}] model on [{args.opt_model}] loss..."

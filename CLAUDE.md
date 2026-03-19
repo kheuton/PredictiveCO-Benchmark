@@ -39,6 +39,22 @@ python rethink_exp/main_results.py \
 
 See `shells/benchmarks/` for per-problem example commands.
 
+## Benchmark Defaults (Comparability)
+
+Unless intentionally deviating, always match the benchmark's `--instances` and `--testinstances` for each problem so results are directly comparable to the published table:
+
+| Problem | `--instances` | `--testinstances` |
+|---|---|---|
+| knapsack | 400 (default) | 200 (default) |
+| knapsack (energy/real) | 400 (default) | 200 (default) |
+| energy | 400 (default) | 200 (default) |
+| budgetalloc | 400 (default) | 200 (default) |
+| cubic | **250** | **400** |
+| bipartitematching | **20** | **6** |
+| portfolio | 400 (default) | 200 (default) |
+
+The defaults (`--instances 400`, `--testinstances 200`) apply when neither flag is passed. Cubic and bipartitematching are the two exceptions that require explicit values.
+
 ## Running Tests
 
 ```bash
