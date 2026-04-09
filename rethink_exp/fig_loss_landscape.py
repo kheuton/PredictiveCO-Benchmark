@@ -140,8 +140,8 @@ V_y    = V(y)
 z_star = z_min(y)
 
 h          = 0.55    # finite-difference step for PGB / DBB
-sigma_dpo  = 0.18    # DPO perturbation std — kept small so DPO ≈ 0 at theta=0
-n_dpo      = 800     # MC samples per theta for DPO
+sigma_dpo  = 0.06    # DPO perturbation std — small enough that DPO(0) ≈ 0
+n_dpo      = 1200    # MC samples per theta for DPO (more to reduce MC noise at small sigma)
 
 regret   = np.zeros(n_theta)
 spo_plus = np.zeros(n_theta)
