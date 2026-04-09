@@ -52,15 +52,18 @@ class pointwiseLTR(optModel):
         self.solpool = np.unique(self.solpool, axis=0)
         # convert tensor
         solpool = to_tensor(self.solpool).to(coeff_hat.device)
-        # obj for solpool as score
-        expand_shape = torch.Size([solpool.shape[0]] + list(coeff_hat.shape[1:]))
-        coeff_hat = coeff_hat.expand(*expand_shape)
-        coeff_true = coeff_true.expand(*expand_shape)
-        #
-        objpool_c = problem.get_objective(coeff_true, solpool, params)
-        objpool_c_hat = problem.get_objective(coeff_hat, solpool, params)
-        # squared loss
-        loss = (objpool_c - objpool_c_hat).square().mean(axis=0)
+        K = solpool.shape[0]
+        # Compute per-instance pointwise loss: each instance's predicted coeff is
+        # scored against all K pooled solutions and compared to true coeff scores.
+        losses_per_instance = []
+        for i in range(coeff_hat.shape[0]):
+            ch_i = coeff_hat[i:i+1].expand(K, *coeff_hat.shape[1:])
+            ct_i = coeff_true[i:i+1].expand(K, *coeff_true.shape[1:])
+            params_i = params[i:i+1].expand(K, *params.shape[1:]) if isinstance(params, torch.Tensor) else params
+            obj_c = problem.get_objective(ct_i, solpool, params_i)
+            obj_c_hat = problem.get_objective(ch_i, solpool, params_i)
+            losses_per_instance.append((obj_c - obj_c_hat).square().mean())
+        loss = torch.stack(losses_per_instance)
         # reduction
         loss = do_reduction(loss, hyperparams["reduction"])
         return loss
@@ -101,31 +104,25 @@ class pairwiseLTR(optModel):
         # remove duplicate
         self.solpool = np.unique(self.solpool, axis=0)
         solpool = to_tensor(self.solpool).to(coeff_hat.device)
-        # transform to tensor
-        expand_shape = torch.Size([solpool.shape[0]] + list(coeff_hat.shape[1:]))
-        coeff_hat_pool = coeff_hat.expand(*expand_shape)
-        coeff_true_pool = coeff_true.expand(*expand_shape)
-        # obj for solpool
-        objpool_c_true = problem.get_objective(coeff_true_pool, solpool, params)
-        objpool_c_hat_pool = problem.get_objective(coeff_hat_pool, solpool, params)
-        # TODO: currently, only support batch-1 training
-        # init loss
+        K = solpool.shape[0]
+        # Compute per-instance pairwise loss (supports any batch size).
         loss = []
-        for i in range(len(coeff_hat)):
-            # best sol
+        for i in range(coeff_hat.shape[0]):
+            ch_i = coeff_hat[i:i+1].expand(K, *coeff_hat.shape[1:])
+            ct_i = coeff_true[i:i+1].expand(K, *coeff_true.shape[1:])
+            params_i = params[i:i+1].expand(K, *params.shape[1:]) if isinstance(params, torch.Tensor) else params
+            objpool_c_true_i = problem.get_objective(ct_i, solpool, params_i)
+            objpool_c_hat_i = problem.get_objective(ch_i, solpool, params_i)
+            # identify the best solution under true coeff
             if self.ptoSolver.modelSense == GRB.MINIMIZE:
-                # best_ind = torch.argmin(objpool_c_true[i])
-                best_ind = torch.argmin(objpool_c_true)
+                best_ind = torch.argmin(objpool_c_true_i)
             elif self.ptoSolver.modelSense == GRB.MAXIMIZE:
-                # best_ind = torch.argmax(objpool_c_true[i])
-                best_ind = torch.argmax(objpool_c_true)
+                best_ind = torch.argmax(objpool_c_true_i)
             else:
                 raise NotImplementedError
-            objpool_cp_best = objpool_c_hat_pool[best_ind]
-            # rest sol
-            rest_ind = [j for j in range(len(objpool_c_hat_pool)) if j != best_ind]
-            objpool_cp_rest = objpool_c_hat_pool[rest_ind]
-            # best vs rest loss
+            objpool_cp_best = objpool_c_hat_i[best_ind]
+            rest_ind = [j for j in range(K) if j != best_ind.item()]
+            objpool_cp_rest = objpool_c_hat_i[rest_ind]
             if self.ptoSolver.modelSense == GRB.MINIMIZE:
                 loss.append(F.relu(objpool_cp_best - objpool_cp_rest))
             elif self.ptoSolver.modelSense == GRB.MAXIMIZE:
@@ -179,22 +176,26 @@ class listwiseLTR(optModel):
         self.solpool = np.unique(self.solpool, axis=0)
         # convert tensor
         solpool = to_tensor(self.solpool).to(coeff_hat.device)
-        expand_shape = torch.Size([solpool.shape[0]] + list(coeff_hat.shape[1:]))
-        coeff_hat = coeff_hat.expand(*expand_shape)
-        coeff_true = coeff_true.expand(*expand_shape)
-        # obj for solpool
-        objpool_c = problem.get_objective(coeff_true, solpool, params)
-        objpool_c_hat = problem.get_objective(coeff_hat, solpool, params)
-        # cross entropy loss
-        if self.ptoSolver.modelSense == GRB.MINIMIZE:
-            loss = -(
-                F.log_softmax(-objpool_c_hat / self.tau, dim=0)
-                * F.softmax(-objpool_c / self.tau, dim=0)
-            )
-        elif self.ptoSolver.modelSense == GRB.MAXIMIZE:
-            loss = -(F.log_softmax(objpool_c_hat, dim=0) * F.softmax(objpool_c, dim=0))
-        else:
-            raise NotImplementedError
+        K = solpool.shape[0]
+        # Compute per-instance listwise (softmax ranking) loss (supports any batch size).
+        losses_per_instance = []
+        for i in range(coeff_hat.shape[0]):
+            ch_i = coeff_hat[i:i+1].expand(K, *coeff_hat.shape[1:])
+            ct_i = coeff_true[i:i+1].expand(K, *coeff_true.shape[1:])
+            params_i = params[i:i+1].expand(K, *params.shape[1:]) if isinstance(params, torch.Tensor) else params
+            obj_c = problem.get_objective(ct_i, solpool, params_i)
+            obj_c_hat = problem.get_objective(ch_i, solpool, params_i)
+            if self.ptoSolver.modelSense == GRB.MINIMIZE:
+                loss_i = -(
+                    F.log_softmax(-obj_c_hat / self.tau, dim=0)
+                    * F.softmax(-obj_c / self.tau, dim=0)
+                )
+            elif self.ptoSolver.modelSense == GRB.MAXIMIZE:
+                loss_i = -(F.log_softmax(obj_c_hat, dim=0) * F.softmax(obj_c, dim=0))
+            else:
+                raise NotImplementedError
+            losses_per_instance.append(loss_i.mean())
+        loss = torch.stack(losses_per_instance)
         # reduction
         loss = do_reduction(loss, hyperparams["reduction"])
         return loss

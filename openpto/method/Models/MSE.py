@@ -146,7 +146,7 @@ class DFL(optModel):
         else:
             raise ValueError(f"Not a valid 2-stage loss: {problem.get_twostageloss()}")
         sol_hat, _ = problem.get_decision(
-            coeff_hat,
+            coeff_hat.detach(),
             params=params,
             ptoSolver=self.ptoSolver,
             isTrain=True,

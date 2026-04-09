@@ -147,7 +147,7 @@ def print_metrics(
                         )
                     )
 
-                losses = torch.vstack(losses).flatten()
+                losses = torch.cat([l.flatten() for l in losses])
                 # Print
                 loss = do_reduction(losses, "mean").item()  # reduction
             test_time = 0

@@ -18,7 +18,6 @@ from openpto.method.Solvers.utils_solver import starmap_with_kwargs
 from openpto.method.utils_method import to_tensor
 from openpto.problems.BipartiteMatching import BipartiteMatching
 from openpto.problems.BudgetAllocation import BudgetAllocation
-from openpto.problems.RMAB import RMAB
 
 NUM_CPUS = os.cpu_count()
 
@@ -390,11 +389,9 @@ class LODL(optModel):
             Yhats = Yhats.clamp(
                 min=0, max=1
             )  # Assuming Yhats must be in the range [0, 1]
-        elif isinstance(problem, RMAB):
-            Yhats /= Yhats.sum(-1, keepdim=True)
         # print("after clamp: ",Yhats)
-        print("yhat does have negative:", sum(sum(Yhats < 0)))
-        print("y does have negative:", sum(sum(Y < 0)))
+        print("yhat does have negative:", (Yhats < 0).sum().item())
+        print("y does have negative:", (Y < 0).sum().item())
 
         # Calculate decision-focused loss for points
         #   Calculate for 'true label'
@@ -497,9 +494,9 @@ class LODL(optModel):
                 Yhats_test.to(device),
             )
             objectives_train, objectives_val, objectives_test = (
-                objectives_train.to(device),
-                objectives_val.to(device),
-                objectives_test.to(device),
+                objectives_train.to(device).float(),
+                objectives_val.to(device).float(),
+                objectives_test.to(device).float(),
             )
             self.lodl_model = self.lodl_model.to(device)
 
@@ -507,8 +504,13 @@ class LODL(optModel):
             optimizer = torch.optim.Adam(self.lodl_model.parameters(), lr=losslr)
             best = (float("inf"), None)
             time_since_best = 0
-            # get loss func
-            twostage_criterion = str2twoStageLoss(problem)
+            # Surrogate models predict regret (a continuous scalar), so always use MSE
+            # regardless of the problem's two-stage loss (e.g. BCE for BipartiteMatching
+            # would fail since regret values are not in [0, 1]).
+            import torch.nn.functional as _F
+            twostage_criterion = lambda problem, pred, target, reduction="sum": _F.mse_loss(
+                pred, target, reduction=reduction
+            )
             for iter_idx in range(num_iters):
                 # Define update step using "closure" function
                 def loss_closure():

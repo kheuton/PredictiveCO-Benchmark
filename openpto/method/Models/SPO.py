@@ -132,6 +132,12 @@ class SPOPlusFunc(torch.autograd.Function):
                     grad_output = grad_output.view(new_shape)
                     grad_output = grad_output.expand(coeff_hat_cpu.shape)
                 # print("2:: grad_output, grad: ", coeff_hat_cpu.shape,  grad_output.shape, grad.shape)
+        # Align grad_output dims with grad for batched forward passes (e.g. bs>1).
+        # grad is [bs, n_vars] but grad_output is [bs] — unsqueeze trailing dims.
+        if grad_output.shape != grad.shape and grad_output.ndim < grad.ndim:
+            grad_output = grad_output.view(
+                *grad_output.shape, *([1] * (grad.ndim - grad_output.ndim))
+            ).expand_as(grad)
                 # ## when a batch contains multiple items, do:
                 # if grad_output.ndim < grad.ndim:
                 #     grad_output_shape = grad_output.shape

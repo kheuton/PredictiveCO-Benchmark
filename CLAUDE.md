@@ -39,27 +39,82 @@ python rethink_exp/main_results.py \
 
 See `shells/benchmarks/` for per-problem example commands.
 
-## Benchmark Defaults (Comparability)
+## Benchmark Fidelity (Critical)
 
-Unless intentionally deviating, always match the benchmark's `--instances` and `--testinstances` for each problem so results are directly comparable to the published table:
+**Always preserve these fixed settings** so results are directly comparable to the published NeurIPS 2024 table and to each other:
 
-| Problem | `--instances` | `--testinstances` |
-|---|---|---|
-| knapsack | 400 (default) | 200 (default) |
-| knapsack (energy/real) | 400 (default) | 200 (default) |
-| energy | 400 (default) | 200 (default) |
-| budgetalloc | 400 (default) | 200 (default) |
-| cubic | **250** | **400** |
-| bipartitematching | **20** | **6** |
-| portfolio | 400 (default) | 200 (default) |
+```
+--seed 2023  --n_epochs 300  --patience 40  --pred_model dense  --n_ptr_epochs 0
+```
 
-The defaults (`--instances 400`, `--testinstances 200`) apply when neither flag is passed. Cubic and bipartitematching are the two exceptions that require explicit values.
+Instance counts — **must not deviate**:
+
+| Problem | `--instances` | `--testinstances` | Notes |
+|---|---|---|---|
+| knapsack | 400 (default) | 200 (default) | |
+| knapsack-real | (don't pass) | (don't pass) | hardcoded real dataset |
+| energy | (don't pass) | (don't pass) | hardcoded real dataset |
+| budgetalloc | 400 (default) | 200 (default) | |
+| cubic | **250** | **400** | non-default, must be explicit |
+| bipartitematching | **20** | **6** | non-default, must be explicit |
+| portfolio | 400 (default) | 200 (default) | |
+
+Knapsack-real and energy silently ignore `--instances`/`--testinstances` (they load fixed real-world splits). Do not pass those flags for them.
+
+**Solvers for comparability:**
+- knapsack: `heuristic` (DP) — 100× faster than Gurobi, validated equivalent accuracy
+- knapsack-real, energy: `gurobi`
+- budgetalloc: `neural`
+- cubic, bipartitematching: `heuristic` / `cvxpy`
+- portfolio: `cvxpy`
+- qptl, cpLayer: only valid for knapsack / bipartitematching / portfolio
+
+## Hyperparameter Tuning Principle
+
+The original benchmark only tuned learning rate. Our re-run sweeps **both LR and batch size**, plus method-specific HPs (dflalpha, lambd, tau, n_samples, sigma). This is the right way to compare methods fairly.
+
+**Phase 1 (LR × Batch):** 3 LRs × 2 batch configs per method × task — establishes best training setup.
+**Phase 2 (method HP):** sweeps the key HP for each method using Phase 1's best (LR, batch).
+
+Always prefer results from the Phase 1/2 sweep over ad-hoc runs when reporting numbers.
 
 ## Running Tests
 
 ```bash
 python -m pytest tests/test_perturbed_softdecision.py -v
 ```
+
+## Benchmark Re-Run Sweep
+
+The canonical benchmark comparison lives in the Phase 1/2 sweep infrastructure:
+
+```bash
+# Submit Phase 1 (498 jobs: all methods × all tasks × 3 LR × 2 batch)
+bash shells/slurm/submit_bench_p1.sh --dry-run          # preview
+bash shells/slurm/submit_bench_p1.sh                    # submit all
+bash shells/slurm/submit_bench_p1.sh --problem knapsack # filter by problem
+bash shells/slurm/submit_bench_p1.sh --method mse       # filter by method
+
+# Monitor
+python rethink_exp/sweep_status.py --phase 1            # status grid (✓/R/--)
+python rethink_exp/sweep_status.py --phase 1 --vals     # best regret per cell
+
+# Collect Phase 1 results → pick best (LR, batch) per method×task
+python rethink_exp/collect_bench_p1.py                  # prints grid, writes bench_p1_best.json
+
+# Submit Phase 2 (~210 jobs: method-specific HP sweep using Phase 1 best configs)
+bash shells/slurm/submit_bench_p2.sh --dry-run
+bash shells/slurm/submit_bench_p2.sh
+
+# Collect Phase 2 → final table
+python rethink_exp/collect_bench_p2.py --final
+```
+
+All jobs use `--requeue` + checkpoint/resume (SIGTERM handler in `ExpManager.py`). Jobs interrupted by preemption restart automatically from the last completed epoch.
+
+**Prefix conventions:**
+- Phase 1: `bench_p1_{method}_{batch}_lr{lr}` e.g. `bench_p1_mse_default_lr1e-2`
+- Phase 2: `bench_p2_{method}_{hp_tag}_{batch}_lr{lr}` e.g. `bench_p2_dfl_alpha0.01_gd_lr5e-3`
 
 ## SLURM (Tufts HPC)
 
@@ -71,7 +126,7 @@ bash shells/slurm/submit_softdec_wave1.sh              # submit
 bash shells/slurm/submit_softdec_wave1.sh --problem knapsack
 ```
 
-Each submit script supports `--dry-run`, `--problem <filter>`, and `--no-backup` flags. Jobs go to `preempt` partition with `hugheslab,gpu` as backup.
+Each submit script supports `--dry-run`, `--problem <filter>`, and `--no-backup` flags. Partition: `hugheslab,batch`.
 
 ## Architecture
 
@@ -110,6 +165,12 @@ Orchestrates the full train/eval loop:
 2. Fine-tune with the chosen PnO loss for `--n_epochs` epochs (minibatch via DataLoader)
 3. Evaluate on train/val/test; track best model by val regret; save checkpoints
 
+**Checkpoint/resume support** (added for Phase 1/2 sweep):
+- Saves `checkpoint_latest.pt` after every epoch (model, optimizer, best_val, time_since_best)
+- Registers SIGTERM handler: saves checkpoint and exits 0 on preemption → SLURM `--requeue` restarts automatically
+- On startup, detects `checkpoint_latest.pt` and resumes from the last completed epoch
+- `train_logs.csv` / `val_logs.csv` written incrementally (append per epoch) so full history survives restarts
+
 **Output directories:**
 - `saved_records/<problem>-<version>/<opt_model>/<prefix>/` — latest run logs + checkpoints
 - `saved_records/timed_logs/<problem>-<version>/<opt_model>/<prefix>/<timestamp>/` — timestamped backup
@@ -129,8 +190,14 @@ Perturb model configs follow the naming convention `perturb_s<sigma>_n<n_samples
 ## Collecting Results
 
 ```bash
+# Original benchmark scripts
 python rethink_exp/collect_results.py    # prints benchmark table for all problems/models
 python rethink_exp/find_best_val.py      # finds best hyperparams across prefix sweeps
+
+# Phase 1/2 sweep scripts (preferred for the re-run)
+python rethink_exp/collect_bench_p1.py  # Phase 1 grid + writes bench_p1_best.json
+python rethink_exp/collect_bench_p2.py  # Phase 2 HP sweep results
+python rethink_exp/collect_bench_p2.py --final   # full final table across all methods
 ```
 
 Results for each run are stored in `saved_records/.../results.npy` as `[Objs_test_opt, eval_values]`.

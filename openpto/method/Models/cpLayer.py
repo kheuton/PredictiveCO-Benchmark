@@ -31,7 +31,7 @@ class cpLayer(optModel):
         Forward pass
         """
         sols_hat, _ = problem.get_decision(
-            coeff_hat,
+            coeff_hat.detach(),
             params=params,
             ptoSolver=self.ptoSolver,
             isTrain=True,

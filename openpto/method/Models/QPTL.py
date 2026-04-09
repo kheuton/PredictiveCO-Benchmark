@@ -66,7 +66,7 @@ class QPTL(optModel):
         )
         sol_true = to_tensor(sol_true).to(device)
 
-        obj_cp = problem.get_objective(coeff_hat, sol_true)
+        obj_cp = problem.get_objective(coeff_hat, sol_true, params)
 
         # get loss
         if self.ptoSolver.modelSense == GRB.MINIMIZE:

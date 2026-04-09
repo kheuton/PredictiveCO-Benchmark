@@ -64,19 +64,22 @@ class NCE(optModel):
         self.solpool = np.unique(self.solpool, axis=0)
         solpool = to_tensor(self.solpool).to(device)
 
-        # get obj
-        # print(solpool.shape, coeff_hat.shape)
-        expand_shape = torch.Size([solpool.shape[0]] + list(coeff_hat.shape[1:]))
-        coeff_hat_pool = coeff_hat.expand(*expand_shape)
-        obj_cp = problem.get_objective(coeff_hat, sol_true, params)
-        objpool_cp = problem.get_objective(coeff_hat_pool, solpool, params)
-        # get loss
-        if self.ptoSolver.modelSense == GRB.MINIMIZE:
-            loss = obj_cp - objpool_cp
-        elif self.ptoSolver.modelSense == GRB.MAXIMIZE:
-            loss = objpool_cp - obj_cp
-        else:
-            raise NotImplementedError
+        # get obj — per-instance to support batch sizes > 1
+        K = solpool.shape[0]
+        obj_cp = problem.get_objective(coeff_hat, sol_true, params)  # [bs]
+        losses_per_instance = []
+        for i in range(coeff_hat.shape[0]):
+            ch_i = coeff_hat[i:i+1].expand(K, *coeff_hat.shape[1:])
+            params_i = params[i:i+1].expand(K, *params.shape[1:]) if isinstance(params, torch.Tensor) else params
+            objpool_cp_i = problem.get_objective(ch_i, solpool, params_i)  # [K]
+            if self.ptoSolver.modelSense == GRB.MINIMIZE:
+                loss_i = obj_cp[i] - objpool_cp_i
+            elif self.ptoSolver.modelSense == GRB.MAXIMIZE:
+                loss_i = objpool_cp_i - obj_cp[i]
+            else:
+                raise NotImplementedError
+            losses_per_instance.append(loss_i.mean())
+        loss = torch.stack(losses_per_instance)  # [bs]
 
         # reduction
         loss = do_reduction(loss, hyperparams["reduction"])
