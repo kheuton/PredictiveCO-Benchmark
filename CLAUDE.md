@@ -30,7 +30,7 @@ python rethink_exp/main_results.py \
 
 **Key arguments** (see `openpto/config/utils_conf.py` for full list):
 - `--problem`: `knapsack`, `portfolio`, `budgetalloc`, `energy`, `cubic`, `bipartitematching`, `advertising`, `shortestpath`, `TSP`
-- `--opt_model`: `mse`, `dfl`, `blackbox`, `identity`, `spo`, `nce`, `qptl`, `pointLTR`, `pairLTR`, `listLTR`, `lodl`, `perturb`, `cpLayer`
+- `--opt_model`: `mse`, `dfl`, `blackbox`, `identity`, `spo`, `nce`, `qptl`, `pointLTR`, `pairLTR`, `listLTR`, `lodl`, `perturb`, `cpLayer`, `pg`
 - `--solver`: `gurobi`, `cvxpy`, `heuristic`, `neural`, `ortools`, `qptl`
 - `--method_path`: path to model config YAML (default `openpto/config/models/default.yaml`)
 - `--config_path`: path to problem config YAML (auto-detected from `--problem` if empty)
@@ -68,6 +68,7 @@ Knapsack-real and energy silently ignore `--instances`/`--testinstances` (they l
 - cubic, bipartitematching: `heuristic` / `cvxpy`
 - portfolio: `cvxpy`
 - qptl, cpLayer: only valid for knapsack / bipartitematching / portfolio
+- pg: not valid for budgetalloc (coeff and sol have incompatible shapes due to nonlinear submodular objective)
 
 ## Hyperparameter Tuning Principle
 
@@ -75,6 +76,8 @@ The original benchmark only tuned learning rate. Our re-run sweeps **both LR and
 
 **Phase 1 (LR × Batch):** 3 LRs × 2 batch configs per method × task — establishes best training setup.
 **Phase 2 (method HP):** sweeps the key HP for each method using Phase 1's best (LR, batch).
+
+Method-specific HPs swept in Phase 2: dflalpha (dfl), lambd (blackbox), tau (qptl, listLTR), num_samples (lodl), sigma+n_samples (perturb), sigma (pg).
 
 Always prefer results from the Phase 1/2 sweep over ad-hoc runs when reporting numbers.
 
@@ -89,7 +92,7 @@ python -m pytest tests/test_perturbed_softdecision.py -v
 The canonical benchmark comparison lives in the Phase 1/2 sweep infrastructure:
 
 ```bash
-# Submit Phase 1 (498 jobs: all methods × all tasks × 3 LR × 2 batch)
+# Submit Phase 1 (540 jobs: 14 methods × tasks × 3 LR × 2 batch; pg excluded from budgetalloc)
 bash shells/slurm/submit_bench_p1.sh --dry-run          # preview
 bash shells/slurm/submit_bench_p1.sh                    # submit all
 bash shells/slurm/submit_bench_p1.sh --problem knapsack # filter by problem
@@ -102,7 +105,7 @@ python rethink_exp/sweep_status.py --phase 1 --vals     # best regret per cell
 # Collect Phase 1 results → pick best (LR, batch) per method×task
 python rethink_exp/collect_bench_p1.py                  # prints grid, writes bench_p1_best.json
 
-# Submit Phase 2 (~210 jobs: method-specific HP sweep using Phase 1 best configs)
+# Submit Phase 2 (~260 jobs: method-specific HP sweep using Phase 1 best configs)
 bash shells/slurm/submit_bench_p2.sh --dry-run
 bash shells/slurm/submit_bench_p2.sh
 
@@ -152,9 +155,11 @@ Selected by `solver_wrapper()` in `wrapper_solver.py`. Grouped by backend:
 ### 3. Loss Functions / PnO Models (`openpto/method/Models/`)
 All extend `optModel` (abstract base in `abcOptModel.py`), implementing `forward(problem, coeff_hat, coeff_true, params)` → `loss`. Registered in `wrapper_loss.py`:
 - PtO: `MSE`, `BCE`, `CE`, `MAE`, `DFL`
-- PnO: `SPO`, `QPTL`, `Blackbox`, `NCE`, `LTR` variants, `LODL`, `perturbed`, `cpLayer`
+- PnO: `SPO`, `QPTL`, `Blackbox`, `NCE`, `LTR` variants, `LODL`, `perturbed`, `cpLayer`, `perturbationGradient` (pg)
 
 **`perturbed`** (in `perturbed.py`) implements the **correct Berthet et al. DPO** (soft-decision formulation). The legacy `perturbed_reinforce` class uses REINFORCE on scalar objectives (kept for reproducibility). The `perturbed` model supports a `SigmaScheduler` with schedules: `constant`, `linear_decay`, `cosine_decay`, `step_decay`. `ExpManager` calls `loss_fn.step(epoch)` each epoch if that method exists.
+
+**`perturbationGradient`** (in `PG.py`, `--opt_model pg`) implements the PG method (arxiv 2402.03256). Deterministic finite-difference surrogate: solves at `c_hat` and `c_hat - σ·c_true`, gradient flows through the differentiable linear objective `c_hat · sol`. No sampling noise unlike DPO. HP: `sigma` (finite difference width, default 0.1). **Not valid for budgetalloc** — incompatible shapes because budgetalloc's coeff is `[bs, n_items, n_targets]` while sol is `[bs, n_items]`; contrast with SPO+ which avoids this via a custom autograd Function and `problem.get_objective()`.
 
 ### 4. Prediction Models (`openpto/method/Predicts/`)
 Neural nets mapping features X → predicted cost coefficients Ŷ. Selected via `--pred_model`: `dense`, `cvr`, `cv_mlp`, `ConvNet`, etc.

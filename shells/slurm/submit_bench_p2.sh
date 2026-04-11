@@ -184,6 +184,9 @@ LODL_VALS=(100 250 500 1000 2000)
 # perturb: sigma (fixed n_samples=10)
 PERTURB_SIGMA_VALS=(0.1 0.5 1.0 2.0 5.0)
 
+# pg: sigma (finite difference width)
+PG_SIGMA_VALS=(0.01 0.05 0.1 0.5 1.0)
+
 # perturb: n_samples (using best sigma from sigma sweep, or default sigma=1.0 for now)
 PERTURB_N_VALS=(5 10 25 50 100)
 
@@ -476,6 +479,18 @@ if [[ -z "$METHOD_FILTER" || "$METHOD_FILTER" == "perturb" ]]; then
         for val in "${PERTURB_N_VALS[@]}"; do
             yaml_path=$(ensure_yaml "$PERTURB_BASE" "perturb" "n_samples" "$val")
             submit_p2_job "$prob" "perturb" "s1p0_n${val}" "$SCRIPT_DIR/$yaml_path" "pno"
+        done
+    done
+    echo ""
+fi
+
+# ---- pg: sigma ----
+if [[ -z "$METHOD_FILTER" || "$METHOD_FILTER" == "pg" ]]; then
+    echo "--- pg: sigma sweep ---"
+    for prob in knapsack knapsack-real energy cubic bipartitematching portfolio; do
+        for val in "${PG_SIGMA_VALS[@]}"; do
+            yaml_path=$(ensure_yaml "$BASE_YAML" "pg" "sigma" "$val")
+            submit_p2_job "$prob" "pg" "s${val//./p}" "$SCRIPT_DIR/$yaml_path" "pno"
         done
     done
     echo ""

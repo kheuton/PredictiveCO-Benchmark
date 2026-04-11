@@ -90,6 +90,10 @@ def get_loss_fn(args, ptoSolver, conf):
         from openpto.method.Models.cpLayer import cpLayer
 
         ModelCalss = cpLayer
+    elif name == "pg":
+        from openpto.method.Models.PG import perturbationGradient
+
+        ModelCalss = perturbationGradient
     else:
         raise LookupError()
     loss_dict = {

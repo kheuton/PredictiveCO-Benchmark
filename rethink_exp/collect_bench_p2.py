@@ -50,17 +50,18 @@ PROB_VERSION = {
 }
 
 # Methods with HP sweeps in Phase 2
-P2_METHODS = ["dfl", "blackbox", "qptl", "listLTR", "lodl", "perturb"]
+P2_METHODS = ["dfl", "blackbox", "qptl", "listLTR", "lodl", "perturb", "pg"]
 
 # Methods valid for only a subset of problems
 METHOD_PROBLEMS = {
     "qptl":    {"knapsack", "bipartitematching", "portfolio"},
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
+    "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching", "portfolio"},
 }
 
 # All methods (for final table)
 ALL_METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
-               "pointLTR", "pairLTR", "listLTR", "lodl", "perturb",
+               "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
                "qptl", "cpLayer"]
 
 # HP sweep definitions per method (must match submit_bench_p2.sh)
@@ -75,6 +76,11 @@ HP_SWEEPS = {
                 "tag_fn": lambda v: f"tau{v}"},
     "lodl":    {"hp": "num_samples", "vals": ["100", "250", "500", "1000", "2000"],
                 "tag_fn": lambda v: f"ns{v}"},
+    "pg": {
+        "hp": "sigma",
+        "vals": ["0.01", "0.05", "0.1", "0.5", "1.0"],
+        "tag_fn": lambda v: f"s{v.replace('.', 'p')}",
+    },
     "perturb_sigma": {
         "method": "perturb",
         "hp": "sigma",

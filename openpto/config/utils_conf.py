@@ -61,6 +61,7 @@ def get_args():
             "lodl",
             "perturb",
             "cpLayer",
+            "pg",
         ],
         default="mse",
     )

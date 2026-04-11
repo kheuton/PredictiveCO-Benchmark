@@ -247,10 +247,10 @@
       "n_total": 6
     },
     "portfolio": {
-      "lr": "5e-3",
+      "lr": "1e-2",
       "batch": "default",
-      "val": 0.284356,
-      "n_done": 5,
+      "val": 0.309922,
+      "n_done": 2,
       "n_total": 6
     }
   },
@@ -273,7 +273,7 @@
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.066189,
-      "n_done": 6,
+      "n_done": 5,
       "n_total": 6
     },
     "budgetalloc": {
@@ -352,7 +352,7 @@
       "lr": "1e-2",
       "batch": "default",
       "val": 0.229687,
-      "n_done": 4,
+      "n_done": 3,
       "n_total": 6
     }
   },
@@ -401,9 +401,9 @@
     },
     "portfolio": {
       "lr": "5e-3",
-      "batch": "alt",
-      "val": 0.246917,
-      "n_done": 4,
+      "batch": "default",
+      "val": 0.253858,
+      "n_done": 3,
       "n_total": 6
     }
   },
@@ -454,7 +454,7 @@
       "lr": "1e-3",
       "batch": "default",
       "val": 0.238361,
-      "n_done": 5,
+      "n_done": 2,
       "n_total": 6
     }
   },
@@ -473,13 +473,6 @@
       "n_done": 6,
       "n_total": 6
     },
-    "energy": {
-      "lr": "1e-2",
-      "batch": "alt",
-      "val": 0.024379,
-      "n_done": 6,
-      "n_total": 6
-    },
     "budgetalloc": {
       "lr": "1e-3",
       "batch": "default",
@@ -491,20 +484,6 @@
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.04218,
-      "n_done": 6,
-      "n_total": 6
-    },
-    "bipartitematching": {
-      "lr": "5e-3",
-      "batch": "default",
-      "val": 0.911568,
-      "n_done": 6,
-      "n_total": 6
-    },
-    "portfolio": {
-      "lr": "1e-3",
-      "batch": "default",
-      "val": 0.240552,
       "n_done": 6,
       "n_total": 6
     }
@@ -524,18 +503,11 @@
       "n_done": 6,
       "n_total": 6
     },
-    "energy": {
-      "lr": "5e-3",
-      "batch": "alt",
-      "val": 0.019704,
-      "n_done": 4,
-      "n_total": 6
-    },
     "budgetalloc": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.066512,
-      "n_done": 6,
+      "n_done": 2,
       "n_total": 6
     },
     "cubic": {
@@ -560,43 +532,6 @@
       "n_total": 6
     }
   },
-  "pg": {
-    "knapsack": {
-      "lr": "1e-2",
-      "batch": "alt",
-      "val": 0.111386,
-      "n_done": 6,
-      "n_total": 6
-    },
-    "knapsack-real": {
-      "lr": "5e-3",
-      "batch": "alt",
-      "val": 0.086801,
-      "n_done": 6,
-      "n_total": 6
-    },
-    "cubic": {
-      "lr": "1e-3",
-      "batch": "default",
-      "val": 0.071626,
-      "n_done": 6,
-      "n_total": 6
-    },
-    "bipartitematching": {
-      "lr": "1e-3",
-      "batch": "alt",
-      "val": 0.901676,
-      "n_done": 6,
-      "n_total": 6
-    },
-    "portfolio": {
-      "lr": "1e-3",
-      "batch": "alt",
-      "val": 0.338874,
-      "n_done": 6,
-      "n_total": 6
-    }
-  },
   "qptl": {
     "knapsack": {
       "lr": "1e-2",
@@ -609,13 +544,6 @@
       "lr": "5e-3",
       "batch": "default",
       "val": 0.915932,
-      "n_done": 6,
-      "n_total": 6
-    },
-    "portfolio": {
-      "lr": "1e-3",
-      "batch": "alt",
-      "val": 0.286107,
       "n_done": 6,
       "n_total": 6
     }

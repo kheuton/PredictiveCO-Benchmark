@@ -48,13 +48,14 @@ PROB_VERSION = {
 }
 
 METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
-           "pointLTR", "pairLTR", "listLTR", "lodl", "perturb",
+           "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
            "qptl", "cpLayer"]
 
 # Methods only valid for subset of problems
 METHOD_PROBLEMS = {
     "qptl":    {"knapsack", "bipartitematching", "portfolio"},
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
+    "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching", "portfolio"},
 }
 
 LRS = ["1e-2", "5e-3", "1e-3"]

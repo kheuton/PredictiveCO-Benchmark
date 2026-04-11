@@ -182,6 +182,7 @@ METHOD_PROBLEMS[pairLTR]="all"
 METHOD_PROBLEMS[listLTR]="all"
 METHOD_PROBLEMS[lodl]="all"
 METHOD_PROBLEMS[perturb]="all"
+METHOD_PROBLEMS[pg]="knapsack knapsack-real energy cubic bipartitematching portfolio"
 METHOD_PROBLEMS[qptl]="knapsack bipartitematching portfolio"
 METHOD_PROBLEMS[cpLayer]="knapsack bipartitematching portfolio"
 
@@ -197,6 +198,7 @@ METHOD_SOLVER_GROUP[pairLTR]=pno
 METHOD_SOLVER_GROUP[listLTR]=pno
 METHOD_SOLVER_GROUP[lodl]=lodl
 METHOD_SOLVER_GROUP[perturb]=pno
+METHOD_SOLVER_GROUP[pg]=pno
 METHOD_SOLVER_GROUP[qptl]=pno
 METHOD_SOLVER_GROUP[cpLayer]=pno
 
@@ -213,6 +215,7 @@ METHOD_DEFAULT_OPT[pairLTR]=sgd
 METHOD_DEFAULT_OPT[listLTR]=sgd
 METHOD_DEFAULT_OPT[lodl]=gd
 METHOD_DEFAULT_OPT[perturb]=gd
+METHOD_DEFAULT_OPT[pg]=gd
 METHOD_DEFAULT_OPT[qptl]=gd
 METHOD_DEFAULT_OPT[cpLayer]=gd
 
@@ -239,6 +242,7 @@ METHOD_PATH[pairLTR]=openpto/config/models/default.yaml
 METHOD_PATH[listLTR]=openpto/config/models/default.yaml
 METHOD_PATH[lodl]=openpto/config/models/default.yaml
 METHOD_PATH[perturb]=openpto/config/models/perturb_s1_n10.yaml   # sigma=1.0, n=10
+METHOD_PATH[pg]=openpto/config/models/default.yaml
 METHOD_PATH[qptl]=openpto/config/models/default.yaml
 METHOD_PATH[cpLayer]=openpto/config/models/default.yaml
 
@@ -426,7 +430,7 @@ $cmd
 # Main sweep
 # ====================================================================
 
-METHODS=(mse dfl identity spo nce blackbox pointLTR pairLTR listLTR lodl perturb qptl cpLayer)
+METHODS=(mse dfl identity spo nce blackbox pointLTR pairLTR listLTR lodl perturb pg qptl cpLayer)
 BATCH_LABELS=(default alt)
 
 echo "=== Benchmark Phase 1 sweep ==="

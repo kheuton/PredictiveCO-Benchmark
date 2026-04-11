@@ -69,7 +69,7 @@ PROB_DISPLAY = {
 
 # ---- Method config ----
 METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
-           "pointLTR", "pairLTR", "listLTR", "lodl", "perturb",
+           "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
            "qptl", "cpLayer"]
 
 # Extra one-off data points not part of the sweep (portfolio-only sigma=0 run)
@@ -95,6 +95,7 @@ METHOD_DISPLAY = {
     "listLTR":  "L-LTR",
     "lodl":     "LODL",
     "perturb":  "Perturb",
+    "pg":       "PG",
     "qptl":     "QPTL",
     "cpLayer":  "cpLayer",
 }
@@ -102,6 +103,7 @@ METHOD_DISPLAY = {
 METHOD_PROBLEMS = {
     "qptl":    {"knapsack", "bipartitematching", "portfolio"},
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
+    "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching", "portfolio"},
 }
 
 LRS          = ["1e-2", "5e-3", "1e-3"]
@@ -139,6 +141,11 @@ HP_SWEEPS = {
         "hp": "sigma",
         "vals": ["0.1", "0.5", "1.0", "2.0", "5.0"],
         "tag_fn": lambda v: f"s{v.replace('.','p')}_n10",
+    },
+    "pg": {
+        "hp": "sigma",
+        "vals": ["0.01", "0.05", "0.1", "0.5", "1.0"],
+        "tag_fn": lambda v: f"s{v.replace('.','p')}",
     },
 }
 
@@ -292,6 +299,7 @@ G4 = "#222222"   # very dark gray  (Perturb diamond, LODL hexagon need distinct 
 #   LTR                 → square ("s"):   NCE, pt-LTR, pr-LTR; L-LTR is orange square
 #   Trained Surrogate   → circle ("o"):   LODL
 G5 = "#666666"   # mid-gray for SPO+
+G6 = "#999999"   # light-mid gray for PG
 METHOD_STYLE = {
     "mse":      ("*",  MSE_C,  80,  1.0),
     # Surrogate Gradient methods (gray hexagons, light → dark)
@@ -299,7 +307,8 @@ METHOD_STYLE = {
     "blackbox": ("h",  G2,     50,  0.90),
     "identity": ("h",  G3,     50,  0.90),
     "perturb":  ("h",  G4,     50,  0.90),
-    "spo":      ("h",  G5,     50,  0.90),
+    "spo":      ("P",  G5,     50,  0.90),
+    "pg":       ("P",  G6,     50,  0.90),
     # Trained Surrogate (gray circle)
     "lodl":     ("o",  G2,     44,  0.85),
     # Continuous methods (gray triangles)
@@ -442,7 +451,8 @@ def draw_bump(task_list, title, fname, figsize=None):
         _le("h",  G2,     "Blackbox"),
         _le("h",  G3,     "Identity"),
         _le("h",  G4,     "Perturb"),
-        _le("h",  G5,     "SPO+"),
+        _le("P",  G5,     "SPO+"),
+        _le("P",  G6,     "PG"),
         *_extra_les("surrogate_gradient"),
         # Trained Surrogate group
         _hdr("Trained Surrogate"),
@@ -691,7 +701,7 @@ export = {
     },
     "method_groups": {
         "Decision-Unaware": ["MSE"],
-        "Surrogate Gradient": ["DFL", "Blackbox", "Identity", "Perturb", "SPO+"],
+        "Surrogate Gradient": ["DFL", "Blackbox", "Identity", "Perturb", "SPO+", "PG"],
         "Trained Surrogate": ["LODL"],
         "Continuous": ["cpLayer", "QPTL"],
         "Statistical": ["NCE", "pt-LTR", "pr-LTR", "L-LTR"],

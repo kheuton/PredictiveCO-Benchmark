@@ -1,0 +1,439 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+\title{\textbf{Adaptive $\sigma$ for Perturbed Optimizers}\\
+\large Advisor Meeting --- March 2026}
+\author{Kyle Heuton}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\tableofcontents
+\vspace{1em}
+\hrule
+\vspace{1em}
+
+% ============================================================
+\section{Motivation}
+% ============================================================
+
+The \textbf{perturbed optimizer} (Berthet et al.\ 2020) approximates the
+decision-focused gradient by Monte Carlo: draw $N$ perturbations
+$\epsilon_n \sim \mathcal{N}(0, \sigma^2 I)$, solve the CO problem
+for each perturbed cost $\hat{y} + \epsilon_n$, and use the resulting
+decision spread as a surrogate gradient.
+The key hyperparameter is $\sigma$, the perturbation magnitude, which
+controls an exploration--exploitation tradeoff:
+\begin{itemize}[itemsep=2pt]
+  \item $\sigma$ too \emph{small}: nearly all $z_n = z_0$ (the unperturbed
+        solution) $\Rightarrow$ zero gradient.
+  \item $\sigma$ too \emph{large}: decisions become random
+        $\Rightarrow$ high-variance, uninformative gradient.
+\end{itemize}
+
+The critical scaling issue is that $\sigma$ must track $\|\hat{y}\|$
+(predicted cost magnitude). In practice the dense prediction model's
+coefficient norm drifts \textbf{100--1000$\times$} during training,
+so a fixed $\sigma$ falls off the useful range after a few dozen epochs.
+Polynomial models are more stable ($3$--$4\times$ drift), so this problem
+is most acute for dense MLPs.
+
+\textbf{Goal}: design $\sigma$ controllers that automatically maintain
+useful gradient signal throughout training, without per-run tuning.
+
+% ============================================================
+\section{Exploration Metrics}
+% ============================================================
+
+We need a scalar that quantifies ``how much exploration is happening''
+so we can close a feedback loop around $\sigma$.
+
+\subsection{Rank Change Rate (RCR) --- binary decisions only}
+
+For binary ($0/1$) solutions with sparsity $K$ (e.g.\ top-$K$ knapsack),
+RCR measures the fraction of perturbed solutions that differ from the
+unperturbed baseline, normalised by the maximum possible Hamming distance:
+\begin{equation}
+  \mathrm{RCR} = \frac{1}{N} \sum_{n=1}^{N}
+    \frac{\|z_n - z_0\|_1}{2K},
+  \label{eq:rcr}
+\end{equation}
+where $z_0$ is the solution under the unperturbed cost $\hat{y}$ and
+$z_n$ is the solution under $\hat{y} + \epsilon_n$.
+RCR $= 0$ means no exploration; RCR $= 1$ means complete randomisation.
+
+\textbf{Connection to your comment}: You suggested that among instances
+where $y$ and $\hat{y}$ are far apart, $\sigma$ should produce nontrivial
+gradients for $\geq 50\%$ of perturbations.  This is precisely RCR
+$\geq 0.5$ applied \emph{conditional} on a margin threshold $|y - \hat{y}|
+> \delta$.  Our global (unconditional) RCR sweet spot of $0.3$--$0.4$ is
+consistent: when only a subset of instances have large residuals at any
+training step, global RCR $< 0.5$ while conditional RCR $\approx 0.5$ for
+the ``active'' subset.
+
+\textbf{Limitation}: RCR is undefined for non-binary decisions
+(portfolio weights, matching edge probabilities) and behaves adversarially
+if the solution sparsity $K$ changes across instances.
+
+\subsection{OCV\_Y: Objective Coefficient of Variation}
+
+To generalise beyond binary decisions, we measure the normalised spread
+of \emph{true} objective values across the $N$ perturbed solutions:
+\begin{equation}
+  \mathrm{OCV\_Y} = \frac{\mathrm{std}_n\!\left(Y \cdot z_n\right)}
+    {|Y \cdot z_0| + \varepsilon},
+  \label{eq:ocvy}
+\end{equation}
+where $Y$ denotes the \emph{true} (observed) cost coefficients and
+$z_n$ are the decisions under the perturbed \emph{predicted} costs.
+Key properties:
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Monotone in $\sigma$}: larger $\sigma$ produces more
+        diverse $z_n$, wider spread in $Y \cdot z_n$.
+  \item \textbf{Problem-agnostic}: works for any CO problem;
+        uses true objectives, not solution structure.
+  \item \textbf{RCR equivalence}: on cubic (binary), the correlation
+        between OCV\_Y and RCR is $r = 0.996$, so they are essentially
+        interchangeable as control targets for binary problems.
+\end{itemize}
+The controller holds OCV\_Y $\approx \tau$ (a target) via proportional updates.
+Both $z_0$ (unperturbed solution) and $z_n$ (perturbed solutions) are
+already computed during the forward pass, so OCV\_Y costs no extra solver calls.
+
+\subsection{FracImproving --- convergence diagnostic}
+
+\begin{equation}
+  \mathrm{FracImproving} = \frac{1}{N} \sum_{n=1}^{N}
+    \mathbf{1}\!\left[Y \cdot z_n > Y \cdot z_0\right].
+  \label{eq:fracimproving}
+\end{equation}
+
+FracImproving is the fraction of perturbed solutions that beat the
+unperturbed solution under \emph{true} costs.
+It is \textbf{not} monotone in $\sigma$ and is not suitable as a control
+target. However, it is a useful convergence diagnostic: as $z_0 \to z^*$
+(near-optimal), fewer perturbed solutions can improve on it, so
+FracImproving $\to 0$. In practice:
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Long plateau then cliff}: learning rate too high;
+        gradient overshoots.
+  \item \textbf{Gradual smooth decay}: appropriate learning rate;
+        model is converging properly.
+\end{itemize}
+
+% ============================================================
+\section{Sigma Controllers}
+% ============================================================
+
+\subsection{Global Proportional Controller}
+
+At the end of each epoch, aggregate OCV\_Y from all minibatches in that
+epoch (accumulating $\hat{y}$, $z_0$, and $z_n$ buffers), then update:
+\begin{equation}
+  \sigma_{t+1} = \sigma_t \cdot
+    \mathrm{clip}\!\left(\frac{\tau}{\mathrm{OCV\_Y}_t},\;
+    \frac{1}{s},\; s\right),
+  \label{eq:global-update}
+\end{equation}
+where $\tau$ is the target OCV\_Y and $s > 1$ is a \texttt{max\_step}
+parameter that limits the per-epoch change to a factor of $s$
+(prevents runaway).
+
+A single $\sigma$ is shared across all training instances.
+
+\subsection{Per-Instance Proportional Controller}
+
+Maintains a $\sigma$ vector of length $N_\mathrm{train}$
+(one value per instance). Each training instance $i$ in a minibatch
+has its own OCV\_Y computed from the $N$ perturbed solutions for that
+instance. The update applies EMA smoothing:
+\begin{equation}
+  \sigma_i^{(t+1)} = (1 - \alpha)\,\sigma_i^{(t)}
+    + \alpha \cdot \sigma_i^{(t)} \cdot
+    \mathrm{clip}\!\left(\frac{\tau}{\mathrm{OCV\_Y}_{i,t}},\;
+    \frac{1}{s},\; s\right),
+  \label{eq:pi-update}
+\end{equation}
+where $\alpha$ is an EMA weight (default $0.05$).
+
+\textbf{Motivation}: instances where the K-th decision is tight (small
+margin between selected/rejected items) need more perturbation to explore
+alternative solutions. Per-instance $\sigma$ allows these ``hard''
+instances to use a larger perturbation while ``easy'' instances converge
+with a smaller one.
+
+\textbf{Empirical result on cubic}: at epoch 50, small-margin instances
+receive $\sim 30\%$ larger $\sigma$ (Spearman $r \approx -0.28$ between
+$\sigma_i$ and margin). This pattern is structural, not noise --- it
+emerges around epoch 50 and is stable.
+
+% ============================================================
+\section{Results}
+% ============================================================
+
+\subsection{Cubic: $\sigma$ sweet spot and LR interaction}
+
+The cubic task (top-$K$ selection, polynomial DGP) gives a clean
+testbed because the polynomial prediction model is near-optimal.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]%
+    {fig_rcr_sweetspot.png}
+  \caption{\textbf{RCR sweet spot on cubic.}
+    Fixed-$\sigma$ sweep showing the inverted-U relationship between
+    $\sigma$ and validation regret.  RCR $0.3$--$0.4$ coincides with
+    the best performance, consistent with the interpretation that roughly
+    half the instances are ``actively exploring'' at any time.}
+  \label{fig:rcr-sweetspot}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.90\textwidth]%
+    {fig_ocv_lr_comparison.png}
+  \caption{\textbf{OCV\_Y controller + LR interaction (cubic, dense model).}
+    At lr$= 5\text{e-}2$ (left), FracImproving shows a long plateau
+    followed by an abrupt cliff --- a signature of gradient overshooting.
+    At lr$= 1\text{e-}2$ (middle), the model breaks through and reaches
+    val\_regret $\approx 0.005$.
+    At lr$= 5\text{e-}3$ (right), convergence is slower but stable.
+    The OCV\_Y controller holds exploration at the target throughout all
+    three LRs; the bottleneck is the learning rate, not $\sigma$ control.}
+  \label{fig:ocv-lr}
+\end{figure}
+
+Key findings on cubic:
+\begin{itemize}[itemsep=2pt]
+  \item Dense coeff-norm drifts 100--1000$\times$ during training;
+        fixed $\sigma$ falls off the useful range by epoch~50.
+  \item The OCV\_Y controller automatically compensates:
+        $\sigma$ tracks $\|\hat{y}\|$ and stays in the sweet spot.
+  \item LR is a critical co-factor: lr$=1\text{e-}2$ with
+        OCV\_Y$=0.066$ reaches val\_regret $=0.005$ (dense),
+        compared to $\sim0.11$ with lr$=5\text{e-}2$.
+  \item Polynomial model is LR-insensitive (already near-optimal at
+        val\_regret $\approx 0.008$--$0.023$ for all LRs).
+\end{itemize}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]%
+    {fig_pi_lr_comparison.png}
+  \caption{\textbf{Per-instance vs.\ global controller (cubic).}
+    Polynomial model at lr$=5\text{e-}2$: per-instance best is
+    $0.0001$ at target $0.045$, vs.\ global best $0.008$.
+    Dense model at lr$=1\text{e-}2$: per-instance best $0.009$ at
+    target $0.206$ --- no significant improvement over global ($0.005$),
+    consistent with representation capacity being the binding constraint
+    for dense on cubic.}
+  \label{fig:pi-lr}
+\end{figure}
+
+\clearpage
+\subsection{Knapsack: benchmark scale}
+
+We evaluated on the standard knapsack benchmark
+(20 items, 200 train / 100 test instances, DGP noise\_width$=0.5$).
+We replaced the default Gurobi solver in the inner loop with a
+vectorised numpy DP solver (0.1~ms/call vs.\ 6~ms for Gurobi),
+which allowed $N=100$ perturbation samples per instance per batch
+(vs.\ $N=10$ with Gurobi), giving higher-quality gradient estimates.
+
+\begin{table}[h]
+  \centering
+  \caption{\textbf{Knapsack benchmark results.}
+    Test regret (lower is better) for the MSE baseline and four
+    perturbed-optimizer variants.  All runs: 300 epochs, dense model,
+    lr$=1\text{e-}2$.  MSE uses Gurobi at test time.}
+  \label{tab:knapsack}
+  \begin{tabular}{lc}
+    \toprule
+    Controller & Test Regret \\
+    \midrule
+    MSE (Gurobi, baseline) & \textbf{0.0640} \\
+    \midrule
+    Global OCV\_Y (DP, $N=100$)        & 0.093 \\
+    Per-instance OCV\_Y (DP, $N=100$)  & \textbf{0.084} \\
+    Per-instance Hamming const.        & 0.087 \\
+    Per-instance Hamming decay         & 0.096 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]%
+    {fig_kn_bench_results.png}
+  \caption{\textbf{Knapsack benchmark results.}
+    Val regret and FracImproving traces across training epochs for the
+    four perturbed controller variants, plus the MSE baseline (dashed).
+    FracImproving plateaus at $\approx 0.13$ for all runs --- an
+    irreducible floor set by the DGP noise (noise\_width$=0.5$);
+    this means roughly 13\% of perturbations will always find solutions
+    better than $z_0$ under true costs, even at optimality.}
+  \label{fig:kn-results}
+\end{figure}
+
+Key findings on knapsack:
+\begin{itemize}[itemsep=2pt]
+  \item Per-instance $\sigma$ outperforms global ($0.084$ vs.\ $0.093$,
+        $\sim 10\%$ improvement).
+  \item Hamming decay --- annealing $\sigma \to 0$ over training ---
+        is \emph{worse} than constant $\sigma$. Reducing exploration late
+        in training kills the gradient signal before convergence.
+  \item The MSE baseline still outperforms all perturbed variants by
+        $\sim 31\%$ ($0.064$ vs.\ $0.084$). This gap is investigated
+        in the next section.
+\end{itemize}
+
+\subsection{Local minimum diagnosis (Waves 6--7)}
+
+The 31\% gap prompted a systematic investigation:
+is the perturbed optimizer finding a different (worse) local minimum,
+or is there a structural barrier?
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]%
+    {fig_kn_loss_landscape.png}
+  \caption{\textbf{Loss landscape interpolation (Wave~6).}
+    Linear interpolation between the random-init solution weights
+    $\theta_\mathrm{rand}$ and the MSE solution weights $\theta_\mathrm{MSE}$,
+    evaluated at 200 grid points.  Both decision regret and perturbed
+    objective decrease monotonically along this path --- no barrier exists
+    between the two solutions in this 1D slice.}
+  \label{fig:landscape}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]%
+    {fig_kn_warmstart.png}
+  \caption{\textbf{Warm-start from MSE checkpoint (Wave~7).}
+    Cold init (random weights): test regret $= 0.085$.
+    Warm init (MSE weights, then fine-tune with perturbed loss):
+    test regret $= \mathbf{0.064}$, matching MSE exactly.
+    The perturbed method initialized from MSE does not improve over MSE ---
+    it converges to the same solution.  Random init falls into a worse
+    local minimum at $\approx 0.085$.}
+  \label{fig:warmstart}
+\end{figure}
+
+\textbf{Interpretation}: The warm-start result (Figure~\ref{fig:warmstart})
+confirms that the 31\% gap is an \emph{optimization} problem, not a
+structural limitation of the perturbed loss:
+\begin{enumerate}[itemsep=2pt]
+  \item The MSE solution is also a local minimum of the perturbed
+        objective; gradient-based fine-tuning does not move away from it.
+  \item Random initialization falls into a different (worse) local
+        minimum at $0.085$.
+  \item No barrier exists along the 1D interpolation path
+        (Figure~\ref{fig:landscape}), but the full high-dimensional
+        landscape can still have local minima --- the interpolation
+        rules out a barrier along one path, not globally.
+\end{enumerate}
+
+\textbf{Practical implication}: The benchmark already runs MSE pretraining
+(\texttt{--n\_ptr\_epochs}) before PnO fine-tuning.  If the fine-tuning
+learning rate is too high, the model may escape the MSE basin and fall
+into the nearby $0.085$ attractor.  Lowering the fine-tuning LR may
+recover the MSE performance while adding the potential for improvement
+via decision-focused gradients.
+
+% ============================================================
+\section{Open Questions and Next Steps}
+% ============================================================
+
+\begin{enumerate}[itemsep=6pt]
+
+  \item \textbf{Conditional RCR (your suggestion)}.
+    Compute RCR conditioned on instances where $\|y - \hat{y}\|_2 > \delta$.
+    This isolates ``hard'' instances where the prediction is currently wrong
+    and gradient signal matters most.  A natural question: does
+    optimising for conditional RCR $\approx 0.5$ outperform global OCV\_Y?
+    This requires defining $\delta$ (e.g., top 25\% of residuals),
+    but could give a sharper, more interpretable target.
+
+  \item \textbf{Fine-tuning LR on knapsack}.
+    Does lowering the fine-tuning LR (from $5\text{e-}2$ to $1\text{e-}2$
+    or $1\text{e-}3$) after MSE pretraining close the 31\% gap?
+    Cubic suggests yes: LR$=1\text{e-}2$ broke the plateau for dense.
+    On knapsack, the experiment is: MSE pretrain for $P$ epochs
+    $\rightarrow$ fine-tune with perturbed loss at varied LRs.
+    If this closes the gap, the conclusion is that the benchmark's
+    default LR schedule is the bottleneck, not the loss function.
+
+  \item \textbf{Generalisation to other problems}.
+    We have tested cubic and knapsack.  Does the per-instance OCV\_Y
+    controller consistently outperform global, and does it outperform MSE,
+    on portfolio (continuous), bipartite matching (combinatorial),
+    or TSP (permutation)?
+
+  \item \textbf{Theoretical connection: OCV\_Y $\approx$ RCR}.
+    On cubic (binary decisions), OCV\_Y and RCR have near-perfect
+    correlation ($r = 0.996$).  Is this provable?
+    For a top-$K$ selector, OCV\_Y $\propto K^{-1/2}$ times the expected
+    Hamming distance between $z_n$ and $z_0$, suggesting a closed-form
+    relationship under mild distributional assumptions.
+
+  \item \textbf{What does the perturbed method actually add?}
+    Warm-start results show the method doesn't improve over MSE when
+    initialised from MSE weights.  Is there any regime (task, model,
+    noise level) where the perturbed gradient provides a genuine
+    improvement over MSE fine-tuning?  If not, the practical
+    recommendation is: run MSE with good LR, skip the perturbed loss.
+
+\end{enumerate}
+
+% ============================================================
+\appendix
+\section{Implementation Notes}
+% ============================================================
+
+\begin{itemize}[itemsep=4pt]
+
+  \item \textbf{RCR equivalence to entropy}: empirically, RCR and
+    decision entropy have $r = 0.996$ on cubic.  Both are valid control
+    targets for binary decisions; OCV\_Y supersedes both for general CO.
+
+  \item \textbf{DP solver for knapsack}: custom vectorised numpy
+    0-1 DP (\texttt{openpto/method/Solvers/heuristic/dp.py}),
+    $0.1$~ms/call.  Allows $N = 100$ samples where Gurobi only allows
+    $N = 10$ in the same wall-clock budget.  The extra samples
+    meaningfully reduce gradient variance.
+
+  \item \textbf{FracImproving floor on knapsack}: DGP noise\_width$=0.5$
+    means even the true $z^*$ is beaten by $\approx 13\%$ of perturbations,
+    because noise shifts some costs enough to change the optimal solution.
+    This sets an irreducible FracImproving floor --- it does not indicate
+    a suboptimal solution.
+
+  \item \textbf{Per-instance $\sigma$ vs.\ margin}: the negative
+    Spearman correlation ($r \approx -0.28$) between $\sigma_i$ and
+    the K-th-item margin emerges at epoch 50.  The controller assigns
+    larger $\sigma$ to tight-margin instances automatically, without
+    any explicit margin signal.
+
+  \item \textbf{Cosine similarity as diagnostic}: the cosine similarity
+    between the perturbed gradient and the finite-difference gradient is
+    $\approx 0$ throughout training on cubic.  The method does not
+    work by aligning with the FD gradient; it works by smoothing
+    the loss landscape.  Cosine similarity is uninformative as a metric.
+
+\end{itemize}
+
+\end{document}

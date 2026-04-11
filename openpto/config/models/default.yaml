@@ -55,3 +55,6 @@ perturb:
   noise: normal
 cpLayer:
   reduction: mean
+pg:
+  reduction: mean
+  sigma: 0.1
