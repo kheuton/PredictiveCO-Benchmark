@@ -8,13 +8,16 @@ from typing import Dict
 import pandas as pd
 
 from openpto.problems.Advertising import Advertising
+from openpto.problems.AerialSurv import AerialSurv
 from openpto.problems.BipartiteMatching import BipartiteMatching
 from openpto.problems.BudgetAllocation import BudgetAllocation
+from openpto.problems.CookCounty import CookCounty
 from openpto.problems.CubicTopK import CubicTopK
 from openpto.problems.Energy import Energy
 from openpto.problems.Knapsack import Knapsack
 from openpto.problems.PortfolioOpt import PortfolioOpt
 from openpto.problems.Shortestpath import Shortestpath
+from openpto.problems.SpeedHumps import SpeedHumps
 from openpto.problems.TSP import TSP
 
 
@@ -31,6 +34,9 @@ def problem_wrapper(args, conf):
 
 def str2prob(prob_str):
     prob_dict = {
+        "asurv": AerialSurv,
+        "cook_county": CookCounty,
+        "speed_humps": SpeedHumps,
         "budgetalloc": BudgetAllocation,
         "cubic": CubicTopK,
         "bipartitematching": BipartiteMatching,

@@ -54,16 +54,12 @@ class perturbationGradient(optModel):
         sol  = to_tensor(sols ).to(device)
         solm = to_tensor(solsm).to(device)
 
-        # Flatten to [bs, n_vars] so einsum works for any problem shape
-        bs = coeff_hat.shape[0]
-        ch_flat  = coeff_hat.reshape(bs, -1)
-        ct_flat  = coeff_true.reshape(bs, -1)
-        sol_flat  = sol.reshape(bs, -1)
-        solm_flat = solm.reshape(bs, -1)
-
-        # Differentiable objectives (solutions are detached constants)
-        obj  = (ch_flat * sol_flat).sum(dim=1)
-        objm = ((ch_flat - self.sigma * ct_flat) * solm_flat).sum(dim=1)
+        # Differentiable objectives via problem.get_objective.
+        # Solutions are constants; gradients flow through coeff_hat only.
+        # Handles both linear objectives (knapsack etc.) and nonlinear ones
+        # (budgetalloc: P(>=1 click) = 1 - prod(1 - p_i * x_i)).
+        obj  = problem.get_objective(coeff_hat,                            sol.detach(),  params).to(device)
+        objm = problem.get_objective(coeff_hat - self.sigma * coeff_true,  solm.detach(), params).to(device)
 
         if self.ptoSolver.modelSense == GRB.MAXIMIZE:
             loss = (objm - obj) / self.sigma

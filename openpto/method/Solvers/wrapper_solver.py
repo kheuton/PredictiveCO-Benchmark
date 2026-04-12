@@ -18,6 +18,9 @@ from openpto.method.Solvers.ortools.ortools_ad import AdOrToolSolver
 ################################# Wrappers ################################################
 def solver_wrapper(args, conf, problem):
     prob_solver_dict = {
+        "asurv":       {"heuristic": TopKSolver},
+        "cook_county": {"heuristic": TopKSolver},
+        "speed_humps": {"heuristic": TopKSolver},
         "budgetalloc": {"neural": budgetallocSolver},
         "bipartitematching": {"cvxpy": BmatchingSolver},
         "portfolio": {"cvxpy": CpPortfolioSolver},

@@ -28,6 +28,9 @@ def get_args():
             "advertising",
             "shortestpath",
             "TSP",
+            "asurv",
+            "cook_county",
+            "speed_humps",
         ],
         default="knapsack",
     )
@@ -62,6 +65,7 @@ def get_args():
             "perturb",
             "cpLayer",
             "pg",
+            "dad",
         ],
         default="mse",
     )

@@ -94,6 +94,10 @@ def get_loss_fn(args, ptoSolver, conf):
         from openpto.method.Models.PG import perturbationGradient
 
         ModelCalss = perturbationGradient
+    elif name == "dad":
+        from openpto.method.Models.DAD import DecisionAwareDenoising
+
+        ModelCalss = DecisionAwareDenoising
     else:
         raise LookupError()
     loss_dict = {

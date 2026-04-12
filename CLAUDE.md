@@ -29,8 +29,8 @@ python rethink_exp/main_results.py \
 ```
 
 **Key arguments** (see `openpto/config/utils_conf.py` for full list):
-- `--problem`: `knapsack`, `portfolio`, `budgetalloc`, `energy`, `cubic`, `bipartitematching`, `advertising`, `shortestpath`, `TSP`
-- `--opt_model`: `mse`, `dfl`, `blackbox`, `identity`, `spo`, `nce`, `qptl`, `pointLTR`, `pairLTR`, `listLTR`, `lodl`, `perturb`, `cpLayer`, `pg`
+- `--problem`: `knapsack`, `portfolio`, `budgetalloc`, `energy`, `cubic`, `bipartitematching`, `advertising`, `shortestpath`, `TSP`, `asurv`, `cook_county`, `speed_humps`
+- `--opt_model`: `mse`, `dfl`, `blackbox`, `identity`, `spo`, `nce`, `qptl`, `pointLTR`, `pairLTR`, `listLTR`, `lodl`, `perturb`, `cpLayer`, `pg`, `dad`
 - `--solver`: `gurobi`, `cvxpy`, `heuristic`, `neural`, `ortools`, `qptl`
 - `--method_path`: path to model config YAML (default `openpto/config/models/default.yaml`)
 - `--config_path`: path to problem config YAML (auto-detected from `--problem` if empty)
@@ -58,8 +58,11 @@ Instance counts — **must not deviate**:
 | cubic | **250** | **400** | non-default, must be explicit |
 | bipartitematching | **20** | **6** | non-default, must be explicit |
 | portfolio | 400 (default) | 200 (default) | |
+| asurv | (don't pass) | (don't pass) | real dataset; 1338 locs, T=15/6/6 |
+| cook_county | (don't pass) | (don't pass) | real dataset; 1328 tracts, T=4/1/2 |
+| speed_humps | (don't pass) | (don't pass) | real dataset; 2107 tracts, T=5/2/4 |
 
-Knapsack-real and energy silently ignore `--instances`/`--testinstances` (they load fixed real-world splits). Do not pass those flags for them.
+Knapsack-real, energy, asurv, cook_county, and speed_humps load fixed real-world splits. Do not pass `--instances`/`--testinstances` for them.
 
 **Solvers for comparability:**
 - knapsack: `heuristic` (DP) — 100× faster than Gurobi, validated equivalent accuracy
@@ -67,8 +70,10 @@ Knapsack-real and energy silently ignore `--instances`/`--testinstances` (they l
 - budgetalloc: `neural`
 - cubic, bipartitematching: `heuristic` / `cvxpy`
 - portfolio: `cvxpy`
+- asurv, cook_county, speed_humps: `heuristic` (TopK)
 - qptl, cpLayer: only valid for knapsack / bipartitematching / portfolio
-- pg: not valid for budgetalloc (coeff and sol have incompatible shapes due to nonlinear submodular objective)
+- pg: valid for all problems except budgetalloc (shape incompatibility with submodular objective)
+- dad: valid for all 10 problems (including speed_humps, asurv, cook_county)
 
 ## Hyperparameter Tuning Principle
 
@@ -77,7 +82,7 @@ The original benchmark only tuned learning rate. Our re-run sweeps **both LR and
 **Phase 1 (LR × Batch):** 3 LRs × 2 batch configs per method × task — establishes best training setup.
 **Phase 2 (method HP):** sweeps the key HP for each method using Phase 1's best (LR, batch).
 
-Method-specific HPs swept in Phase 2: dflalpha (dfl), lambd (blackbox), tau (qptl, listLTR), num_samples (lodl), sigma+n_samples (perturb), sigma (pg).
+Method-specific HPs swept in Phase 2: dflalpha (dfl), lambd (blackbox), tau (qptl, listLTR), num_samples (lodl), sigma+n_samples (perturb), sigma (pg), stein_weight (dad).
 
 Always prefer results from the Phase 1/2 sweep over ad-hoc runs when reporting numbers.
 
@@ -92,7 +97,7 @@ python -m pytest tests/test_perturbed_softdecision.py -v
 The canonical benchmark comparison lives in the Phase 1/2 sweep infrastructure:
 
 ```bash
-# Submit Phase 1 (540 jobs: 14 methods × tasks × 3 LR × 2 batch; pg excluded from budgetalloc)
+# Submit Phase 1 (546 jobs: 14 methods × tasks × 3 LR × 2 batch; qptl/cpLayer limited to 3 problems)
 bash shells/slurm/submit_bench_p1.sh --dry-run          # preview
 bash shells/slurm/submit_bench_p1.sh                    # submit all
 bash shells/slurm/submit_bench_p1.sh --problem knapsack # filter by problem
@@ -155,11 +160,13 @@ Selected by `solver_wrapper()` in `wrapper_solver.py`. Grouped by backend:
 ### 3. Loss Functions / PnO Models (`openpto/method/Models/`)
 All extend `optModel` (abstract base in `abcOptModel.py`), implementing `forward(problem, coeff_hat, coeff_true, params)` → `loss`. Registered in `wrapper_loss.py`:
 - PtO: `MSE`, `BCE`, `CE`, `MAE`, `DFL`
-- PnO: `SPO`, `QPTL`, `Blackbox`, `NCE`, `LTR` variants, `LODL`, `perturbed`, `cpLayer`, `perturbationGradient` (pg)
+- PnO: `SPO`, `QPTL`, `Blackbox`, `NCE`, `LTR` variants, `LODL`, `perturbed`, `cpLayer`, `perturbationGradient` (pg), `DecisionAwareDenoising` (dad)
 
 **`perturbed`** (in `perturbed.py`) implements the **correct Berthet et al. DPO** (soft-decision formulation). The legacy `perturbed_reinforce` class uses REINFORCE on scalar objectives (kept for reproducibility). The `perturbed` model supports a `SigmaScheduler` with schedules: `constant`, `linear_decay`, `cosine_decay`, `step_decay`. `ExpManager` calls `loss_fn.step(epoch)` each epoch if that method exists.
 
-**`perturbationGradient`** (in `PG.py`, `--opt_model pg`) implements the PG method (arxiv 2402.03256). Deterministic finite-difference surrogate: solves at `c_hat` and `c_hat - σ·c_true`, gradient flows through the differentiable linear objective `c_hat · sol`. No sampling noise unlike DPO. HP: `sigma` (finite difference width, default 0.1). **Not valid for budgetalloc** — incompatible shapes because budgetalloc's coeff is `[bs, n_items, n_targets]` while sol is `[bs, n_items]`; contrast with SPO+ which avoids this via a custom autograd Function and `problem.get_objective()`.
+**`perturbationGradient`** (in `PG.py`, `--opt_model pg`) implements the PG method (arxiv 2402.03256). Deterministic finite-difference surrogate: solves at `c_hat` and `c_hat - σ·c_true`, gradient flows through `problem.get_objective(coeff_hat, sol.detach())` — solutions are constants, autograd differentiates through the objective w.r.t. `coeff_hat`. No sampling noise unlike DPO. HP: `sigma` (finite difference width, default 0.1). Works for all problems including budgetalloc (heuristic extension — not mathematically principled for nonlinear objectives, but practically motivated).
+
+**`DecisionAwareDenoising`** (in `DAD.py`, `--opt_model dad`) implements Decision-Aware Denoising (Gupta, Huang, Rusmevichientong 2024). Minimizes `−J_stein = −(in_sample_obj − stein_weight·stein_bias)` where `stein_bias` is estimated via MC perturbations with per-item variance-adaptive sigma: `σ_j = sqrt((ŷ_j−y_j)²+ε)`. Generalizes the paper's Stein formula (exact for TopK problems) to all CO problems via reparameterized MC: `δ_k = h·σ_j·ε_k`, `ε_k~N(0,I)`, `h=S^{-1/6}`. Structurally similar to `perturb` (DPO) but uses per-item residual sigma instead of fixed global sigma. HPs: `stein_weight` (Phase 2 sweep: {0.1,0.5,1.0,2.0,5.0}), `n_samples` (default 10), `sigma` (-1 = use residuals). Valid for all 10 problems.
 
 ### 4. Prediction Models (`openpto/method/Predicts/`)
 Neural nets mapping features X → predicted cost coefficients Ŷ. Selected via `--pred_model`: `dense`, `cvr`, `cv_mlp`, `ConvNet`, etc.

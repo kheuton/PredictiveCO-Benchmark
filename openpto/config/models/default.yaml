@@ -58,3 +58,8 @@ cpLayer:
 pg:
   reduction: mean
   sigma: 0.1
+dad:
+  reduction: mean
+  stein_weight: 1.0
+  n_samples: 10
+  sigma: -1.0

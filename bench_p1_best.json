@@ -48,6 +48,20 @@
       "val": 0.220562,
       "n_done": 6,
       "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.688867,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.188003,
+      "n_done": 6,
+      "n_total": 6
     }
   },
   "dfl": {
@@ -97,6 +111,20 @@
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.270848,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.72664,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.19605,
       "n_done": 6,
       "n_total": 6
     }
@@ -150,6 +178,20 @@
       "val": 0.268543,
       "n_done": 6,
       "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.72664,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.19605,
+      "n_done": 6,
+      "n_total": 6
     }
   },
   "spo": {
@@ -199,6 +241,20 @@
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.224547,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.675944,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.193124,
       "n_done": 6,
       "n_total": 6
     }
@@ -252,6 +308,20 @@
       "val": 0.284356,
       "n_done": 5,
       "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.645129,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.215801,
+      "n_done": 6,
+      "n_total": 6
     }
   },
   "blackbox": {
@@ -301,6 +371,20 @@
       "lr": "5e-3",
       "batch": "default",
       "val": 0.268195,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.72664,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.19605,
       "n_done": 6,
       "n_total": 6
     }
@@ -354,6 +438,20 @@
       "val": 0.229687,
       "n_done": 4,
       "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.691849,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.198244,
+      "n_done": 6,
+      "n_total": 6
     }
   },
   "pairLTR": {
@@ -404,6 +502,20 @@
       "batch": "alt",
       "val": 0.246917,
       "n_done": 4,
+      "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.717694,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.189466,
+      "n_done": 6,
       "n_total": 6
     }
   },
@@ -456,6 +568,20 @@
       "val": 0.238361,
       "n_done": 5,
       "n_total": 6
+    },
+    "asurv": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.703777,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.195318,
+      "n_done": 6,
+      "n_total": 6
     }
   },
   "lodl": {
@@ -505,6 +631,20 @@
       "lr": "1e-3",
       "batch": "default",
       "val": 0.240552,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.719682,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.181419,
       "n_done": 6,
       "n_total": 6
     }
@@ -558,6 +698,20 @@
       "val": 0.323445,
       "n_done": 6,
       "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.697813,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.481346,
+      "n_done": 6,
+      "n_total": 6
     }
   },
   "pg": {
@@ -573,6 +727,13 @@
       "batch": "alt",
       "val": 0.086801,
       "n_done": 6,
+      "n_total": 6
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.019291,
+      "n_done": 5,
       "n_total": 6
     },
     "cubic": {
@@ -593,6 +754,20 @@
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.338874,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.684891,
+      "n_done": 6,
+      "n_total": 6
+    },
+    "cook_county": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.197513,
       "n_done": 6,
       "n_total": 6
     }

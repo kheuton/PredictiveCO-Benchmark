@@ -63,7 +63,7 @@ fi
 # Problem configuration (same as Phase 1)
 # ====================================================================
 
-PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio)
+PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps)
 
 declare -A PROB_ARG
 PROB_ARG[knapsack]=knapsack
@@ -73,6 +73,9 @@ PROB_ARG[budgetalloc]=budgetalloc
 PROB_ARG[cubic]=cubic
 PROB_ARG[bipartitematching]=bipartitematching
 PROB_ARG[portfolio]=portfolio
+PROB_ARG[asurv]=asurv
+PROB_ARG[cook_county]=cook_county
+PROB_ARG[speed_humps]=speed_humps
 
 declare -A PROB_VERSION
 PROB_VERSION[knapsack]=gen
@@ -82,6 +85,9 @@ PROB_VERSION[budgetalloc]=real
 PROB_VERSION[cubic]=gen
 PROB_VERSION[bipartitematching]=cora
 PROB_VERSION[portfolio]=real
+PROB_VERSION[asurv]=real
+PROB_VERSION[cook_county]=real
+PROB_VERSION[speed_humps]=real
 
 declare -A PROB_CONFIG
 PROB_CONFIG[knapsack]=openpto/config/probs/knapsack_small.yaml
@@ -91,6 +97,9 @@ PROB_CONFIG[budgetalloc]=""
 PROB_CONFIG[cubic]=""
 PROB_CONFIG[bipartitematching]=""
 PROB_CONFIG[portfolio]=""
+PROB_CONFIG[asurv]=openpto/config/probs/asurv.yaml
+PROB_CONFIG[cook_county]=openpto/config/probs/cook_county.yaml
+PROB_CONFIG[speed_humps]=openpto/config/probs/speed_humps.yaml
 
 declare -A INSTANCES
 INSTANCES[knapsack]=400
@@ -100,6 +109,9 @@ INSTANCES[budgetalloc]=400
 INSTANCES[cubic]=250
 INSTANCES[bipartitematching]=20
 INSTANCES[portfolio]=400
+INSTANCES[asurv]=400             # silently ignored; dataset is fixed
+INSTANCES[cook_county]=400       # silently ignored; dataset is fixed
+INSTANCES[speed_humps]=400       # silently ignored; dataset is fixed
 
 declare -A TESTINSTANCES
 TESTINSTANCES[knapsack]=200
@@ -109,6 +121,9 @@ TESTINSTANCES[budgetalloc]=200
 TESTINSTANCES[cubic]=400
 TESTINSTANCES[bipartitematching]=6
 TESTINSTANCES[portfolio]=200
+TESTINSTANCES[asurv]=200         # silently ignored
+TESTINSTANCES[cook_county]=200   # silently ignored
+TESTINSTANCES[speed_humps]=200   # silently ignored
 
 declare -A SOLVER_PTO
 SOLVER_PTO[knapsack]=heuristic
@@ -118,6 +133,9 @@ SOLVER_PTO[budgetalloc]=neural
 SOLVER_PTO[cubic]=heuristic
 SOLVER_PTO[bipartitematching]=cvxpy
 SOLVER_PTO[portfolio]=cvxpy
+SOLVER_PTO[asurv]=heuristic
+SOLVER_PTO[cook_county]=heuristic
+SOLVER_PTO[speed_humps]=heuristic
 
 declare -A SOLVER_PNO
 SOLVER_PNO[knapsack]=heuristic
@@ -127,6 +145,9 @@ SOLVER_PNO[budgetalloc]=neural
 SOLVER_PNO[cubic]=heuristic
 SOLVER_PNO[bipartitematching]=cvxpy
 SOLVER_PNO[portfolio]=cvxpy
+SOLVER_PNO[asurv]=heuristic
+SOLVER_PNO[cook_county]=heuristic
+SOLVER_PNO[speed_humps]=heuristic
 
 declare -A SOLVER_CVXPY
 SOLVER_CVXPY[knapsack]=heuristic
@@ -487,10 +508,23 @@ fi
 # ---- pg: sigma ----
 if [[ -z "$METHOD_FILTER" || "$METHOD_FILTER" == "pg" ]]; then
     echo "--- pg: sigma sweep ---"
-    for prob in knapsack knapsack-real energy cubic bipartitematching portfolio; do
+    for prob in knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county; do
         for val in "${PG_SIGMA_VALS[@]}"; do
             yaml_path=$(ensure_yaml "$BASE_YAML" "pg" "sigma" "$val")
             submit_p2_job "$prob" "pg" "s${val//./p}" "$SCRIPT_DIR/$yaml_path" "pno"
+        done
+    done
+    echo ""
+fi
+
+# ---- dad: stein_weight ----
+DAD_STEIN_VALS=(0.1 0.5 1.0 2.0 5.0)
+if [[ -z "$METHOD_FILTER" || "$METHOD_FILTER" == "dad" ]]; then
+    echo "--- dad: stein_weight sweep ---"
+    for prob in "${PROBLEMS[@]}"; do
+        for val in "${DAD_STEIN_VALS[@]}"; do
+            yaml_path=$(ensure_yaml "$BASE_YAML" "dad" "stein_weight" "$val")
+            submit_p2_job "$prob" "dad" "sw${val//./p}" "$SCRIPT_DIR/$yaml_path" "pno"
         done
     done
     echo ""

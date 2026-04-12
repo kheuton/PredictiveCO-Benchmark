@@ -38,6 +38,9 @@ PROB_ARG = {
     "cubic":              "cubic",
     "bipartitematching":  "bipartitematching",
     "portfolio":          "portfolio",
+    "asurv":              "asurv",
+    "cook_county":        "cook_county",
+    "speed_humps":        "speed_humps",
 }
 
 PROB_VERSION = {
@@ -48,6 +51,9 @@ PROB_VERSION = {
     "cubic":              "gen",
     "bipartitematching":  "cora",
     "portfolio":          "real",
+    "asurv":              "real",
+    "cook_county":        "real",
+    "speed_humps":        "real",
 }
 
 

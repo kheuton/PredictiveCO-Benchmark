@@ -27,7 +27,8 @@ import numpy as np
 # ---- Configuration ----
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
-            "cubic", "bipartitematching", "portfolio"]
+            "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
+            "speed_humps"]
 
 PROB_ARG = {
     "knapsack":           "knapsack",
@@ -37,6 +38,9 @@ PROB_ARG = {
     "cubic":              "cubic",
     "bipartitematching":  "bipartitematching",
     "portfolio":          "portfolio",
+    "asurv":              "asurv",
+    "cook_county":        "cook_county",
+    "speed_humps":        "speed_humps",
 }
 
 PROB_VERSION = {
@@ -47,22 +51,25 @@ PROB_VERSION = {
     "cubic":              "gen",
     "bipartitematching":  "cora",
     "portfolio":          "real",
+    "asurv":              "real",
+    "cook_county":        "real",
+    "speed_humps":        "real",
 }
 
 # Methods with HP sweeps in Phase 2
-P2_METHODS = ["dfl", "blackbox", "qptl", "listLTR", "lodl", "perturb", "pg"]
+P2_METHODS = ["dfl", "blackbox", "qptl", "listLTR", "lodl", "perturb", "pg", "dad"]
 
 # Methods valid for only a subset of problems
 METHOD_PROBLEMS = {
     "qptl":    {"knapsack", "bipartitematching", "portfolio"},
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
-    "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching", "portfolio"},
+    "pg":      None,  # all problems (including asurv, cook_county)
 }
 
 # All methods (for final table)
 ALL_METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
                "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
-               "qptl", "cpLayer"]
+               "qptl", "cpLayer", "dad"]
 
 # HP sweep definitions per method (must match submit_bench_p2.sh)
 HP_SWEEPS = {
@@ -92,6 +99,11 @@ HP_SWEEPS = {
         "hp": "n_samples",
         "vals": ["5", "10", "25", "50", "100"],
         "tag_fn": lambda v: f"s1p0_n{v}",
+    },
+    "dad": {
+        "hp": "stein_weight",
+        "vals": ["0.1", "0.5", "1.0", "2.0", "5.0"],
+        "tag_fn": lambda v: f"sw{v.replace('.', 'p')}",
     },
 }
 

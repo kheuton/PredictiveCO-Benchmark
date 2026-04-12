@@ -25,7 +25,8 @@ import numpy as np
 # ---- Configuration (mirrors submit_bench_p1.sh) ----
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
-            "cubic", "bipartitematching", "portfolio"]
+            "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
+            "speed_humps"]
 
 PROB_ARG = {
     "knapsack":           "knapsack",
@@ -35,6 +36,9 @@ PROB_ARG = {
     "cubic":              "cubic",
     "bipartitematching":  "bipartitematching",
     "portfolio":          "portfolio",
+    "asurv":              "asurv",
+    "cook_county":        "cook_county",
+    "speed_humps":        "speed_humps",
 }
 
 PROB_VERSION = {
@@ -45,17 +49,20 @@ PROB_VERSION = {
     "cubic":              "gen",
     "bipartitematching":  "cora",
     "portfolio":          "real",
+    "asurv":              "real",
+    "cook_county":        "real",
+    "speed_humps":        "real",
 }
 
 METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
            "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
-           "qptl", "cpLayer"]
+           "qptl", "cpLayer", "dad"]
 
 # Methods only valid for subset of problems
 METHOD_PROBLEMS = {
     "qptl":    {"knapsack", "bipartitematching", "portfolio"},
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
-    "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching", "portfolio"},
+    "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching", "portfolio", "asurv", "cook_county"},
 }
 
 LRS = ["1e-2", "5e-3", "1e-3"]

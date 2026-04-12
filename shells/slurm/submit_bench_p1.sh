@@ -51,7 +51,7 @@ mkdir -p "$SCRIPT_DIR/logs/slurm"
 # Problem configuration
 # ====================================================================
 
-PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio)
+PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps)
 
 declare -A PROB_ARG
 PROB_ARG[knapsack]=knapsack
@@ -61,6 +61,9 @@ PROB_ARG[budgetalloc]=budgetalloc
 PROB_ARG[cubic]=cubic
 PROB_ARG[bipartitematching]=bipartitematching
 PROB_ARG[portfolio]=portfolio
+PROB_ARG[asurv]=asurv
+PROB_ARG[cook_county]=cook_county
+PROB_ARG[speed_humps]=speed_humps
 
 declare -A PROB_VERSION
 PROB_VERSION[knapsack]=gen
@@ -70,6 +73,9 @@ PROB_VERSION[budgetalloc]=real
 PROB_VERSION[cubic]=gen
 PROB_VERSION[bipartitematching]=cora
 PROB_VERSION[portfolio]=real
+PROB_VERSION[asurv]=real
+PROB_VERSION[cook_county]=real
+PROB_VERSION[speed_humps]=real
 
 declare -A PROB_CONFIG
 PROB_CONFIG[knapsack]=openpto/config/probs/knapsack_small.yaml
@@ -79,6 +85,9 @@ PROB_CONFIG[budgetalloc]=""
 PROB_CONFIG[cubic]=""
 PROB_CONFIG[bipartitematching]=""
 PROB_CONFIG[portfolio]=""
+PROB_CONFIG[asurv]=openpto/config/probs/asurv.yaml
+PROB_CONFIG[cook_county]=openpto/config/probs/cook_county.yaml
+PROB_CONFIG[speed_humps]=openpto/config/probs/speed_humps.yaml
 
 declare -A INSTANCES
 INSTANCES[knapsack]=400
@@ -88,6 +97,9 @@ INSTANCES[budgetalloc]=400
 INSTANCES[cubic]=250
 INSTANCES[bipartitematching]=20
 INSTANCES[portfolio]=400
+INSTANCES[asurv]=400             # silently ignored; dataset is fixed
+INSTANCES[cook_county]=400       # silently ignored; dataset is fixed
+INSTANCES[speed_humps]=400       # silently ignored; dataset is fixed
 
 declare -A TESTINSTANCES
 TESTINSTANCES[knapsack]=200
@@ -97,6 +109,9 @@ TESTINSTANCES[budgetalloc]=200
 TESTINSTANCES[cubic]=400
 TESTINSTANCES[bipartitematching]=6
 TESTINSTANCES[portfolio]=200
+TESTINSTANCES[asurv]=200         # silently ignored
+TESTINSTANCES[cook_county]=200   # silently ignored
+TESTINSTANCES[speed_humps]=200   # silently ignored
 
 # ---- Per-problem solvers per method group ----
 # PtO methods use fast solvers; PnO methods use the same (but gurobi for energy)
@@ -108,6 +123,9 @@ SOLVER_PTO[budgetalloc]=neural
 SOLVER_PTO[cubic]=heuristic
 SOLVER_PTO[bipartitematching]=cvxpy
 SOLVER_PTO[portfolio]=cvxpy
+SOLVER_PTO[asurv]=heuristic
+SOLVER_PTO[cook_county]=heuristic
+SOLVER_PTO[speed_humps]=heuristic
 
 declare -A SOLVER_PNO   # SPO, NCE, LTR, Blackbox, LODL, perturb
 SOLVER_PNO[knapsack]=heuristic
@@ -117,6 +135,9 @@ SOLVER_PNO[budgetalloc]=neural
 SOLVER_PNO[cubic]=heuristic
 SOLVER_PNO[bipartitematching]=cvxpy
 SOLVER_PNO[portfolio]=cvxpy
+SOLVER_PNO[asurv]=heuristic
+SOLVER_PNO[cook_county]=heuristic
+SOLVER_PNO[speed_humps]=heuristic
 
 declare -A SOLVER_CVXPY  # QPTL, cpLayer — only valid for 3 tasks
 SOLVER_CVXPY[knapsack]=heuristic    # qptl uses heuristic solver for knapsack
@@ -182,9 +203,10 @@ METHOD_PROBLEMS[pairLTR]="all"
 METHOD_PROBLEMS[listLTR]="all"
 METHOD_PROBLEMS[lodl]="all"
 METHOD_PROBLEMS[perturb]="all"
-METHOD_PROBLEMS[pg]="knapsack knapsack-real energy cubic bipartitematching portfolio"
+METHOD_PROBLEMS[pg]="knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county"
 METHOD_PROBLEMS[qptl]="knapsack bipartitematching portfolio"
 METHOD_PROBLEMS[cpLayer]="knapsack bipartitematching portfolio"
+METHOD_PROBLEMS[dad]="all"
 
 declare -A METHOD_SOLVER_GROUP
 METHOD_SOLVER_GROUP[mse]=pto
@@ -201,6 +223,7 @@ METHOD_SOLVER_GROUP[perturb]=pno
 METHOD_SOLVER_GROUP[pg]=pno
 METHOD_SOLVER_GROUP[qptl]=pno
 METHOD_SOLVER_GROUP[cpLayer]=pno
+METHOD_SOLVER_GROUP[dad]=pno
 
 # Default batch config (benchmark default per method group)
 declare -A METHOD_DEFAULT_OPT
@@ -218,6 +241,7 @@ METHOD_DEFAULT_OPT[perturb]=gd
 METHOD_DEFAULT_OPT[pg]=gd
 METHOD_DEFAULT_OPT[qptl]=gd
 METHOD_DEFAULT_OPT[cpLayer]=gd
+METHOD_DEFAULT_OPT[dad]=gd
 
 declare -A METHOD_DEFAULT_BS     # only used when opt=sgd
 METHOD_DEFAULT_BS[spo]=1
@@ -245,6 +269,7 @@ METHOD_PATH[perturb]=openpto/config/models/perturb_s1_n10.yaml   # sigma=1.0, n=
 METHOD_PATH[pg]=openpto/config/models/default.yaml
 METHOD_PATH[qptl]=openpto/config/models/default.yaml
 METHOD_PATH[cpLayer]=openpto/config/models/default.yaml
+METHOD_PATH[dad]=openpto/config/models/default.yaml
 
 # Extra args per method (e.g. --skip_solver_eval for PtO on energy)
 # These are evaluated per (method, prob) at submit time
@@ -430,7 +455,7 @@ $cmd
 # Main sweep
 # ====================================================================
 
-METHODS=(mse dfl identity spo nce blackbox pointLTR pairLTR listLTR lodl perturb pg qptl cpLayer)
+METHODS=(mse dfl identity spo nce blackbox pointLTR pairLTR listLTR lodl perturb pg qptl cpLayer dad)
 BATCH_LABELS=(default alt)
 
 echo "=== Benchmark Phase 1 sweep ==="
