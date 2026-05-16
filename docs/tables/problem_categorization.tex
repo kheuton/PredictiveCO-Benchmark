@@ -1,0 +1,189 @@
+% =====================================================================
+% Table: Benchmark problems categorised by specification bin.
+%
+% Required packages in the host document:
+%   \usepackage{booktabs}
+%   \usepackage{array}
+%   \usepackage{makecell}
+%   \usepackage{adjustbox}
+%   \usepackage{rotating}        % for sidewaystable
+%
+% Usage:  \input{tables/problem_categorization.tex}
+% =====================================================================
+
+\begin{sidewaystable}[p]
+    \centering
+    \caption[Benchmark problems categorised]{%
+        The 13 benchmark problems categorised along the axes that matter
+        for the reviewer's feedback: true data-generating process (DGP),
+        hypothesis-class expressivity, combinatorial objective class,
+        whether the objective is linear in the predicted coefficients,
+        and the specification bin that classifies the
+        prediction--decision setting.  Rows 7--8 (\texttt{sp\_synth} and
+        \texttt{sp\_planted}) are a deliberately matched mis/well pair.
+        Row~5 (\texttt{budgetalloc}) is the only objective non-linear in
+        $c$, giving the largest observed DPO-vs-MSE gap.%
+    }
+    \label{tab:problem_categorization}
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{adjustbox}{max width=\linewidth}
+    \begin{tabular}{@{}cllllllccl@{}}
+        \toprule
+          & \textbf{Problem}
+          & \textbf{Data}
+          & \textbf{DGP ($c = f(x)$)}
+          & \textbf{Pred.\ model}
+          & \textbf{Obj.\ class}
+          & \textbf{$\partial_c$ lin.}
+          & \textbf{Tr / Val / Te}
+          & \textbf{Specification bin}
+          & \textbf{Expected DPO vs.\ MSE} \\
+        \midrule
+        1  & \texttt{knapsack}
+           & Synth.$^{a}$
+           & \makecell[l]{$c_i = 5[(Bx_i/\sqrt{p}+3)/3.5]^{7}(1+\eta_i)$,\\
+                         $\eta\!\sim\!\mathcal{U}(-0.5,\,0.5)$}
+           & Dense MLP
+           & 0/1 KP
+           & Yes
+           & 320 / 80 / 200
+           & Well-specified$^{b}$
+           & MSE tied / wins \\
+        2  & \texttt{knapsack-real}
+           & Real (UCI kp800)
+           & Unknown
+           & Dense MLP
+           & 0/1 KP
+           & Yes
+           & real splits
+           & Real / unknown
+           & Empirical \\
+        3  & \texttt{cubic}
+           & Synth.
+           & \makecell[l]{$c = 10(x^{3} - 0.65x)$,\\ $x\!\sim\!\mathcal{U}(-1,1)$, noise-free}
+           & Dense MLP
+           & Top-$k$
+           & Yes
+           & 200 / 50 / 400
+           & Well-specified (noise-free)
+           & MSE wins (zero noise) \\
+        4  & \texttt{bipartitematching}
+           & Cora features
+           & \makecell[l]{Semi-synth.\ edges;\\ BCE two-stage target}
+           & Dense MLP
+           & LP
+           & Yes
+           & 16 / 4 / 6 gr.
+           & Small-data, real feats.
+           & High variance \\
+        5  & \texttt{budgetalloc}
+           & Synth.
+           & Linear click-prob.\ $y_{ij}\!\in\![0,1]$
+           & Dense MLP
+           & \makecell[l]{Max $\sum_i w_i(1-\prod_j(1-z_j y_{ij}))$\\ (submodular)}
+           & \textbf{No}
+           & 320 / 80 / 200
+           & \textbf{Mis-spec.\ by obj.}$^{c}$
+           & \textbf{DPO wins ($\sim\!11\times$)} \\
+        6  & \texttt{portfolio}
+           & Synth.\ returns
+           & Linear factor model
+           & Dense MLP
+           & \makecell[l]{Markowitz QP:\\ $\max\langle c,z\rangle-\alpha z^\top\!\Sigma z$}
+           & Yes
+           & 320 / 80 / 200
+           & Well-specified
+           & MSE tied \\
+        7  & \texttt{sp\_synth}
+           & Synth.\ (SPO+ paper)
+           & \makecell[l]{$c=((Bx/\sqrt{p}+3)/3.5)^{6}(1+\eta)$\\ on $5\!\times\!5$ grid}
+           & Dense, 1 layer
+           & Shortest path
+           & Yes
+           & 320 / 80 / 10k
+           & \textbf{Mis-spec.\ by design}$^{d}$
+           & Gradient methods win \\
+        8  & \texttt{sp\_planted}
+           & Synth.\ (PG paper)
+           & Two-path planted, linear
+           & Dense, 1 layer
+           & Shortest path
+           & Yes
+           & 320 / 80 / 10k
+           & \textbf{Well-spec.\ by design}$^{d}$
+           & MSE tied \\
+        9  & \texttt{shortestpath}
+           & \makecell[l]{Real images\\ (Warcraft 12$\times$12)}
+           & Image $\to$ vertex weights
+           & ResNet18
+           & \makecell[l]{Shortest path\\ (Dijkstra, 8-grid)}
+           & Yes
+           & 8k / 2k / 1k
+           & Under-determined (rich mapping)
+           & Deep net + $n$ large $\to$ MSE ok \\
+        10 & \texttt{energy}
+           & Real (ICON prices)
+           & 48-period day-ahead prices
+           & Dense MLP
+           & Unit-commitment MILP
+           & Yes
+           & 550 / 100 / $\sim$150
+           & Real / unknown
+           & Empirical \\
+        11 & \texttt{asurv}
+           & Real (NYC)
+           & lat/long + temporal feats.
+           & Dense MLP
+           & Top-$k$ ($k{=}50$, $n{=}1338$)
+           & Yes
+           & 15 / 6 / 6 periods
+           & Real / unknown (temporal)
+           & Empirical \\
+        12 & \texttt{cook\_county}
+           & Real (Cook County)
+           & \makecell[l]{SVI + lagged deaths +\\ coords $\to$ tract deaths}
+           & Dense MLP
+           & Top-$k$ ($k{=}100$, $n{=}1328$)
+           & Yes
+           & 4 / 1 / 2 yr
+           & \makecell[l]{Real / unknown\\ (dist.\ shift)}
+           & Empirical \\
+        13 & \texttt{speed\_humps}
+           & Real (NYC)
+           & \makecell[l]{9 feats.\ $\to$ tract-level\\ ped.\ injury counts}
+           & Dense MLP
+           & Top-$k$ ($k{=}107$, $n{=}2107$)
+           & Yes
+           & 5 / 2 / 4 yr
+           & \makecell[l]{Real / unknown\\ (2020--23 test)}
+           & Empirical \\
+        \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+
+    \vspace{0.5em}
+    \begin{flushleft}
+    \scriptsize
+    $^{a}$~\texttt{Knapsack.py} uses $c_i = 5\cdot[(B x_i/\sqrt{p}+3)/3.5]^{\mathrm{poly\_deg}}(1+\eta_i)$ with
+    $\mathrm{poly\_deg}=7$, $p=5$, multiplicative uniform noise of width $0.5$, and a fixed
+    $\mathrm{Bernoulli}(0.5)$ projection $B$.\\[2pt]
+    $^{b}$~``Well-specified'' means the hypothesis class can represent the conditional mean.
+    Irreducible noise still floors regret; the observed oracle ceiling is $\approx 0.052$
+    (see \texttt{memory/oracle\_ceiling.md}).\\[2pt]
+    $^{c}$~\texttt{budgetalloc} is the clearest \emph{objective} mis-spec: $y$ itself is predictable,
+    but the CO objective $1 - \prod_j (1 - z_j y_{ij})$ is non-linear in $y$, so prediction errors
+    compound non-linearly in the decision. Per \citet{elmachtoub2025misspec} this is the regime where
+    decision-aware surrogates most clearly beat MSE; observed gap is $\sim 11\times$ in our Phase-2 sweep.\\[2pt]
+    $^{d}$~\texttt{sp\_synth}/\texttt{sp\_planted} form a deliberate well/mis contrast: same 5$\times$5
+    shortest-path problem, same \emph{linear} prediction head (\texttt{-{}-n\_layers 1}), but the true
+    $c(x)$ is polynomial of degree 6 (mis-spec) versus linear (well-spec).\\[2pt]
+    \textit{Columns.} \textbf{DGP}: the true $c=f(x)$ in data-generation code; ``Unknown'' for real data.
+    \textbf{$\partial_c$~lin.}: whether the CO objective is linear in the predicted coefficients.
+    \textbf{Specification bin}: our categorisation — \emph{well-specified}, \emph{mis-specified}
+    (by hypothesis class or by objective), \emph{small-data}, or \emph{real / unknown}.
+    \textbf{Expected}: hypothesis \emph{going in}, not the observed outcome; the chapter compares expected
+    versus observed.
+    \end{flushleft}
+\end{sidewaystable}

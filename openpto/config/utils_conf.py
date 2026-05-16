@@ -27,6 +27,8 @@ def get_args():
             "energy",
             "advertising",
             "shortestpath",
+            "sp_synth",
+            "sp_planted",
             "TSP",
             "asurv",
             "cook_county",
@@ -136,6 +138,10 @@ def get_args():
     parser.add_argument("--kernel_size", type=int, default=1)
     parser.add_argument("--warmstart_ckpt", type=str, default=None,
                         help="Path to a .pt checkpoint to warm-start the pred model before fine-tuning.")
+    parser.add_argument("--train_subsample_n", type=int, default=0,
+                        help="If > 0, keep only the first N training instances "
+                             "(slice on axis 0 of each tensor returned by problem.get_train_data()). "
+                             "For CookCounty this means keep N timesteps (years).")
     parser.add_argument("--grad_surgery", action="store_true",
                         help="Gradient surgery: remove MSE-misaligned component of PnO gradient "
                              "and inject surgery_weight * g_mse. Requires --opt_name sgd.")

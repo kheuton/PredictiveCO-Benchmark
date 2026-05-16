@@ -35,7 +35,7 @@ PARTITION="preempt"
 MEM="8G"
 CONDA_ENV="pco_bench_rhel7"
 SKIP_COMPLETED=true
-BEST_JSON="bench_p1_best.json"
+BEST_JSON="bench_p1_best_val.json"   # val-selected HPs (test-leakage fix, Apr 2026). Override with --best-json to use pre-fix bench_p1_best.json.
 MANIFEST_FILE="sweep_manifest_p2.json"
 
 while [[ $# -gt 0 ]]; do
@@ -63,7 +63,7 @@ fi
 # Problem configuration (same as Phase 1)
 # ====================================================================
 
-PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps)
+PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps sp_synth sp_planted shortestpath)
 
 declare -A PROB_ARG
 PROB_ARG[knapsack]=knapsack
@@ -76,6 +76,9 @@ PROB_ARG[portfolio]=portfolio
 PROB_ARG[asurv]=asurv
 PROB_ARG[cook_county]=cook_county
 PROB_ARG[speed_humps]=speed_humps
+PROB_ARG[sp_synth]=sp_synth
+PROB_ARG[sp_planted]=sp_planted
+PROB_ARG[shortestpath]=shortestpath
 
 declare -A PROB_VERSION
 PROB_VERSION[knapsack]=gen
@@ -88,6 +91,9 @@ PROB_VERSION[portfolio]=real
 PROB_VERSION[asurv]=real
 PROB_VERSION[cook_county]=real
 PROB_VERSION[speed_humps]=real
+PROB_VERSION[sp_synth]=synth
+PROB_VERSION[sp_planted]=planted
+PROB_VERSION[shortestpath]=warcraft
 
 declare -A PROB_CONFIG
 PROB_CONFIG[knapsack]=openpto/config/probs/knapsack_small.yaml
@@ -100,6 +106,9 @@ PROB_CONFIG[portfolio]=""
 PROB_CONFIG[asurv]=openpto/config/probs/asurv.yaml
 PROB_CONFIG[cook_county]=openpto/config/probs/cook_county.yaml
 PROB_CONFIG[speed_humps]=openpto/config/probs/speed_humps.yaml
+PROB_CONFIG[sp_synth]=openpto/config/probs/sp_synth.yaml
+PROB_CONFIG[sp_planted]=openpto/config/probs/sp_planted.yaml
+PROB_CONFIG[shortestpath]=openpto/config/probs/shortestpath.yaml
 
 declare -A INSTANCES
 INSTANCES[knapsack]=400
@@ -112,6 +121,9 @@ INSTANCES[portfolio]=400
 INSTANCES[asurv]=400             # silently ignored; dataset is fixed
 INSTANCES[cook_county]=400       # silently ignored; dataset is fixed
 INSTANCES[speed_humps]=400       # silently ignored; dataset is fixed
+INSTANCES[sp_synth]=400
+INSTANCES[sp_planted]=400
+INSTANCES[shortestpath]=10000    # warcraft: 10K train images
 
 declare -A TESTINSTANCES
 TESTINSTANCES[knapsack]=200
@@ -124,6 +136,9 @@ TESTINSTANCES[portfolio]=200
 TESTINSTANCES[asurv]=200         # silently ignored
 TESTINSTANCES[cook_county]=200   # silently ignored
 TESTINSTANCES[speed_humps]=200   # silently ignored
+TESTINSTANCES[sp_synth]=10000
+TESTINSTANCES[sp_planted]=10000
+TESTINSTANCES[shortestpath]=1000
 
 declare -A SOLVER_PTO
 SOLVER_PTO[knapsack]=heuristic
@@ -136,6 +151,9 @@ SOLVER_PTO[portfolio]=cvxpy
 SOLVER_PTO[asurv]=heuristic
 SOLVER_PTO[cook_county]=heuristic
 SOLVER_PTO[speed_humps]=heuristic
+SOLVER_PTO[sp_synth]=heuristic
+SOLVER_PTO[sp_planted]=heuristic
+SOLVER_PTO[shortestpath]=heuristic
 
 declare -A SOLVER_PNO
 SOLVER_PNO[knapsack]=heuristic
@@ -148,6 +166,9 @@ SOLVER_PNO[portfolio]=cvxpy
 SOLVER_PNO[asurv]=heuristic
 SOLVER_PNO[cook_county]=heuristic
 SOLVER_PNO[speed_humps]=heuristic
+SOLVER_PNO[sp_synth]=heuristic
+SOLVER_PNO[sp_planted]=heuristic
+SOLVER_PNO[shortestpath]=heuristic
 
 declare -A SOLVER_CVXPY
 SOLVER_CVXPY[knapsack]=heuristic
@@ -159,22 +180,34 @@ get_walltime() {
     case "$group" in
         pto)
             case "$prob" in
-                energy) echo "3:00:00" ;;
-                *)       echo "1:30:00" ;;
+                energy)             echo "10:00:00" ;;
+                budgetalloc)        echo "5:00:00" ;;
+                bipartitematching)  echo "5:00:00" ;;
+                shortestpath)       echo "4:00:00" ;;   # GPU, ResNet18
+                *)                  echo "1:30:00" ;;
             esac ;;
         pno)
             case "$prob" in
-                energy)        echo "26:00:00" ;;
-                budgetalloc)   echo "4:00:00" ;;
-                *)             echo "2:00:00" ;;
+                energy)             echo "26:00:00" ;;
+                budgetalloc)        echo "20:00:00" ;;   # high n_samples/stein_weight sweeps need many hours
+                bipartitematching)  echo "5:00:00" ;;
+                shortestpath)       echo "8:00:00" ;;   # GPU, ResNet18
+                *)                  echo "2:00:00" ;;
             esac ;;
         lodl)
             case "$prob" in
-                energy)        echo "26:00:00" ;;
-                *)             echo "4:00:00" ;;
+                energy)             echo "26:00:00" ;;
+                shortestpath)       echo "8:00:00" ;;   # GPU, ResNet18
+                *)                  echo "4:00:00" ;;
             esac ;;
     esac
 }
+
+# Per-problem prediction model overrides
+declare -A PRED_MODEL_ARGS
+PRED_MODEL_ARGS[sp_synth]="--pred_model dense --n_layers 1"
+PRED_MODEL_ARGS[sp_planted]="--pred_model dense --n_layers 1"
+PRED_MODEL_ARGS[shortestpath]="--pred_model Resnet18"
 
 # ====================================================================
 # Method-specific HP definitions
@@ -243,10 +276,19 @@ print(cfg.get('batch', 'default'))
 
 prob_out_dir() { echo "${PROB_ARG[$1]}-${PROB_VERSION[$1]}"; }
 
+# Cache active SLURM jobs once (full untruncated names, --format="%j").
+_SLURM_ACTIVE_JOBS=$(squeue --user="$USER" --format="%j" --noheader 2>/dev/null || true)
+
 is_completed() {
     local prob="$1" method="$2" prefix="$3"
     local out="$SCRIPT_DIR/saved_records/$(prob_out_dir $prob)/${method}/${prefix}/results.npy"
     [[ -f "$out" ]]
+}
+
+is_running() {
+    # Returns true if a job with this exact name is already active in SLURM.
+    local job_name="$1"
+    echo "$_SLURM_ACTIVE_JOBS" | grep -qxF "$job_name"
 }
 
 has_checkpoint() {
@@ -315,6 +357,17 @@ submit_p2_job() {
         extra_args="$extra_args --skip_solver_eval"
     fi
 
+    # Per-problem prediction model override
+    local pred_model_args="${PRED_MODEL_ARGS[$prob]:-}"
+
+    # GPU flag for problems that need it
+    local gpu_flag=""
+    local gpu_arg=""
+    if [[ "$prob" == "shortestpath" ]]; then
+        gpu_flag="--gres=gpu:1"
+        gpu_arg="--gpu 0"
+    fi
+
     local prob_arg="${PROB_ARG[$prob]}"
     local prob_cfg="${PROB_CONFIG[$prob]}"
     local cfg_flag=""
@@ -325,14 +378,27 @@ submit_p2_job() {
     local walltime
     walltime=$(get_walltime "$prob" "$solver_group")
 
+    # LTR on shortestpath runs bs=1 → 10K steps/epoch; 8h walltime was hitting TIMEOUT.
+    if [[ "$prob" == "shortestpath" && ( "$method" == "pointLTR" || "$method" == "pairLTR" || "$method" == "listLTR" ) ]]; then
+        walltime="20:00:00"
+    fi
+
     # Prefix encodes the hp value
     local prefix="bench_p2_${method}_${hp_tag}_${batch_label}_lr${lr}"
+    local job_name="bp2_${prob}_${method}_${hp_tag}"
 
     add_manifest_entry "$prob" "$method" "$prefix"
 
     if $SKIP_COMPLETED && is_completed "$prob" "$method" "$prefix"; then
         (( n_skipped++ )) || true
         $DRY_RUN && echo "  [skip] ${prob} ${method} ${hp_tag}" || true
+        return
+    fi
+
+    # Skip if already active in SLURM (running or pending) — avoids duplicate submission.
+    if is_running "$job_name"; then
+        (( n_skipped++ )) || true
+        $DRY_RUN && echo "  [skip/active] ${job_name}" || true
         return
     fi
 
@@ -352,10 +418,17 @@ submit_p2_job() {
         --method_path ${method_path} \
         ${bs_flag} \
         ${cfg_flag} \
+        ${pred_model_args} \
+        ${gpu_arg} \
         ${extra_args}"
 
-    local job_name="bp2_${prob}_${method}_${hp_tag}"
     local log_file="$SCRIPT_DIR/logs/slurm/${job_name}_%j.out"
+
+    # Per-problem memory override (shortestpath: ResNet18 + 10K images needs more RAM)
+    local mem="$MEM"
+    [[ "$prob" == "shortestpath" ]] && mem="32G"
+    # LODL's 500-sample hessian + ResNet18 on 10K images blows past 32G (OOM killed at 33.5G)
+    [[ "$prob" == "shortestpath" && "$method" == "lodl" ]] && mem="64G"
 
     if $DRY_RUN; then
         echo "[DRY-RUN] ${job_name}  (lr=${lr}, batch=${batch_label}, time=${walltime})"
@@ -368,9 +441,10 @@ submit_p2_job() {
            --output="$log_file" \
            --partition="$PARTITION" \
            --cpus-per-task=2 \
-           --mem="$MEM" \
+           --mem="$mem" \
            --time="${walltime}" \
            --requeue \
+           ${gpu_flag} \
            --wrap="
 cd $SCRIPT_DIR
 source \$(conda info --base)/etc/profile.d/conda.sh
@@ -508,7 +582,7 @@ fi
 # ---- pg: sigma ----
 if [[ -z "$METHOD_FILTER" || "$METHOD_FILTER" == "pg" ]]; then
     echo "--- pg: sigma sweep ---"
-    for prob in knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county; do
+    for prob in knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps sp_synth sp_planted; do
         for val in "${PG_SIGMA_VALS[@]}"; do
             yaml_path=$(ensure_yaml "$BASE_YAML" "pg" "sigma" "$val")
             submit_p2_job "$prob" "pg" "s${val//./p}" "$SCRIPT_DIR/$yaml_path" "pno"

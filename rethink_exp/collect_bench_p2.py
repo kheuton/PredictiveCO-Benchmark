@@ -28,7 +28,7 @@ import numpy as np
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
             "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
-            "speed_humps"]
+            "speed_humps", "sp_synth", "sp_planted", "shortestpath"]
 
 PROB_ARG = {
     "knapsack":           "knapsack",
@@ -41,6 +41,9 @@ PROB_ARG = {
     "asurv":              "asurv",
     "cook_county":        "cook_county",
     "speed_humps":        "speed_humps",
+    "sp_synth":           "sp_synth",
+    "sp_planted":         "sp_planted",
+    "shortestpath":       "shortestpath",
 }
 
 PROB_VERSION = {
@@ -54,6 +57,9 @@ PROB_VERSION = {
     "asurv":              "real",
     "cook_county":        "real",
     "speed_humps":        "real",
+    "sp_synth":           "synth",
+    "sp_planted":         "planted",
+    "shortestpath":       "warcraft",
 }
 
 # Methods with HP sweeps in Phase 2
@@ -63,7 +69,9 @@ P2_METHODS = ["dfl", "blackbox", "qptl", "listLTR", "lodl", "perturb", "pg", "da
 METHOD_PROBLEMS = {
     "qptl":    {"knapsack", "bipartitematching", "portfolio"},
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
-    "pg":      None,  # all problems (including asurv, cook_county)
+    "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching",
+                "portfolio", "asurv", "cook_county", "speed_humps",
+                "sp_synth", "sp_planted"},
 }
 
 # All methods (for final table)

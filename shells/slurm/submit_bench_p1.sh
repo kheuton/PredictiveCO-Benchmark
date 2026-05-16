@@ -2,7 +2,8 @@
 # ====================================================================
 # Benchmark re-run — Phase 1: LR × Batch sweep
 # ====================================================================
-# Runs all 13 methods × 7 tasks × 3 LRs × 2 batch configs ≈ 498 jobs.
+# Runs all 15 methods × 13 tasks × 5 LRs × 2 batch configs.
+# LRs match the original NeurIPS 2024 benchmark sweep: 1e-3, 5e-3, 1e-2, 5e-2, 1e-1.
 # Each job uses --requeue so preempted jobs are automatically restarted;
 # the ExpManager checkpoint/resume support picks up where it left off.
 #
@@ -51,7 +52,7 @@ mkdir -p "$SCRIPT_DIR/logs/slurm"
 # Problem configuration
 # ====================================================================
 
-PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps)
+PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps sp_synth sp_planted shortestpath)
 
 declare -A PROB_ARG
 PROB_ARG[knapsack]=knapsack
@@ -64,6 +65,9 @@ PROB_ARG[portfolio]=portfolio
 PROB_ARG[asurv]=asurv
 PROB_ARG[cook_county]=cook_county
 PROB_ARG[speed_humps]=speed_humps
+PROB_ARG[sp_synth]=sp_synth
+PROB_ARG[sp_planted]=sp_planted
+PROB_ARG[shortestpath]=shortestpath
 
 declare -A PROB_VERSION
 PROB_VERSION[knapsack]=gen
@@ -76,6 +80,9 @@ PROB_VERSION[portfolio]=real
 PROB_VERSION[asurv]=real
 PROB_VERSION[cook_county]=real
 PROB_VERSION[speed_humps]=real
+PROB_VERSION[sp_synth]=synth
+PROB_VERSION[sp_planted]=planted
+PROB_VERSION[shortestpath]=warcraft
 
 declare -A PROB_CONFIG
 PROB_CONFIG[knapsack]=openpto/config/probs/knapsack_small.yaml
@@ -88,6 +95,9 @@ PROB_CONFIG[portfolio]=""
 PROB_CONFIG[asurv]=openpto/config/probs/asurv.yaml
 PROB_CONFIG[cook_county]=openpto/config/probs/cook_county.yaml
 PROB_CONFIG[speed_humps]=openpto/config/probs/speed_humps.yaml
+PROB_CONFIG[sp_synth]=openpto/config/probs/sp_synth.yaml
+PROB_CONFIG[sp_planted]=openpto/config/probs/sp_planted.yaml
+PROB_CONFIG[shortestpath]=openpto/config/probs/shortestpath.yaml
 
 declare -A INSTANCES
 INSTANCES[knapsack]=400
@@ -100,6 +110,9 @@ INSTANCES[portfolio]=400
 INSTANCES[asurv]=400             # silently ignored; dataset is fixed
 INSTANCES[cook_county]=400       # silently ignored; dataset is fixed
 INSTANCES[speed_humps]=400       # silently ignored; dataset is fixed
+INSTANCES[sp_synth]=400
+INSTANCES[sp_planted]=400
+INSTANCES[shortestpath]=10000    # warcraft: 10K train images
 
 declare -A TESTINSTANCES
 TESTINSTANCES[knapsack]=200
@@ -112,6 +125,9 @@ TESTINSTANCES[portfolio]=200
 TESTINSTANCES[asurv]=200         # silently ignored
 TESTINSTANCES[cook_county]=200   # silently ignored
 TESTINSTANCES[speed_humps]=200   # silently ignored
+TESTINSTANCES[sp_synth]=10000
+TESTINSTANCES[sp_planted]=10000
+TESTINSTANCES[shortestpath]=1000
 
 # ---- Per-problem solvers per method group ----
 # PtO methods use fast solvers; PnO methods use the same (but gurobi for energy)
@@ -126,6 +142,9 @@ SOLVER_PTO[portfolio]=cvxpy
 SOLVER_PTO[asurv]=heuristic
 SOLVER_PTO[cook_county]=heuristic
 SOLVER_PTO[speed_humps]=heuristic
+SOLVER_PTO[sp_synth]=heuristic
+SOLVER_PTO[sp_planted]=heuristic
+SOLVER_PTO[shortestpath]=heuristic
 
 declare -A SOLVER_PNO   # SPO, NCE, LTR, Blackbox, LODL, perturb
 SOLVER_PNO[knapsack]=heuristic
@@ -138,6 +157,9 @@ SOLVER_PNO[portfolio]=cvxpy
 SOLVER_PNO[asurv]=heuristic
 SOLVER_PNO[cook_county]=heuristic
 SOLVER_PNO[speed_humps]=heuristic
+SOLVER_PNO[sp_synth]=heuristic
+SOLVER_PNO[sp_planted]=heuristic
+SOLVER_PNO[shortestpath]=heuristic
 
 declare -A SOLVER_CVXPY  # QPTL, cpLayer — only valid for 3 tasks
 SOLVER_CVXPY[knapsack]=heuristic    # qptl uses heuristic solver for knapsack
@@ -155,19 +177,22 @@ get_walltime() {
     case "$group" in
         pto)
             case "$prob" in
-                energy) echo "3:00:00" ;;   # skip_solver_eval; setup ~35min
-                *)       echo "1:30:00" ;;
+                energy)        echo "3:00:00" ;;   # skip_solver_eval; setup ~35min
+                shortestpath)  echo "4:00:00" ;;   # GPU, ResNet18, 10K images
+                *)             echo "1:30:00" ;;
             esac ;;
         pno)
             case "$prob" in
                 energy)        echo "26:00:00" ;;  # Gurobi in training loop
                 budgetalloc)   echo "4:00:00" ;;   # neural solver
+                shortestpath)  echo "20:00:00" ;;  # GPU, ResNet18; LTR bs=1 is 10K steps/epoch
                 *)             echo "2:00:00" ;;
             esac ;;
         lodl)
             case "$prob" in
                 energy)        echo "26:00:00" ;;
                 budgetalloc)   echo "4:00:00" ;;
+                shortestpath)  echo "8:00:00" ;;   # GPU, ResNet18, 10K images
                 *)             echo "4:00:00" ;;   # slow surrogate training
             esac ;;
     esac
@@ -176,7 +201,7 @@ get_walltime() {
 # ====================================================================
 # Batch configs
 # ====================================================================
-LRS=(1e-2 5e-3 1e-3)
+LRS=(1e-2 5e-3 1e-3 5e-2 1e-1)
 
 # Batch configs: label → opt_name + batch_size flag
 # Groups: default (full-batch gd) and alt (bs=32 sgd)
@@ -203,7 +228,7 @@ METHOD_PROBLEMS[pairLTR]="all"
 METHOD_PROBLEMS[listLTR]="all"
 METHOD_PROBLEMS[lodl]="all"
 METHOD_PROBLEMS[perturb]="all"
-METHOD_PROBLEMS[pg]="knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county"
+METHOD_PROBLEMS[pg]="knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps sp_synth sp_planted"
 METHOD_PROBLEMS[qptl]="knapsack bipartitematching portfolio"
 METHOD_PROBLEMS[cpLayer]="knapsack bipartitematching portfolio"
 METHOD_PROBLEMS[dad]="all"
@@ -271,6 +296,12 @@ METHOD_PATH[qptl]=openpto/config/models/default.yaml
 METHOD_PATH[cpLayer]=openpto/config/models/default.yaml
 METHOD_PATH[dad]=openpto/config/models/default.yaml
 
+# Per-problem prediction model overrides (empty = use default dense 3-layer)
+declare -A PRED_MODEL_ARGS
+PRED_MODEL_ARGS[sp_synth]="--pred_model dense --n_layers 1"      # linear model (SPO+ paper)
+PRED_MODEL_ARGS[sp_planted]="--pred_model dense --n_layers 1"    # linear model (PG paper)
+PRED_MODEL_ARGS[shortestpath]="--pred_model Resnet18"             # ResNet18 (DPO paper)
+
 # Extra args per method (e.g. --skip_solver_eval for PtO on energy)
 # These are evaluated per (method, prob) at submit time
 
@@ -329,6 +360,12 @@ submit_job() {
         local found=false
         for p in $prob_list; do [[ "$p" == "$prob" ]] && found=true; done
         $found || return 0
+    fi
+
+    # Known-infeasible: perturb default-batch (full-batch gd, n_samples=10) on shortestpath
+    # consumes ~22.6 GB on a 23.5 GB GPU and reliably OOMs. Skip entirely.
+    if [[ "$prob" == "shortestpath" && "$method" == "perturb" && "$3" == "default" ]]; then
+        return 0
     fi
 
     # Determine opt_name and batch_size
@@ -398,6 +435,17 @@ submit_job() {
         extra_args="--skip_solver_eval"
     fi
 
+    # Per-problem prediction model override
+    local pred_model_args="${PRED_MODEL_ARGS[$prob]:-}"
+
+    # GPU flag for problems that need it (e.g. warcraft shortestpath with ResNet18)
+    local gpu_flag=""
+    local gpu_arg=""
+    if [[ "$prob" == "shortestpath" ]]; then
+        gpu_flag="--gres=gpu:1"
+        gpu_arg="--gpu 0"
+    fi
+
     # Walltime
     local walltime
     walltime=$(get_walltime "$prob" "$solver_group")
@@ -420,9 +468,17 @@ submit_job() {
         --method_path ${method_path} \
         ${bs_flag} \
         ${cfg_flag} \
+        ${pred_model_args} \
+        ${gpu_arg} \
         ${extra_args}"
 
     local log_file="$SCRIPT_DIR/logs/slurm/${job_name}_%j.out"
+
+    # Per-problem memory override (shortestpath: ResNet18 + 10K images needs more RAM)
+    local mem="$MEM"
+    [[ "$prob" == "shortestpath" ]] && mem="32G"
+    # LODL's 500-sample hessian + ResNet18 on 10K images blows past 32G (OOM killed at 33.5G)
+    [[ "$prob" == "shortestpath" && "$method" == "lodl" ]] && mem="64G"
 
     if $DRY_RUN; then
         local resume_tag=""
@@ -437,9 +493,10 @@ submit_job() {
            --output="$log_file" \
            --partition="$PARTITION" \
            --cpus-per-task=2 \
-           --mem="$MEM" \
+           --mem="$mem" \
            --time="${walltime}" \
            --requeue \
+           ${gpu_flag} \
            --wrap="
 cd $SCRIPT_DIR
 source \$(conda info --base)/etc/profile.d/conda.sh

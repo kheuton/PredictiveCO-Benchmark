@@ -6,6 +6,7 @@ from openpto.method.Solvers.grb.grb_energy import ICONGrbSolver
 from openpto.method.Solvers.grb.grb_knapsack import KPGrbSolver
 from openpto.method.Solvers.grb.grb_qpsolver import QPGrbSolver
 from openpto.method.Solvers.grb.grb_tsp import TSPGrbSolver
+from openpto.method.Solvers.heuristic.dagSPSolver import dagSPSolver
 from openpto.method.Solvers.heuristic.dp import DPSolver
 from openpto.method.Solvers.heuristic.lkh import LKHSolver
 from openpto.method.Solvers.heuristic.spSolver import spSolver
@@ -34,6 +35,8 @@ def solver_wrapper(args, conf, problem):
         },
         "advertising": {"gurobi": AdGrbSolver, "ortools": AdOrToolSolver},
         "shortestpath": {"heuristic": spSolver},
+        "sp_synth": {"heuristic": dagSPSolver},
+        "sp_planted": {"heuristic": dagSPSolver},
         "TSP": {"gurobi": TSPGrbSolver, "heuristic": LKHSolver},
     }
     solve_dict = {**problem.init_API(), **conf["solver"][args.solver]}

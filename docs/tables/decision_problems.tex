@@ -1,0 +1,34 @@
+\begin{table}[t]
+\centering
+\caption{Decision problem solved by each experiment. $\hat y$ is the
+predicted parameter; $z$ is the decision variable with feasible set
+$\mathcal Z$. The reported decision is
+$z^{\star}(x,\theta)=\arg\min_{z\in\mathcal Z}\,
+\mathbb{E}_{p_\theta(Y\mid X=x)}[c(z,Y)]$ (or the analogous $\arg\max$ when
+the objective is to be maximized). Sizes are train/val/test instance counts
+(real-world tasks measured in years).}
+\label{tab:decision-problems}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lllllll@{}}
+\toprule
+Task & $\hat y$ & $z\in\mathcal Z$ & Objective $c(z,y)$ & Constraints & Sizes (train/val/test) & Source \\
+\midrule
+Knapsack (synth.) & $\hat y\in\mathbb{R}^{20}$ & $z\in\{0,1\}^{20}$ & $\max_z\,\langle z,y\rangle$ & $\sum_i w_i z_i\le 30$ & 320 / 80 / 200 & polynomial DGP (deg 4) \\
+Knapsack (energy) & $\hat y\in\mathbb{R}^{48}$ & $z\in\{0,1\}^{48}$ & $\max_z\,\langle z,y\rangle$ & $\sum_i w_i z_i\le C$ & 442 / 110 / 237 & SEMO energy prices \\
+Energy scheduling & $\hat y\in\mathbb{R}^{48}$ & $z\in\{0,1\}^{M\times R\times 48}$ & $\min_z\,\sum_{j,m,t} z^{jmt}\!\sum_{t'} p^j_{t'}\,y_{t'}$ & job-sched.; $M{=}3$, $R{=}1$ & 520 / 130 / 139 & SEMO energy prices \\
+Budget allocation & $\hat y\in[0,1]^{I\times T}$ & $z\in\{0,1\}^{I}$ & $\max_z\,\sum_t\!\Big[1-\prod_i (1-y_{it}\,p_i\,z_i)\Big]$ & $\sum_i z_i\le B$, $B{=}1$ & 320 / 80 / 200 & Yahoo! Webscope (5 sites, 10 users) \\
+Cubic Top-$K$ & $\hat y\in\mathbb{R}^{50}$ & $z\in\{0,1\}^{50}$ & $\max_z\,\langle z,y\rangle$ & $\sum_i z_i = K$, $K{=}5$ & 200 / 50 / 400 & $y_i=10x_i^{3}-6.5x_i$ \\
+Bipartite matching & $\hat y\in\mathbb{R}^{50\times 50}$ & $z\in\{0,1\}^{50\times 50}$ & $\max_z\,\sum_{i,j} y_{ij}\,z_{ij}$ & $\sum_j z_{ij}\le 1$, $\sum_i z_{ij}\le 1$ & 16 / 4 / 6 & Cora citation network \\
+Portfolio optim. & $\hat y\in\mathbb{R}^{50}$ & $z\in\Delta^{49}\subset[0,1]^{50}$ & $\max_z\,\langle z,y\rangle - \alpha\,z^{\!\top}\!\Sigma z$ & $\sum_i z_i = 1$, $z\succeq 0$; $\alpha{=}0.1$ & 320 / 80 / 200 & S\&P\,500 daily returns (Quandl) \\
+Aerial survey & $\hat y\in\mathbb{R}_{\ge 0}^{1338}$ & $z\in\{0,1\}^{1338}$ & $\max_z\,\langle z,y\rangle$ & $\sum_i z_i\le 50$ & 15 / 6 / 6 yrs & wildlife counts, 1338 sites \\
+Cook County opioid & $\hat y\in\mathbb{R}_{\ge 0}^{1328}$ & $z\in\{0,1\}^{1328}$ & $\max_z\,\langle z,y\rangle$ & $\sum_i z_i\le 100$ & 4 / 1 / 2 yrs & opioid deaths, 1328 tracts \\
+NYC speed humps & $\hat y\in\mathbb{R}_{\ge 0}^{2107}$ & $z\in\{0,1\}^{2107}$ & $\max_z\,\langle z,y\rangle$ & $\sum_i z_i\le 107$ & 5 / 2 / 4 yrs & pedestrian injuries, 2107 tracts \\
+Shortest path (synth.) & $\hat y\in\mathbb{R}^{E}$ & $z\in\{0,1\}^{E}$ & $\min_z\,\langle z,y\rangle$ & $s{\to}t$ path on $5{\times}5$ DAG & 320 / 80 / 10000 & polynomial DGP (deg 6); SPO\textsuperscript{+} setup \\
+Shortest path (planted) & $\hat y\in\mathbb{R}^{E}$ & $z\in\{0,1\}^{E}$ & $\min_z\,\langle z,y\rangle$ & $s{\to}t$ path on $5{\times}5$ DAG w/ planted arcs & 320 / 80 / 10000 & polynomial DGP (deg 6); PG setup \\
+Warcraft shortest path & $\hat y\in\mathbb{R}_{\ge 0}^{144}$ & $z\in\{0,1\}^{144}$ & $\min_z\,\sum_v y_v\,z_v$ & $s{\to}t$ path on $12{\times}12$ 8-grid & 8000 / 1000 / 1000 & Warcraft tile maps (RGB images) \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

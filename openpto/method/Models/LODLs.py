@@ -289,7 +289,7 @@ class LODL(optModel):
                 return torch.zeros(1)
             # during testing, loss is evaluated on the training samples
             first = losses[partition][index](coeff_hat).flatten()
-            second = -SL_dataset[partition][index][1].to(problem.device)
+            second = -SL_dataset[partition][index][1].to(problem.device).squeeze()
             return first - second
 
         return surrogate_decision_quality

@@ -5,63 +5,104 @@
       "batch": "alt",
       "val": 0.054385,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.076315,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.019954,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.36572,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.000264,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.917228,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.220562,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.688867,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.188003,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.182517,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.095913,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.102151,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.000177,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "dfl": {
@@ -70,63 +111,104 @@
       "batch": "default",
       "val": 0.241773,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.096156,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.139783,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.24526,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.135321,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.916733,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.270848,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.72664,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.19605,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.231735,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.746765,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.42994,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.748001,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "identity": {
@@ -135,63 +217,104 @@
       "batch": "alt",
       "val": 0.238469,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.351103,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.139733,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.146521,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.138841,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.918128,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.268543,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.72664,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.19605,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.228659,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.714691,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.402117,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 6.477848,
+      "n_done": 5,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "spo": {
@@ -200,63 +323,104 @@
       "batch": "alt",
       "val": 0.0559,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.070089,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.018092,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.031075,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-2",
       "batch": "default",
       "val": 1.604079,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.918385,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.224547,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.675944,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.193124,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.173033,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.055959,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.051965,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.020402,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "nce": {
@@ -265,63 +429,104 @@
       "batch": "alt",
       "val": 0.139061,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.117504,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.018914,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.086314,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-2",
       "batch": "default",
       "val": 1.426018,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.897958,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.284356,
-      "n_done": 5,
-      "n_total": 6
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.645129,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.215801,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.195847,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.096755,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.155859,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.486873,
+      "n_done": 3,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "blackbox": {
@@ -330,63 +535,104 @@
       "batch": "alt",
       "val": 0.242049,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.35152,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.066189,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.170223,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.138841,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.916728,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.268195,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.72664,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.19605,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.228659,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.747205,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.430735,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 1.655438,
+      "n_done": 4,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "pointLTR": {
@@ -395,63 +641,96 @@
       "batch": "alt",
       "val": 0.056175,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.083041,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.018602,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.041618,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.000532,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.901522,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
-      "lr": "1e-2",
-      "batch": "default",
-      "val": 0.229687,
-      "n_done": 4,
-      "n_total": 6
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.223151,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.691849,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.198244,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.224814,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.093233,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.098443,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "pairLTR": {
@@ -460,63 +739,96 @@
       "batch": "alt",
       "val": 0.077103,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.083285,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.019438,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.078608,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.004178,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.905474,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
-      "lr": "5e-3",
+      "lr": "1e-2",
       "batch": "alt",
-      "val": 0.246917,
-      "n_done": 4,
-      "n_total": 6
+      "val": 0.242352,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.717694,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.189466,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.215842,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.066734,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.079758,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "listLTR": {
@@ -525,63 +837,104 @@
       "batch": "default",
       "val": 0.0559,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.071757,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.019488,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.033904,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.005508,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.89803,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.238361,
-      "n_done": 5,
-      "n_total": 6
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.703777,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.195318,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.329146,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.06882,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.061272,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.015754,
+      "n_done": 1,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "lodl": {
@@ -590,63 +943,96 @@
       "batch": "default",
       "val": 0.237367,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.093469,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.024379,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.561076,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.04218,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.911568,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.240552,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.719682,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.181419,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.220713,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.602542,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.38255,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "perturb": {
@@ -655,63 +1041,104 @@
       "batch": "alt",
       "val": 0.136445,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.087732,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "5e-3",
-      "batch": "alt",
-      "val": 0.019704,
-      "n_done": 4,
-      "n_total": 6
+      "batch": "default",
+      "val": 0.019132,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     },
     "budgetalloc": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.066512,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.13544,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.925383,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.323445,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.697813,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.481346,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.20687,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.115642,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.133444,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.736947,
+      "n_done": 3,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "pg": {
@@ -720,56 +1147,88 @@
       "batch": "alt",
       "val": 0.111386,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "knapsack-real": {
       "lr": "5e-3",
       "batch": "alt",
       "val": 0.086801,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "energy": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.019291,
-      "n_done": 5,
-      "n_total": 6
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     },
     "cubic": {
       "lr": "1e-3",
       "batch": "default",
       "val": 0.071626,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.901676,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.338874,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "asurv": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.684891,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "cook_county": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.197513,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.198154,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.098698,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.103069,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "qptl": {
@@ -778,21 +1237,24 @@
       "batch": "alt",
       "val": 0.200743,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "5e-3",
       "batch": "default",
       "val": 0.915932,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "1e-3",
       "batch": "alt",
       "val": 0.286107,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     }
   },
   "cpLayer": {
@@ -801,21 +1263,130 @@
       "batch": "alt",
       "val": 0.242049,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "bipartitematching": {
       "lr": "1e-2",
       "batch": "default",
       "val": 0.91378,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
     },
     "portfolio": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 0.265454,
       "n_done": 6,
-      "n_total": 6
+      "n_total": 6,
+      "metric": "test"
+    }
+  },
+  "dad": {
+    "knapsack": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.238882,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "knapsack-real": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.33925,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.124543,
+      "n_done": 5,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "budgetalloc": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.26418,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "cubic": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 1.329621,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "bipartitematching": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.908474,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "portfolio": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.357487,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.719682,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.193124,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "speed_humps": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.202512,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_synth": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.747297,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "sp_planted": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.430898,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "test"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.486873,
+      "n_done": 4,
+      "n_total": 6,
+      "metric": "test"
     }
   }
 }

@@ -1,0 +1,66 @@
+% main.tex --- standalone preview of the 5 committee-feedback tables.
+% Compile from this directory: latexmk -pdf main.tex
+%
+% Citations are referenced as \citep{key} but no .bib file is wired up here,
+% so they will render as [?]. Drop them into the thesis tree where natbib +
+% the existing bibliography are already configured to resolve.
+
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{booktabs}      % \toprule, \midrule, \bottomrule
+\usepackage{makecell}      % \makecell[r]{a\\b\\c}
+\usepackage{multirow}      % \multirow for grouped method rows
+\usepackage{graphicx}      % \resizebox, \includegraphics
+\usepackage{amsmath, amssymb}
+\usepackage[table]{xcolor} % \cellcolor
+\usepackage{pdflscape}     % \begin{landscape}
+\usepackage{array}
+\usepackage{hyperref}
+
+% Stub \citep so the document compiles without a .bib file.
+% Delete this block in the thesis (natbib provides the real macro).
+\providecommand{\citep}[1]{[\textit{cite:}~#1]}
+
+\title{Committee Feedback Tables --- Standalone Preview}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\input{decision_problems.tex}
+
+\clearpage
+\input{methods_hyperparams.tex}
+
+\clearpage
+\input{tuning_benefit.tex}
+
+\clearpage
+% One sub-table per benchmark problem (13 in total). Bold = best test value per metric.
+\input{error_per_problem.tex}
+
+\clearpage
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{hyperplane_landscape_asurv.pdf}
+\caption{Hyperplane loss landscape on the aerial-survey task.}
+\label{fig:hyperplane-asurv}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{hyperplane_landscape_cook.pdf}
+\caption{Hyperplane loss landscape on the Cook County opioid task.}
+\label{fig:hyperplane-cook}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{hyperplane_landscape_MA.pdf}
+\caption{Hyperplane loss landscape on the MA task.}
+\label{fig:hyperplane-MA}
+\end{figure}
+
+\end{document}

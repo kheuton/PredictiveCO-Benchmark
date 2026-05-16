@@ -1,0 +1,1762 @@
+{
+  "mse": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 2.375,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-76",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 72.132545,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-178",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 579.133545,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-272",
+      "val_source": "val_pred_mse"
+    },
+    "budgetalloc": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.023636,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-122",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.001664,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-160",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 34.856459,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-30",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.189446,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-94",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 116.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-83",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 93.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-13",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 169.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-84",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.26658,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-27",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.981925,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-88",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.004449,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-108",
+      "val_source": "val_eval"
+    }
+  },
+  "dfl": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 10.325,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-42",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 77.464828,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-70",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 5264.247559,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_pred_mse"
+    },
+    "budgetalloc": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.019842,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-40",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 1.339054,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-49",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 34.192411,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-64",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.258703,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-12",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 115.833336,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-32",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 102.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-16",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 190.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-16",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 3.071333,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-10",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 4.016119,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-8",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 22.916363,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-2",
+      "val_source": "val_eval"
+    }
+  },
+  "identity": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 10.35,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-4",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 263.348602,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-205",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 5264.234375,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_pred_mse"
+    },
+    "budgetalloc": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.019747,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-36",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 1.387252,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-32",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 35.05903,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-114",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.271414,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-3",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 115.833336,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-32",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 102.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-16",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 190.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-16",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 2.854497,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-21",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 4.007948,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-49",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 193.170685,
+      "n_done": 5,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    }
+  },
+  "spo": {
+    "knapsack": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 2.5875,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-3",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 69.185181,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-44",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 30827.969316,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-38",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.002509,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-44",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 17.586449,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 33.116352,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-67",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.210819,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-21",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 115.833336,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-17",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 90.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-52",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 150.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-34",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.133908,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-88",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.486494,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-30",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.624229,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-27",
+      "val_source": "val_eval"
+    }
+  },
+  "nce": {
+    "knapsack": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 5.425,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-13",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 89.488731,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-3",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 31784.11403,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.013606,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 15.579153,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 32.382481,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-3",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.258283,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-48",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 118.666664,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-4",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 112.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-21",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 184.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-10",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.29327,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-8",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 1.672249,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-21",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 15.013949,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    }
+  },
+  "blackbox": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 10.4125,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-59",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 310.91214,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-8",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 125196.941643,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-17",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.017396,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-8",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 1.387252,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-32",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 34.913989,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-2",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.258773,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-43",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 115.833336,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-32",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 102.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-16",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 190.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-16",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 3.114171,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 4.041167,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 47.782707,
+      "n_done": 4,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    }
+  },
+  "pointLTR": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 2.2875,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-32",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 73.489822,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-75",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 39609.498412,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-237",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.002172,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-77",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.002071,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-145",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 34.614382,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-20",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.192548,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-64",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 116.333336,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-9",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 105.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-9",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 190.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-16",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.2586,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-15",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.762687,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-30",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.160572,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-110",
+      "val_source": "val_eval"
+    }
+  },
+  "pairLTR": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 2.7,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-24",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 71.283371,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-107",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 33365.43387,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-30",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.007422,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.038948,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-8",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 33.616593,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-37",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.210675,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-29",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 114.666664,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-12",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 113.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-2",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 169.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-44",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.192515,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-71",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.752615,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-64",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 8.161118,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-23",
+      "val_source": "val_eval"
+    }
+  },
+  "listLTR": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 2.3375,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-50",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 71.675362,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-2",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 30983.674849,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.000705,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-77",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.041723,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-57",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 33.226511,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-5",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.198136,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-10",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 127.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 128.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 188.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-7",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.197804,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-13",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 0.51341,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-43",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.178306,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-169",
+      "val_source": "val_eval"
+    }
+  },
+  "lodl": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 10.084892,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-26",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 81.750465,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-261",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 44385.023796,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-54",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.050179,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.571253,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-127",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 34.672696,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-76",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.208819,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-8",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 116.803558,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-25",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 89.128906,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-68",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 191.712646,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-48",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 2.111905,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-97",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 3.557402,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-43",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 15.038504,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    }
+  },
+  "perturb": {
+    "knapsack": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 4.9,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-197",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 77.220909,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-67",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 29455.503819,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-46",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.002016,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-93",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 1.339054,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-41",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 33.797434,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-32",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.324605,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-33",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 114.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-51",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 353.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 194.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-42",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.438203,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-149",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 1.556021,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-270",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 22.754646,
+      "n_done": 3,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-12",
+      "val_source": "val_eval"
+    }
+  },
+  "pg": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 5.15,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-122",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 74.217361,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-101",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 30131.292728,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-86",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.886509,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-6",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 32.49832,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-75",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.325283,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 114.166664,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-34",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 100.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-5",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 187.5,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-55",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.306441,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-84",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 1.208339,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-191",
+      "val_source": "val_eval"
+    }
+  },
+  "qptl": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 8.1875,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-6",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 35.024049,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-129",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.26934,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-24",
+      "val_source": "val_eval"
+    }
+  },
+  "cpLayer": {
+    "knapsack": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 10.4125,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-59",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 34.932946,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-132",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.263722,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-7",
+      "val_source": "val_eval"
+    }
+  },
+  "dad": {
+    "knapsack": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 10.3625,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-183",
+      "val_source": "val_eval"
+    },
+    "knapsack-real": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 317.385559,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "energy": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 210145.793883,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-10",
+      "val_source": "val_eval"
+    },
+    "budgetalloc": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.022515,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-46",
+      "val_source": "val_eval"
+    },
+    "cubic": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 14.902038,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "bipartitematching": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 33.459004,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-41",
+      "val_source": "val_eval"
+    },
+    "portfolio": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 0.335379,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "asurv": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 116.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-11",
+      "val_source": "val_eval"
+    },
+    "cook_county": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 102.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-20",
+      "val_source": "val_eval"
+    },
+    "speed_humps": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 191.0,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-15",
+      "val_source": "val_eval"
+    },
+    "sp_synth": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 3.114171,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "sp_planted": {
+      "lr": "1e-3",
+      "batch": "default",
+      "val": 4.060233,
+      "n_done": 6,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 15.013949,
+      "n_done": 5,
+      "n_total": 6,
+      "metric": "val",
+      "best_epoch": "Tr-40",
+      "val_source": "val_eval"
+    }
+  }
+}

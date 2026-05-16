@@ -29,7 +29,7 @@ python rethink_exp/main_results.py \
 ```
 
 **Key arguments** (see `openpto/config/utils_conf.py` for full list):
-- `--problem`: `knapsack`, `portfolio`, `budgetalloc`, `energy`, `cubic`, `bipartitematching`, `advertising`, `shortestpath`, `TSP`, `asurv`, `cook_county`, `speed_humps`
+- `--problem`: `knapsack`, `portfolio`, `budgetalloc`, `energy`, `cubic`, `bipartitematching`, `advertising`, `shortestpath`, `sp_synth`, `sp_planted`, `TSP`, `asurv`, `cook_county`, `speed_humps`
 - `--opt_model`: `mse`, `dfl`, `blackbox`, `identity`, `spo`, `nce`, `qptl`, `pointLTR`, `pairLTR`, `listLTR`, `lodl`, `perturb`, `cpLayer`, `pg`, `dad`
 - `--solver`: `gurobi`, `cvxpy`, `heuristic`, `neural`, `ortools`, `qptl`
 - `--method_path`: path to model config YAML (default `openpto/config/models/default.yaml`)
@@ -61,6 +61,9 @@ Instance counts — **must not deviate**:
 | asurv | (don't pass) | (don't pass) | real dataset; 1338 locs, T=15/6/6 |
 | cook_county | (don't pass) | (don't pass) | real dataset; 1328 tracts, T=4/1/2 |
 | speed_humps | (don't pass) | (don't pass) | real dataset; 2107 tracts, T=5/2/4 |
+| sp_synth | **400** | **10000** | synthetic 5×5 grid (SPO+ paper); `--pred_model dense --n_layers 1` |
+| sp_planted | **400** | **10000** | planted arcs 5×5 grid (PG paper); `--pred_model dense --n_layers 1` |
+| shortestpath | **10000** | **1000** | warcraft 12×12 images; `--pred_model Resnet18`; **needs GPU** |
 
 Knapsack-real, energy, asurv, cook_county, and speed_humps load fixed real-world splits. Do not pass `--instances`/`--testinstances` for them.
 
@@ -71,15 +74,17 @@ Knapsack-real, energy, asurv, cook_county, and speed_humps load fixed real-world
 - cubic, bipartitematching: `heuristic` / `cvxpy`
 - portfolio: `cvxpy`
 - asurv, cook_county, speed_humps: `heuristic` (TopK)
+- sp_synth, sp_planted: `heuristic` (DAG DP on edge costs)
+- shortestpath (warcraft): `heuristic` (Dijkstra 8-grid on vertex costs)
 - qptl, cpLayer: only valid for knapsack / bipartitematching / portfolio
-- pg: valid for all problems except budgetalloc (shape incompatibility with submodular objective)
-- dad: valid for all 10 problems (including speed_humps, asurv, cook_county)
+- pg: valid for all problems except budgetalloc and shortestpath
+- dad: valid for all 13 problems
 
 ## Hyperparameter Tuning Principle
 
 The original benchmark only tuned learning rate. Our re-run sweeps **both LR and batch size**, plus method-specific HPs (dflalpha, lambd, tau, n_samples, sigma). This is the right way to compare methods fairly.
 
-**Phase 1 (LR × Batch):** 3 LRs × 2 batch configs per method × task — establishes best training setup.
+**Phase 1 (LR × Batch):** 5 LRs (1e-3, 5e-3, 1e-2, 5e-2, 1e-1 — matches original NeurIPS 2024 sweep) × 2 batch configs per method × task — establishes best training setup.
 **Phase 2 (method HP):** sweeps the key HP for each method using Phase 1's best (LR, batch).
 
 Method-specific HPs swept in Phase 2: dflalpha (dfl), lambd (blackbox), tau (qptl, listLTR), num_samples (lodl), sigma+n_samples (perturb), sigma (pg), stein_weight (dad).
@@ -97,7 +102,7 @@ python -m pytest tests/test_perturbed_softdecision.py -v
 The canonical benchmark comparison lives in the Phase 1/2 sweep infrastructure:
 
 ```bash
-# Submit Phase 1 (546 jobs: 14 methods × tasks × 3 LR × 2 batch; qptl/cpLayer limited to 3 problems)
+# Submit Phase 1 (~1735 manifest entries: 15 methods × 13 tasks × 5 LR × 2 batch; qptl/cpLayer limited to 3 problems, pg excludes shortestpath/budgetalloc)
 bash shells/slurm/submit_bench_p1.sh --dry-run          # preview
 bash shells/slurm/submit_bench_p1.sh                    # submit all
 bash shells/slurm/submit_bench_p1.sh --problem knapsack # filter by problem
@@ -108,14 +113,15 @@ python rethink_exp/sweep_status.py --phase 1            # status grid (✓/R/--)
 python rethink_exp/sweep_status.py --phase 1 --vals     # best regret per cell
 
 # Collect Phase 1 results → pick best (LR, batch) per method×task
-python rethink_exp/collect_bench_p1.py                  # prints grid, writes bench_p1_best.json
+python rethink_exp/collect_bench_p1.py --metric val     # prints grid, writes bench_p1_best_val.json (val-selected; no test leakage)
 
 # Submit Phase 2 (~260 jobs: method-specific HP sweep using Phase 1 best configs)
 bash shells/slurm/submit_bench_p2.sh --dry-run
-bash shells/slurm/submit_bench_p2.sh
+bash shells/slurm/submit_bench_p2.sh                    # reads bench_p1_best_val.json by default
 
-# Collect Phase 2 → final table
-python rethink_exp/collect_bench_p2.py --final
+# Collect Phase 2 → val-selected best HP per method×task
+python rethink_exp/collect_bench_p2_val.py              # writes bench_p2_best_val.json
+python rethink_exp/collect_bench_p2.py --final          # legacy test-selected printout (kept for diff against val)
 ```
 
 All jobs use `--requeue` + checkpoint/resume (SIGTERM handler in `ExpManager.py`). Jobs interrupted by preemption restart automatically from the last completed epoch.
@@ -207,9 +213,31 @@ python rethink_exp/collect_results.py    # prints benchmark table for all proble
 python rethink_exp/find_best_val.py      # finds best hyperparams across prefix sweeps
 
 # Phase 1/2 sweep scripts (preferred for the re-run)
-python rethink_exp/collect_bench_p1.py  # Phase 1 grid + writes bench_p1_best.json
-python rethink_exp/collect_bench_p2.py  # Phase 2 HP sweep results
-python rethink_exp/collect_bench_p2.py --final   # full final table across all methods
+python rethink_exp/collect_bench_p1.py --metric val          # Phase 1 grid + writes bench_p1_best_val.json (val-selected)
+python rethink_exp/collect_bench_p2_val.py                    # writes bench_p2_best_val.json (val-selected best HP per method×task)
+python rethink_exp/collect_bench_p2.py --final                # legacy test-selected printout
 ```
 
 Results for each run are stored in `saved_records/.../results.npy` as `[Objs_test_opt, eval_values]`.
+
+## Committee Feedback Tables
+
+Five LaTeX tables addressing thesis-changelog round-2 feedback (items #1–#3) live in `docs/tables/` and are produced by scripts in `rethink_exp/`. Full pipeline + per-table notes: `docs/committee_feedback_round2.md`.
+
+```bash
+# Build the data (val-selected end-to-end). Run after Phase 1 / Phase 2 sweeps drain.
+python rethink_exp/collect_bench_p1.py --metric val
+python rethink_exp/collect_bench_p2_val.py
+python rethink_exp/eval_test_pred.py                                     # fills test_pred_loss.json per run
+python rethink_exp/collect_loss_matrix.py --p2_best_json bench_p2_best_val.json
+
+# Emit the five .tex files
+python rethink_exp/table_decision_problems.py    # docs/tables/decision_problems.tex      (item #1)
+python rethink_exp/table_methods_hyperparams.py  # docs/tables/methods_hyperparams.tex    (item #2A)
+python rethink_exp/table_tuning_benefit.py       # docs/tables/tuning_benefit.tex         (item #2B)
+python rethink_exp/table_error_grid.py --metric pred       # docs/tables/pred_error.tex      (wide 15x13 grid, backup)
+python rethink_exp/table_error_grid.py --metric decision   # docs/tables/decision_error.tex  (wide 15x13 grid, backup)
+python rethink_exp/table_error_per_problem.py              # docs/tables/error_per_problem.tex (13 sub-tables, recommended for chapter)
+```
+
+Standalone preview: `cd docs/tables && latexmk -pdf main.tex` (compile off the HPC; the cluster lacks `pdflatex`). The previous round's tables (`method_categorization.tex`, `problem_categorization.tex`, `specification_contrast.md`) remain untouched.

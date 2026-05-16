@@ -28,12 +28,22 @@ class spSolver(ptoSolver):
         dijkstra solver
         """
         matrix = matrix.reshape(self.size, self.size)
+        # Non-finite predicted costs (e.g. NaN/Inf from a diverged model) would
+        # silently break the `<` comparisons below and leave the goal cell out
+        # of `transitions`, raising KeyError at path retrieval. Replace with a
+        # large finite cost so the solver always returns a path.
+        if not np.all(np.isfinite(matrix)):
+            matrix = np.where(np.isfinite(matrix), matrix, 1.0e9)
         x_max, y_max = matrix.shape
         neighbors_func = partial(
             get_neighbourhood_func(self.neighbourhood_fn), x_max=x_max, y_max=y_max
         )
-        #
-        costs = np.full_like(matrix, 1.0e10)
+        # Use np.inf as the unreached-cost sentinel (float64) so any finite
+        # path sum — no matter how large — still satisfies `path < costs[x][y]`
+        # and records a transition. A finite sentinel like 1e10 was too close
+        # to plausible path sums for diverged models and caused missing
+        # transitions → KeyError at path retrieval.
+        costs = np.full(matrix.shape, np.inf, dtype=np.float64)
         costs[0][0] = matrix[0][0]
         # if do_debug:
         #     print("initial: ", costs[0][0])

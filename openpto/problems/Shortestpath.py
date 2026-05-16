@@ -54,12 +54,10 @@ class Shortestpath(PTOProblem):
 
     @staticmethod
     def do_norm(inputs):
-        in_mean, in_std = (
-            torch.mean(inputs, axis=(0, 1, 2), keepdims=True),
-            torch.std(inputs, axis=(0, 1, 2), keepdims=True),
-        )
-        # epsilon = 1e-6
-        # in_std[in_std == 0] = epsilon
+        # inputs: (B, C, H, W) — normalize over batch and spatial dims, per channel
+        in_mean = torch.mean(inputs, dim=(0, 2, 3), keepdim=True)
+        in_std = torch.std(inputs, dim=(0, 2, 3), keepdim=True)
+        in_std = torch.clamp(in_std, min=1e-6)
         return (inputs - in_mean) / in_std
 
     @staticmethod
@@ -85,18 +83,17 @@ class Shortestpath(PTOProblem):
     def read_data(self, data_dir, split_prefix, normalize):
         data_suffix = "maps"
         inputs = self.read_npy_files(data_dir, split_prefix + "_" + data_suffix)
-        # channel last
-        # inputs = inputs.transpose(0, 3, 1, 2)  # channel first
+        # channel-first for CNN/ResNet models: (B, H, W, C) -> (B, C, H, W)
+        inputs = torch.FloatTensor(inputs.transpose(0, 3, 1, 2))
 
         labels = self.read_npy_files(data_dir, split_prefix + "_shortest_paths")
         Y = self.read_npy_files(data_dir, split_prefix + "_vertex_weights")
         full_images = self.read_npy_files(data_dir, split_prefix + "_maps")
-        # print("inputs: ", inputs.shape, "Y: ", Y.shape) #inputs:  (10000, 96, 96, 3) Y:  (10000, 12, 12)
         if normalize:
             inputs = self.do_norm(inputs)
 
         return (
-            torch.FloatTensor(inputs),
+            inputs,
             torch.FloatTensor(labels).reshape(len(labels), -1),
             torch.FloatTensor(Y).reshape(len(labels), -1),
             full_images,
@@ -119,10 +116,12 @@ class Shortestpath(PTOProblem):
         val_X, val_Z, val_Y, _ = self.read_data(
             data_dir, val_prefix, normalize
         )  # (1000, 3, 96, 96) (1000, 12 * 12) (1000, 12 * 12)
+        # Cap n_vals to available val data
+        n_vals = min(self.n_vals, len(val_X))
         self.val_X, self.val_Z, self.val_Y = (
-            val_X[: self.n_vals],
-            val_Z[: self.n_vals],
-            val_Y[: self.n_vals],
+            val_X[:n_vals],
+            val_Z[:n_vals],
+            val_Y[:n_vals],
         )
         test_X, test_Z, test_Y, _ = self.read_data(data_dir, test_prefix, normalize)
         self.test_X, self.test_Z, self.test_Y = (
@@ -203,8 +202,8 @@ class Shortestpath(PTOProblem):
             return self.test_X, self.test_Y, self.test_Z
 
     def get_model_shape(self):
-        assert self.train_X.shape[2] == 8 * self.size
-        return self.train_X.shape[2], self.size**2
+        # Input channels (3 for RGB), output = n_vertices
+        return self.train_X.shape[1], self.size**2
 
     def get_eval_metric(self):
         # return "match"

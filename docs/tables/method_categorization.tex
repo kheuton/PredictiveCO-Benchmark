@@ -1,0 +1,224 @@
+% =====================================================================
+% Table: Benchmark methods categorised.
+%
+% Required packages in the host document:
+%   \usepackage{booktabs}        % \toprule \midrule \bottomrule \cmidrule
+%   \usepackage{array}           % m{} column types
+%   \usepackage{makecell}        % multi-line table cells
+%   \usepackage{adjustbox}       % scale table to \textwidth
+%   \usepackage{siunitx}         % (optional) for aligned numbers
+%
+% Usage in a chapter:
+%   \input{tables/method_categorization.tex}
+%
+% The table is wide (9 columns × 15 rows).  We wrap it in \begin{sidewaystable}
+% for a landscape page; remove that wrapper if the chapter uses landscape
+% by default or the surrounding document class handles orientation
+% differently.  An \adjustbox{max width=\textwidth} alternative is commented
+% out below for double-column / narrow layouts.
+% =====================================================================
+
+\begin{table}[p]
+    \centering
+    \caption[Benchmark methods categorised]{%
+        Benchmark methods categorised along axes relevant to the
+        dissertation reviewer's feedback: loss surrogate, combinatorial
+        scope, per-batch solver-call cost, and number of tunable
+        hyper-parameters.  Rows~2--15 achieve decision-awareness via
+        gradient-based surrogates; row~1 (MSE) is decision-aware only
+        through the finite grid search over $(\mathrm{lr},\,\mathrm{bs})$
+        whose winner is chosen by validation decision regret~---~a
+        constrained form of decision-aware model selection.%
+    }
+    \label{tab:method_categorization}
+    \footnotesize
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.15}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{@{}clllllccll@{}}
+        \toprule
+          & \textbf{Method}
+          & \textbf{Family}
+          & \textbf{Loss / surrogate mechanism}
+          & \textbf{CO scope}
+          & \textbf{Solves/batch}
+          & \textbf{\#\,HP}
+          & \textbf{Phase-2 HP swept}
+          & \textbf{Reference} \\
+        \midrule
+        1  & MSE$^{\ast\dagger}$
+           & PtO
+           & $\lVert \hat c - c \rVert_2^2$~---~prediction loss only
+           & Any
+           & $0$
+           & $2$
+           & \textemdash
+           & \textemdash \\
+        2  & Identity (NID)
+           & PnO
+           & direct obj.; $\partial z/\partial \hat c \equiv -I$
+           & Any
+           & $1$
+           & $2$
+           & \textemdash
+           & \citealp{sahoo2023identity} \\
+        3  & DFL
+           & PnO
+           & \makecell[l]{direct obj.\ with $z$ detached,\\
+                         $+\,\alpha\cdot\mathrm{MSE}$}
+           & Any
+           & $1$
+           & $3$
+           & $\alpha \in \{10^{-3}, 10^{-2}, 10^{-1}, 1, 10\}$
+           & \citealp{wilder2019melding} \\
+        4  & SPO+
+           & PnO
+           & convex upper bound; solve at $2\hat c - c$
+           & LP\,/\,MILP
+           & $1$
+           & $2$
+           & \textemdash
+           & \citealp{elmachtoub2022smart} \\
+        5  & Blackbox (DBB)
+           & PnO
+           & finite-diff.\ on $z$, step $\lambda$
+           & LP\,/\,MILP
+           & $2$
+           & $3$
+           & $\lambda \in \{0.01, 0.05, 0.1, 0.5, 1\}$
+           & \citealp{vlastelica2020differentiation} \\
+        6  & PG
+           & PnO
+           & \makecell[l]{finite-diff.\ on objective,\\
+                         direction $c$, step $\sigma$}
+           & $12$/$13^{\ddagger}$
+           & $2$
+           & $3$
+           & $\sigma \in \{0.01, 0.05, 0.1, 0.5, 1\}$
+           & \citealp{huang2024pg} \\
+        7  & Perturb (DPO)
+           & PnO
+           & \makecell[l]{MC smoothing\\
+                         $\mathbb{E}_{\varepsilon}\bigl[z(\hat c + \sigma\varepsilon)\bigr]$\\
+                         via reparameterisation}
+           & Any
+           & $n$
+           & $4$
+           & \makecell[l]{$\sigma \in \{0.1, 0.5, 1, 2, 5\}$,\\
+                         $n \in \{5, 10, 25, 50, 100\}$}
+           & \citealp{berthet2020learning} \\
+        8  & DAD
+           & PnO
+           & \makecell[l]{Stein / OS-VGC, per-item\\
+                         $\sigma_j = \sqrt{(\hat y_j - y_j)^2 + \varepsilon}$}
+           & Any
+           & $1 + n$
+           & $4$
+           & \makecell[l]{$w_{\mathrm{Stein}} \in \{0.1, 0.5, 1, 2, 5\}$,\\
+                         $n \in \{5, 10, 25, 50, 100\}$}
+           & \citealp{gupta2024dad} \\
+        9  & pointLTR
+           & PnO
+           & \makecell[l]{MSE over pooled solutions\\
+                         $\sum_{z\in\mathcal{P}}(\hat c\cdot z - c\cdot z)^2$}
+           & Any
+           & $1$
+           & $2$
+           & \textemdash
+           & \citealp{mandi2022decisionfocused} \\
+        10 & pairLTR
+           & PnO
+           & hinge: $z^{\star}$ vs.\ rest of pool
+           & Any
+           & $1$
+           & $2$
+           & \textemdash
+           & \citealp{mandi2022decisionfocused} \\
+        11 & listLTR
+           & PnO
+           & softmax cross-entropy over pool, temp.\ $\tau$
+           & Any
+           & $1$
+           & $3$
+           & $\tau \in \{0.1, 0.5, 1, 5, 10\}$
+           & \citealp{mandi2022decisionfocused} \\
+        12 & NCE
+           & PnO
+           & \makecell[l]{contrastive\\
+                         $\sum_{z\in\mathcal{P}}\bigl[\hat c\cdot z^{\star} - \hat c\cdot z\bigr]$}
+           & Any
+           & $1$
+           & $2$
+           & \textemdash
+           & \citealp{mulamba2021contrastive} \\
+        13 & LODL
+           & PnO
+           & \makecell[l]{learned local surrogate\\
+                         $\ell_{\theta}(\hat c, c)$ from $N_s$ samples}
+           & Any
+           & $N_s$ (offline)
+           & $3$
+           & $N_s \in \{100, 250, 500, 1000, 2000\}$
+           & \citealp{shah2022decisionfocused} \\
+        14 & QPTL
+           & PnO
+           & \makecell[l]{KKT implicit diff.\ of\\
+                         regularised QP, temp.\ $\tau$}
+           & QP only ($3/13$)
+           & $1$
+           & $3$
+           & $\tau \in \{0.1, 0.5, 1, 5, 10\}$
+           & \citealp{donti2017task} \\
+        15 & cpLayer
+           & PnO
+           & KKT implicit diff.\ via \texttt{cvxpylayer}
+           & Convex ($3/13$)
+           & $1$
+           & $2$
+           & \textemdash
+           & \citealp{agrawal2019differentiable} \\
+        \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+
+    \vspace{0.5em}
+    \begin{flushleft}
+    \scriptsize
+    $^{\ast}$~The \texttt{mse} sweep entry dispatches to $\mathrm{BCE}$,
+    $\mathrm{CE}$, or $\mathrm{MAE}$ when the problem's two-stage loss so
+    indicates; all four are prediction-loss baselines and share this row.\\[2pt]
+    $^{\dagger}$~\textbf{Every row in this table is also decision-aware
+    via the finite grid search over $(\mathrm{lr},\,\mathrm{bs})$ whose
+    winner is picked by decision regret.} This gives even a
+    nominally ``blind'' baseline (MSE) a constrained form of
+    decision-aware model selection; see \citet{elmachtoub2025misspec}
+    for a well-specified-regime analysis.  Within each run the best
+    epoch's checkpoint is selected by \emph{validation} decision regret;
+    in the current sweep, however, the across-config
+    $(\mathrm{lr},\,\mathrm{bs})$ winner is picked by \emph{test}
+    decision regret (leakage through HP selection; planned fix
+    documented in the dissertation's reproducibility appendix).\\[2pt]
+    $^{\ddagger}$~PG is defined for all problems except
+    \texttt{shortestpath} (warcraft); the finite-difference direction $c$
+    and detached-solver pattern support both linear and non-linear
+    objectives (e.g.\ the sub-modular objective of \texttt{budgetalloc}).\\[2pt]
+    \textit{Solves / batch} counts CO-solver invocations per mini-batch
+    element per forward--backward pass; $n$ is the Phase-2 Monte-Carlo
+    sample count.  \textit{\#\,HP} counts hyper-parameters the benchmark
+    treats as tunable: always $\mathrm{lr}$ and $\mathrm{bs}$, plus any
+    method-specific HPs swept in Phase~2.
+    \end{flushleft}
+\end{table}
+
+% ---------------------------------------------------------------------
+% Alternative: non-rotated, fit-to-column-width (comment out \begin{table}
+% above and use this instead for a narrower layout):
+%
+% \begin{table}[tb]
+%     \centering
+%     \scriptsize
+%     \begin{adjustbox}{max width=\linewidth}
+%       <...same tabular...>
+%     \end{adjustbox}
+% \end{table}
+% ---------------------------------------------------------------------

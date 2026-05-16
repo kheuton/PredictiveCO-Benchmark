@@ -39,6 +39,21 @@ if __name__ == "__main__":
     logger.info(f" Loading [{args.problem}] Problem...")
     problem = problem_wrapper(args, conf)
 
+    # Optional train-set subsampling (first N instances on axis 0).
+    if getattr(args, "train_subsample_n", 0) and args.train_subsample_n > 0:
+        _orig_get_train = problem.get_train_data
+        _n_sub = args.train_subsample_n
+
+        def _subsampled_get_train(*a, **kw):
+            out = _orig_get_train(*a, **kw)
+            return tuple(
+                t[:_n_sub] if hasattr(t, "__getitem__") and hasattr(t, "__len__") else t
+                for t in out
+            )
+
+        problem.get_train_data = _subsampled_get_train
+        logger.info(f" Train subsample: first {_n_sub} instances")
+
     # Load solver
     logger.info(f" Loading [{args.solver}] solver ...")
     ptoSolver = solver_wrapper(args, conf, problem)

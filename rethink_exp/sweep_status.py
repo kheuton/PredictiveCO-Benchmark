@@ -21,11 +21,42 @@ Usage:
 import argparse
 import json
 import os
+import subprocess
 import sys
 
 import numpy as np
 
 RESULTS_ROOT = "saved_records"
+
+
+def get_queued_job_names():
+    """Return set of SLURM job names currently queued for the user."""
+    try:
+        out = subprocess.check_output(
+            ["squeue", "-u", os.environ.get("USER", ""), "-h", "-o", "%j"],
+            stderr=subprocess.DEVNULL,
+        ).decode()
+        return set(out.strip().split("\n")) - {""}
+    except Exception:
+        return set()
+
+
+def prefix_to_job_name(phase, prob, method, prefix):
+    """Map prefix → SLURM job name set by the submit scripts.
+
+    Phase 1: bp1_<prob>_<method>_<batch>_lr<lr>     (prefix == bench_p1_<method>_<batch>_lr<lr>)
+    Phase 2: bp2_<prob>_<method>_<hp_tag>            (prefix == bench_p2_<method>_<hp_tag>_<batch>_lr<lr>)
+    """
+    if phase == 1:
+        # bench_p1_<method>_<rest> → bp1_<prob>_<method>_<rest>
+        rest = prefix[len(f"bench_p1_{method}_"):]
+        return f"bp1_{prob}_{method}_{rest}"
+    # Phase 2: strip the trailing "_<batch>_lr<lr>" from prefix to get hp_tag
+    import re
+    rest = prefix[len(f"bench_p2_{method}_"):]
+    m = re.match(r"(.+)_(default|alt)_lr([^_]+)$", rest)
+    hp_tag = m.group(1) if m else rest
+    return f"bp2_{prob}_{method}_{hp_tag}"
 
 
 # ---- Problem metadata (mirrors submit scripts) ----
@@ -41,6 +72,9 @@ PROB_ARG = {
     "asurv":              "asurv",
     "cook_county":        "cook_county",
     "speed_humps":        "speed_humps",
+    "sp_synth":           "sp_synth",
+    "sp_planted":         "sp_planted",
+    "shortestpath":       "shortestpath",
 }
 
 PROB_VERSION = {
@@ -54,6 +88,9 @@ PROB_VERSION = {
     "asurv":              "real",
     "cook_county":        "real",
     "speed_humps":        "real",
+    "sp_synth":           "synth",
+    "sp_planted":         "planted",
+    "shortestpath":       "warcraft",
 }
 
 
@@ -63,15 +100,26 @@ def out_dir(prob, opt_model, prefix):
     return os.path.join(RESULTS_ROOT, f"{parg}-{pver}", opt_model, prefix)
 
 
-def cell_status(prob, opt_model, prefix):
+def cell_status(prob, opt_model, prefix, queued=None, phase=None):
+    """
+    Returns one of: "done", "running", "stranded", "missing".
+      done      = results.npy exists
+      running   = checkpoint exists AND job is in SLURM queue (needs queued+phase)
+      stranded  = checkpoint exists AND job NOT in queue (timed out / failed w/ ckpt)
+      missing   = no checkpoint, no results
+    If queued is None, "running" and "stranded" collapse to "running" (legacy behavior).
+    """
     d = out_dir(prob, opt_model, prefix)
     results = os.path.join(d, "results.npy")
     ckpt    = os.path.join(d, "checkpoints", "checkpoint_latest.pt")
     if os.path.exists(results):
         return "done"
-    if os.path.exists(ckpt):
+    if not os.path.exists(ckpt):
+        return "missing"
+    if queued is None or phase is None:
         return "running"
-    return "missing"
+    jn = prefix_to_job_name(phase, prob, opt_model, prefix)
+    return "running" if jn in queued else "stranded"
 
 
 def load_regret(prob, opt_model, prefix):
@@ -98,10 +146,13 @@ def load_manifest(phase):
         return json.load(f)
 
 
-def print_status_grid(manifest, show_vals):
+def print_status_grid(manifest, show_vals, phase=None, queued=None):
     """
     manifest: list of {"prob": ..., "opt_model": ..., "prefix": ...}
     Rows = methods, Cols = problems.
+
+    If `queued` is provided, cells with a checkpoint are split into
+    "running" (job in queue) vs "stranded" (ckpt exists, not in queue).
     """
     problems  = []
     methods   = []
@@ -124,14 +175,14 @@ def print_status_grid(manifest, show_vals):
         table.setdefault(key, []).append(entry["prefix"])
 
     col_w = 14
-    prob_w = 12
 
     # Header
     header = f"  {'method':16s}  " + "  ".join(f"{p[:col_w]:>{col_w}}" for p in problems)
     print(header)
     print("  " + "-" * (18 + (col_w + 2) * len(problems)))
 
-    n_done = n_run = n_miss = 0
+    n_done = n_run = n_strand = n_miss = 0
+    show_stranded = queued is not None
 
     for method in methods:
         row_cells = []
@@ -141,38 +192,57 @@ def print_status_grid(manifest, show_vals):
                 row_cells.append(f"{'N/A':>{col_w}}")
                 continue
 
-            statuses = [cell_status(prob, method, pfx) for pfx in prefixes]
+            statuses = [cell_status(prob, method, pfx, queued=queued, phase=phase) for pfx in prefixes]
             n_total = len(statuses)
             n_d = statuses.count("done")
             n_r = statuses.count("running")
+            n_s = statuses.count("stranded")
+            n_m = statuses.count("missing")
 
-            n_done += n_d
-            n_run  += n_r
-            n_miss += statuses.count("missing")
+            n_done   += n_d
+            n_run    += n_r
+            n_strand += n_s
+            n_miss   += n_m
 
             if show_vals and n_d > 0:
-                # Show best regret among completed entries
                 regrets = [load_regret(prob, method, pfx) for pfx in prefixes]
                 regrets = [r for r in regrets if r is not None]
                 best = min(regrets)
                 tag = f"{best:.4f}({n_d}/{n_total})"
-            else:
+            elif not show_stranded:
+                # legacy single-R display
+                n_r_combined = n_r + n_s
                 if n_d == n_total:
                     tag = f"✓({n_d})"
                 elif n_d > 0:
-                    tag = f"✓{n_d}/R{n_r}/{n_total}"
-                elif n_r > 0:
-                    tag = f"R({n_r}/{n_total})"
+                    tag = f"✓{n_d}/R{n_r_combined}/{n_total}"
+                elif n_r_combined > 0:
+                    tag = f"R({n_r_combined}/{n_total})"
                 else:
                     tag = f"--({n_total})"
+            else:
+                # 4-state display: done/running/stranded/missing
+                parts = []
+                if n_d: parts.append(f"✓{n_d}")
+                if n_r: parts.append(f"R{n_r}")
+                if n_s: parts.append(f"T{n_s}")
+                if n_m: parts.append(f"-{n_m}")
+                if n_d == n_total:
+                    tag = f"✓({n_d})"
+                else:
+                    tag = "/".join(parts) + f"/{n_total}"
 
             row_cells.append(f"{tag:>{col_w}}")
 
         print(f"  {method:16s}  " + "  ".join(row_cells))
 
     print()
-    n_total_all = n_done + n_run + n_miss
-    print(f"  Total: {n_total_all}  ✓ done={n_done}  R in-progress={n_run}  -- missing={n_miss}")
+    n_total_all = n_done + n_run + n_strand + n_miss
+    if show_stranded:
+        print(f"  Total: {n_total_all}  ✓ done={n_done}  R running={n_run}  T stranded={n_strand}  -- missing={n_miss}")
+        print("  (R = checkpoint + in SLURM queue; T = checkpoint but NOT in queue — likely TIMEOUT or error)")
+    else:
+        print(f"  Total: {n_total_all}  ✓ done={n_done}  R in-progress={n_run + n_strand}  -- missing={n_miss}")
 
 
 def main():
@@ -183,21 +253,31 @@ def main():
                         help="Path to manifest JSON (overrides --phase)")
     parser.add_argument("--vals", action="store_true",
                         help="Show best test regret per cell instead of status codes")
+    parser.add_argument("--queue", action="store_true",
+                        help="Query SLURM to split R into running (R) vs stranded (T) — "
+                             "T = checkpoint exists but job NOT in queue, usually TIMEOUT")
     args = parser.parse_args()
 
     if args.manifest:
         with open(args.manifest) as f:
             manifest = json.load(f)
         label = os.path.basename(args.manifest)
+        phase = None
     elif args.phase:
         manifest = load_manifest(args.phase)
         label = f"Phase {args.phase}"
+        phase = args.phase
     else:
         parser.print_help()
         sys.exit(1)
 
+    queued = get_queued_job_names() if args.queue else None
+    if args.queue and phase is None:
+        print("Warning: --queue requires --phase to map prefixes to job names; ignoring.\n")
+        queued = None
+
     print(f"\n=== Sweep status: {label}  ({'regret' if args.vals else 'status codes'}) ===\n")
-    print_status_grid(manifest, args.vals)
+    print_status_grid(manifest, args.vals, phase=phase, queued=queued)
 
 
 if __name__ == "__main__":

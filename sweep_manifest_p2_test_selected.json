@@ -1,0 +1,27 @@
+[
+  {
+    "prob": "speed_humps",
+    "opt_model": "pg",
+    "prefix": "bench_p2_pg_s0p01_default_lr1e-3"
+  },
+  {
+    "prob": "speed_humps",
+    "opt_model": "pg",
+    "prefix": "bench_p2_pg_s0p05_default_lr1e-3"
+  },
+  {
+    "prob": "speed_humps",
+    "opt_model": "pg",
+    "prefix": "bench_p2_pg_s0p1_default_lr1e-3"
+  },
+  {
+    "prob": "speed_humps",
+    "opt_model": "pg",
+    "prefix": "bench_p2_pg_s0p5_default_lr1e-3"
+  },
+  {
+    "prob": "speed_humps",
+    "opt_model": "pg",
+    "prefix": "bench_p2_pg_s1p0_default_lr1e-3"
+  }
+]
