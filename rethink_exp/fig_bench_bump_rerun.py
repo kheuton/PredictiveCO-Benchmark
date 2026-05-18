@@ -1,11 +1,11 @@
 """
 fig_bench_bump_rerun.py
 -----------------------
-Bump charts for the 2026 benchmark RE-RUN (13 problems × 15 methods).
+Bump charts for the 2026 benchmark RE-RUN (14 problems × 15 methods).
 
 Differences from fig_bench_bump.py:
   - Adds new problems: asurv, cook_county, speed_humps, sp_synth, sp_planted,
-    shortestpath (warcraft)
+    pg_misspec, shortestpath (warcraft)
   - Adds new methods: pg, dad
   - Adds HP sweep for dad (stein_weight)
   - Groups tasks into multiple figures: classic, spatial/topk, shortest-path
@@ -29,7 +29,7 @@ from matplotlib.lines import Line2D
 
 # ---- Paths ----
 RESULTS_ROOT   = "saved_records"
-BEST_JSON_PATH = "bench_p1_best.json"
+BEST_JSON_PATH = "bench_p1_best_val.json"
 OUT_DIR        = "results"
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -38,7 +38,7 @@ PROBLEMS = [
     "knapsack", "knapsack-real", "energy", "budgetalloc",
     "cubic", "bipartitematching", "portfolio",
     "asurv", "cook_county", "speed_humps",
-    "sp_synth", "sp_planted", "shortestpath",
+    "sp_synth", "sp_planted", "pg_misspec", "shortestpath",
 ]
 
 PROB_ARG = {
@@ -54,6 +54,7 @@ PROB_ARG = {
     "speed_humps":       "speed_humps",
     "sp_synth":          "sp_synth",
     "sp_planted":        "sp_planted",
+    "pg_misspec":        "pg_misspec",
     "shortestpath":      "shortestpath",
 }
 
@@ -70,6 +71,7 @@ PROB_VERSION = {
     "speed_humps":       "real",
     "sp_synth":          "synth",
     "sp_planted":        "planted",
+    "pg_misspec":        "v3",
     "shortestpath":      "warcraft",
 }
 
@@ -86,6 +88,7 @@ PROB_DISPLAY = {
     "speed_humps":       "Speed Humps\n(TopK)",
     "sp_synth":          "SP Synth\n(5×5)",
     "sp_planted":        "SP Planted\n(5×5)",
+    "pg_misspec":        "PG Misspec\n(v3)",
     "shortestpath":      "Warcraft\n(12×12)",
 }
 
@@ -123,7 +126,7 @@ METHOD_PROBLEMS = {
     # dad valid on all 13 problems
 }
 
-LRS          = ["1e-2", "5e-3", "1e-3"]
+LRS          = ["1e-2", "5e-3", "1e-3", "5e-2", "1e-1"]
 BATCH_LABELS = ["default", "alt"]
 USE_ABSOLUTE = {"portfolio"}
 
@@ -561,9 +564,9 @@ draw_bump(
 
 draw_bump(
     PROBLEMS,
-    title="Benchmark re-run — All 13 tasks — Relative regret % (best ↑)",
+    title=f"Benchmark re-run — All {len(PROBLEMS)} tasks — Relative regret % (best ↑)",
     fname="fig_bench_bump_rerun_all.png",
-    figsize=(14.5, 3.4),
+    figsize=(15.5, 3.4),
     add_avg_rank=True,
 )
 
@@ -581,6 +584,14 @@ draw_bump(
     fname="fig_bench_bump_rerun_portfolio.png",
     figsize=(2.2, 2.8),
     exclude_methods=["dad", "cpLayer", "qptl"],
+)
+
+draw_bump(
+    ["pg_misspec"],
+    title="Benchmark re-run — PG Misspec (v3)\nRelative regret % (best ↑)",
+    fname="fig_bench_bump_rerun_pg_misspec.png",
+    figsize=(2.2, 2.8),
+    exclude_methods=["cpLayer", "qptl"],
 )
 
 
@@ -601,7 +612,7 @@ for m in METHODS:
         row += f"  {v:>12.4f}" if np.isfinite(v) else f"  {'—':>12}"
     print(row)
 
-print("\nMissing cells per method (out of 13 problems):")
+print(f"\nMissing cells per method (out of {len(PROBLEMS)} problems):")
 for m in METHODS:
     miss = n_missing_by_method[m]
     allowed = METHOD_PROBLEMS.get(m, set(PROBLEMS))
