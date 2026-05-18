@@ -681,13 +681,13 @@
       "val_source": "val_eval"
     },
     "energy": {
-      "lr": "1e-2",
-      "batch": "alt",
-      "val": 125196.941643,
+      "lr": "1e-1",
+      "batch": "default",
+      "val": 92816.507464,
       "n_done": 10,
       "n_total": 10,
       "metric": "val",
-      "best_epoch": "Tr-17",
+      "best_epoch": "Tr-248",
       "val_source": "val_eval"
     },
     "budgetalloc": {
@@ -913,13 +913,13 @@
       "val_source": "val_eval"
     },
     "shortestpath": {
-      "lr": "1e-3",
+      "lr": "1e-2",
       "batch": "alt",
-      "val": 0.124185,
-      "n_done": 8,
+      "val": 0.100675,
+      "n_done": 10,
       "n_total": 10,
       "metric": "val",
-      "best_epoch": "Tr-147",
+      "best_epoch": "Tr-190",
       "val_source": "val_eval"
     }
   },
@@ -1047,11 +1047,11 @@
     "shortestpath": {
       "lr": "1e-3",
       "batch": "alt",
-      "val": 8.161118,
-      "n_done": 6,
+      "val": 6.607599,
+      "n_done": 10,
       "n_total": 10,
       "metric": "val",
-      "best_epoch": "Tr-23",
+      "best_epoch": "Tr-34",
       "val_source": "val_eval"
     }
   },
@@ -1178,12 +1178,12 @@
     },
     "shortestpath": {
       "lr": "1e-3",
-      "batch": "alt",
-      "val": 0.178306,
-      "n_done": 6,
+      "batch": "default",
+      "val": 0.152909,
+      "n_done": 10,
       "n_total": 10,
       "metric": "val",
-      "best_epoch": "Tr-169",
+      "best_epoch": "Tr-37",
       "val_source": "val_eval"
     }
   },
@@ -1209,13 +1209,13 @@
       "val_source": "val_eval"
     },
     "energy": {
-      "lr": "1e-2",
+      "lr": "1e-1",
       "batch": "alt",
-      "val": 44385.023796,
-      "n_done": 6,
+      "val": 38688.616779,
+      "n_done": 10,
       "n_total": 10,
       "metric": "val",
-      "best_epoch": "Tr-54",
+      "best_epoch": "Tr-33",
       "val_source": "val_eval"
     },
     "budgetalloc": {
@@ -1309,10 +1309,10 @@
       "val_source": "val_eval"
     },
     "shortestpath": {
-      "lr": "1e-2",
-      "batch": "default",
-      "val": 15.038504,
-      "n_done": 6,
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 15.035824,
+      "n_done": 10,
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-1",
@@ -1444,7 +1444,7 @@
       "lr": "1e-2",
       "batch": "alt",
       "val": 22.754646,
-      "n_done": 3,
+      "n_done": 5,
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-12",
@@ -1752,7 +1752,7 @@
       "lr": "1e-2",
       "batch": "alt",
       "val": 15.013949,
-      "n_done": 5,
+      "n_done": 9,
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-40",
