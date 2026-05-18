@@ -27,7 +27,7 @@ import numpy as np
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
             "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
-            "speed_humps", "sp_synth", "sp_planted", "shortestpath"]
+            "speed_humps", "sp_synth", "sp_planted", "pg_misspec", "shortestpath"]
 
 PROB_ARG = {
     "knapsack":           "knapsack",
@@ -42,6 +42,7 @@ PROB_ARG = {
     "speed_humps":        "speed_humps",
     "sp_synth":           "sp_synth",
     "sp_planted":         "sp_planted",
+    "pg_misspec":         "pg_misspec",
     "shortestpath":       "shortestpath",
 }
 
@@ -58,6 +59,7 @@ PROB_VERSION = {
     "speed_humps":        "real",
     "sp_synth":           "synth",
     "sp_planted":         "planted",
+    "pg_misspec":         "v3",
     "shortestpath":       "warcraft",
 }
 
@@ -71,7 +73,7 @@ METHOD_PROBLEMS = {
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
     "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching",
                 "portfolio", "asurv", "cook_county", "speed_humps",
-                "sp_synth", "sp_planted"},
+                "sp_synth", "sp_planted", "pg_misspec"},
 }
 
 LRS = ["1e-2", "5e-3", "1e-3", "5e-2", "1e-1"]

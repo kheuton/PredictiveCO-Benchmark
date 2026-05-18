@@ -45,7 +45,7 @@ _VAL_MSE_LINE = re.compile(
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
             "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
-            "speed_humps", "sp_synth", "sp_planted", "shortestpath"]
+            "speed_humps", "sp_synth", "sp_planted", "pg_misspec", "shortestpath"]
 
 ALL_METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
                "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
@@ -57,7 +57,8 @@ PROB_ARG = {
     "cubic": "cubic", "bipartitematching": "bipartitematching",
     "portfolio": "portfolio", "asurv": "asurv", "cook_county": "cook_county",
     "speed_humps": "speed_humps", "sp_synth": "sp_synth",
-    "sp_planted": "sp_planted", "shortestpath": "shortestpath",
+    "sp_planted": "sp_planted", "pg_misspec": "pg_misspec",
+    "shortestpath": "shortestpath",
 }
 
 PROB_VERSION = {
@@ -65,7 +66,7 @@ PROB_VERSION = {
     "budgetalloc": "real", "cubic": "gen", "bipartitematching": "cora",
     "portfolio": "real", "asurv": "real", "cook_county": "real",
     "speed_humps": "real", "sp_synth": "synth", "sp_planted": "planted",
-    "shortestpath": "warcraft",
+    "pg_misspec": "v3", "shortestpath": "warcraft",
 }
 
 METHOD_PROBLEMS = {
@@ -73,7 +74,7 @@ METHOD_PROBLEMS = {
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
     "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching",
                 "portfolio", "asurv", "cook_county", "speed_humps",
-                "sp_synth", "sp_planted"},
+                "sp_synth", "sp_planted", "pg_misspec"},
 }
 
 # Phase-2 sweeps: per method, a list of sub-sweeps. Each sub-sweep enumerates

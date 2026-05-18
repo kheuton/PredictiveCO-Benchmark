@@ -120,6 +120,16 @@
       "best_epoch": "Tr-9",
       "val_source": "val_eval"
     },
+    "pg_misspec": {
+      "lr": "5e-2",
+      "batch": "default",
+      "val": 0.07379,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-18",
+      "val_source": "val_eval"
+    },
     "shortestpath": {
       "lr": "5e-3",
       "batch": "alt",
@@ -250,6 +260,16 @@
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-8",
+      "val_source": "val_eval"
+    },
+    "pg_misspec": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.141254,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-15",
       "val_source": "val_eval"
     },
     "shortestpath": {
@@ -384,11 +404,21 @@
       "best_epoch": "Tr-49",
       "val_source": "val_eval"
     },
+    "pg_misspec": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.244101,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
     "shortestpath": {
-      "lr": "1e-1",
+      "lr": "5e-2",
       "batch": "default",
       "val": 15.013949,
-      "n_done": 8,
+      "n_done": 10,
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-2",
@@ -514,6 +544,16 @@
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-30",
+      "val_source": "val_eval"
+    },
+    "pg_misspec": {
+      "lr": "5e-2",
+      "batch": "default",
+      "val": 0.06462,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-58",
       "val_source": "val_eval"
     },
     "shortestpath": {
@@ -648,6 +688,16 @@
       "best_epoch": "Tr-4",
       "val_source": "val_eval"
     },
+    "pg_misspec": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.260912,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
     "shortestpath": {
       "lr": "1e-2",
       "batch": "default",
@@ -780,11 +830,21 @@
       "best_epoch": "Tr-1",
       "val_source": "val_eval"
     },
+    "pg_misspec": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.244101,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
     "shortestpath": {
       "lr": "1e-2",
       "batch": "alt",
       "val": 47.782707,
-      "n_done": 7,
+      "n_done": 10,
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-1",
@@ -912,14 +972,24 @@
       "best_epoch": "Tr-30",
       "val_source": "val_eval"
     },
-    "shortestpath": {
-      "lr": "1e-2",
-      "batch": "alt",
-      "val": 0.100675,
+    "pg_misspec": {
+      "lr": "5e-2",
+      "batch": "default",
+      "val": 0.06462,
       "n_done": 10,
       "n_total": 10,
       "metric": "val",
-      "best_epoch": "Tr-190",
+      "best_epoch": "Tr-41",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.070048,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-203",
       "val_source": "val_eval"
     }
   },
@@ -1042,6 +1112,16 @@
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-25",
+      "val_source": "val_eval"
+    },
+    "pg_misspec": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.06462,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-16",
       "val_source": "val_eval"
     },
     "shortestpath": {
@@ -1176,6 +1256,16 @@
       "best_epoch": "Tr-16",
       "val_source": "val_eval"
     },
+    "pg_misspec": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.06462,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-9",
+      "val_source": "val_eval"
+    },
     "shortestpath": {
       "lr": "1e-3",
       "batch": "default",
@@ -1306,6 +1396,16 @@
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-52",
+      "val_source": "val_eval"
+    },
+    "pg_misspec": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 0.071107,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-126",
       "val_source": "val_eval"
     },
     "shortestpath": {
@@ -1440,6 +1540,16 @@
       "best_epoch": "Tr-270",
       "val_source": "val_eval"
     },
+    "pg_misspec": {
+      "lr": "5e-2",
+      "batch": "alt",
+      "val": 0.06462,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-64",
+      "val_source": "val_eval"
+    },
     "shortestpath": {
       "lr": "1e-2",
       "batch": "alt",
@@ -1560,6 +1670,16 @@
       "n_total": 10,
       "metric": "val",
       "best_epoch": "Tr-191",
+      "val_source": "val_eval"
+    },
+    "pg_misspec": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 0.244101,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-1",
       "val_source": "val_eval"
     }
   },
@@ -1748,14 +1868,24 @@
       "best_epoch": "Tr-1",
       "val_source": "val_eval"
     },
-    "shortestpath": {
+    "pg_misspec": {
       "lr": "1e-2",
-      "batch": "alt",
-      "val": 15.013949,
-      "n_done": 9,
+      "batch": "default",
+      "val": 0.244101,
+      "n_done": 10,
       "n_total": 10,
       "metric": "val",
-      "best_epoch": "Tr-40",
+      "best_epoch": "Tr-1",
+      "val_source": "val_eval"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "default",
+      "val": 15.013949,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-54",
       "val_source": "val_eval"
     }
   }
