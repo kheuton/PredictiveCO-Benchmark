@@ -15,6 +15,7 @@ from openpto.problems.CookCounty import CookCounty
 from openpto.problems.CubicTopK import CubicTopK
 from openpto.problems.Energy import Energy
 from openpto.problems.Knapsack import Knapsack
+from openpto.problems.PGMisspec import PGMisspec
 from openpto.problems.PortfolioOpt import PortfolioOpt
 from openpto.problems.Shortestpath import Shortestpath
 from openpto.problems.ShortestpathSynth import ShortestpathSynth
@@ -48,6 +49,7 @@ def str2prob(prob_str):
         "shortestpath": Shortestpath,
         "sp_synth": ShortestpathSynth,
         "sp_planted": ShortestpathSynth,
+        "pg_misspec": PGMisspec,
         "TSP": TSP,
     }
     return prob_dict[prob_str]

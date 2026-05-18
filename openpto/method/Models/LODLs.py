@@ -310,8 +310,12 @@ class LODL(optModel):
         device = problem.device
         if sampling_std > 0:
             Y_std = float(sampling_std)
-        else:
+        elif Y.numel() > 1:
             Y_std = torch.std(Y) + 1e-5
+        else:
+            # Single-element Y (scalar target, e.g. pg_misspec): torch.std → NaN.
+            # Fall back to 1.0; override via sampling_std > 0 in the method YAML.
+            Y_std = torch.tensor(1.0)
         Y_std = Y_std.to(device)
         #   Generate points
         if sampling == "random":

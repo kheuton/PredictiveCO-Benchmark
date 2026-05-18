@@ -6,6 +6,7 @@ from openpto.method.Solvers.grb.grb_energy import ICONGrbSolver
 from openpto.method.Solvers.grb.grb_knapsack import KPGrbSolver
 from openpto.method.Solvers.grb.grb_qpsolver import QPGrbSolver
 from openpto.method.Solvers.grb.grb_tsp import TSPGrbSolver
+from openpto.method.Solvers.heuristic.BinarySignSolver import BinarySignSolver
 from openpto.method.Solvers.heuristic.dagSPSolver import dagSPSolver
 from openpto.method.Solvers.heuristic.dp import DPSolver
 from openpto.method.Solvers.heuristic.lkh import LKHSolver
@@ -37,6 +38,7 @@ def solver_wrapper(args, conf, problem):
         "shortestpath": {"heuristic": spSolver},
         "sp_synth": {"heuristic": dagSPSolver},
         "sp_planted": {"heuristic": dagSPSolver},
+        "pg_misspec": {"heuristic": BinarySignSolver},
         "TSP": {"gurobi": TSPGrbSolver, "heuristic": LKHSolver},
     }
     solve_dict = {**problem.init_API(), **conf["solver"][args.solver]}

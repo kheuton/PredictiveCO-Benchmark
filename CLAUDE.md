@@ -29,7 +29,7 @@ python rethink_exp/main_results.py \
 ```
 
 **Key arguments** (see `openpto/config/utils_conf.py` for full list):
-- `--problem`: `knapsack`, `portfolio`, `budgetalloc`, `energy`, `cubic`, `bipartitematching`, `advertising`, `shortestpath`, `sp_synth`, `sp_planted`, `TSP`, `asurv`, `cook_county`, `speed_humps`
+- `--problem`: `knapsack`, `portfolio`, `budgetalloc`, `energy`, `cubic`, `bipartitematching`, `advertising`, `shortestpath`, `sp_synth`, `sp_planted`, `pg_misspec`, `TSP`, `asurv`, `cook_county`, `speed_humps`
 - `--opt_model`: `mse`, `dfl`, `blackbox`, `identity`, `spo`, `nce`, `qptl`, `pointLTR`, `pairLTR`, `listLTR`, `lodl`, `perturb`, `cpLayer`, `pg`, `dad`
 - `--solver`: `gurobi`, `cvxpy`, `heuristic`, `neural`, `ortools`, `qptl`
 - `--method_path`: path to model config YAML (default `openpto/config/models/default.yaml`)
@@ -63,6 +63,7 @@ Instance counts — **must not deviate**:
 | speed_humps | (don't pass) | (don't pass) | real dataset; 2107 tracts, T=5/2/4 |
 | sp_synth | **400** | **10000** | synthetic 5×5 grid (SPO+ paper); `--pred_model dense --n_layers 1` |
 | sp_planted | **400** | **10000** | planted arcs 5×5 grid (PG paper); `--pred_model dense --n_layers 1` |
+| pg_misspec | **400** | **10000** | PG paper §4.1 misspec experiment (variant 3); `--pred_model dense --n_layers 1`; **val_frac forced to 0.5** in `PGMisspec.__init__` → n_train=200, n_val=200 per paper |
 | shortestpath | **10000** | **1000** | warcraft 12×12 images; `--pred_model Resnet18`; **needs GPU** |
 
 Knapsack-real, energy, asurv, cook_county, and speed_humps load fixed real-world splits. Do not pass `--instances`/`--testinstances` for them.
@@ -75,10 +76,11 @@ Knapsack-real, energy, asurv, cook_county, and speed_humps load fixed real-world
 - portfolio: `cvxpy`
 - asurv, cook_county, speed_humps: `heuristic` (TopK)
 - sp_synth, sp_planted: `heuristic` (DAG DP on edge costs)
+- pg_misspec: `heuristic` (BinarySignSolver — z=1 iff Y≤0 under MINIMIZE)
 - shortestpath (warcraft): `heuristic` (Dijkstra 8-grid on vertex costs)
 - qptl, cpLayer: only valid for knapsack / bipartitematching / portfolio
-- pg: valid for all problems except budgetalloc and shortestpath
-- dad: valid for all 13 problems
+- pg: valid for all problems except shortestpath (includes pg_misspec)
+- dad: valid for all 14 problems
 
 ## Hyperparameter Tuning Principle
 
@@ -102,7 +104,7 @@ python -m pytest tests/test_perturbed_softdecision.py -v
 The canonical benchmark comparison lives in the Phase 1/2 sweep infrastructure:
 
 ```bash
-# Submit Phase 1 (~1735 manifest entries: 15 methods × 13 tasks × 5 LR × 2 batch; qptl/cpLayer limited to 3 problems, pg excludes shortestpath/budgetalloc)
+# Submit Phase 1 (~1870 manifest entries: 15 methods × 14 tasks × 5 LR × 2 batch; qptl/cpLayer limited to 3 problems, pg excludes shortestpath)
 bash shells/slurm/submit_bench_p1.sh --dry-run          # preview
 bash shells/slurm/submit_bench_p1.sh                    # submit all
 bash shells/slurm/submit_bench_p1.sh --problem knapsack # filter by problem
@@ -171,7 +173,7 @@ Problems are cached to `saved_problems/` as pickles; use `--loadnew True` to for
 Selected by `solver_wrapper()` in `wrapper_solver.py`. Grouped by backend:
 - `grb/`: Gurobi-backed solvers (knapsack, energy, advertising, TSP, portfolio-QP)
 - `cvxpy/`: CvxpyLayer-backed differentiable solvers (portfolio, bipartite matching, knapsack)
-- `heuristic/`: DP, shortest-path, TopK, LKH
+- `heuristic/`: DP, shortest-path, TopK, LKH, BinarySignSolver (pg_misspec)
 - `neural/`: budget allocation, soft-TopK
 - `ortools/`: advertising
 

@@ -52,7 +52,7 @@ mkdir -p "$SCRIPT_DIR/logs/slurm"
 # Problem configuration
 # ====================================================================
 
-PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps sp_synth sp_planted shortestpath)
+PROBLEMS=(knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps sp_synth sp_planted pg_misspec shortestpath)
 
 declare -A PROB_ARG
 PROB_ARG[knapsack]=knapsack
@@ -67,6 +67,7 @@ PROB_ARG[cook_county]=cook_county
 PROB_ARG[speed_humps]=speed_humps
 PROB_ARG[sp_synth]=sp_synth
 PROB_ARG[sp_planted]=sp_planted
+PROB_ARG[pg_misspec]=pg_misspec
 PROB_ARG[shortestpath]=shortestpath
 
 declare -A PROB_VERSION
@@ -82,6 +83,7 @@ PROB_VERSION[cook_county]=real
 PROB_VERSION[speed_humps]=real
 PROB_VERSION[sp_synth]=synth
 PROB_VERSION[sp_planted]=planted
+PROB_VERSION[pg_misspec]=v3
 PROB_VERSION[shortestpath]=warcraft
 
 declare -A PROB_CONFIG
@@ -97,6 +99,7 @@ PROB_CONFIG[cook_county]=openpto/config/probs/cook_county.yaml
 PROB_CONFIG[speed_humps]=openpto/config/probs/speed_humps.yaml
 PROB_CONFIG[sp_synth]=openpto/config/probs/sp_synth.yaml
 PROB_CONFIG[sp_planted]=openpto/config/probs/sp_planted.yaml
+PROB_CONFIG[pg_misspec]=openpto/config/probs/pg_misspec.yaml
 PROB_CONFIG[shortestpath]=openpto/config/probs/shortestpath.yaml
 
 declare -A INSTANCES
@@ -112,6 +115,7 @@ INSTANCES[cook_county]=400       # silently ignored; dataset is fixed
 INSTANCES[speed_humps]=400       # silently ignored; dataset is fixed
 INSTANCES[sp_synth]=400
 INSTANCES[sp_planted]=400
+INSTANCES[pg_misspec]=400        # PG paper §4.1: n_train=200 + n_val=200 (val_frac forced to 0.5 in PGMisspec.__init__)
 INSTANCES[shortestpath]=10000    # warcraft: 10K train images
 
 declare -A TESTINSTANCES
@@ -127,6 +131,7 @@ TESTINSTANCES[cook_county]=200   # silently ignored
 TESTINSTANCES[speed_humps]=200   # silently ignored
 TESTINSTANCES[sp_synth]=10000
 TESTINSTANCES[sp_planted]=10000
+TESTINSTANCES[pg_misspec]=10000
 TESTINSTANCES[shortestpath]=1000
 
 # ---- Per-problem solvers per method group ----
@@ -144,6 +149,7 @@ SOLVER_PTO[cook_county]=heuristic
 SOLVER_PTO[speed_humps]=heuristic
 SOLVER_PTO[sp_synth]=heuristic
 SOLVER_PTO[sp_planted]=heuristic
+SOLVER_PTO[pg_misspec]=heuristic
 SOLVER_PTO[shortestpath]=heuristic
 
 declare -A SOLVER_PNO   # SPO, NCE, LTR, Blackbox, LODL, perturb
@@ -159,6 +165,7 @@ SOLVER_PNO[cook_county]=heuristic
 SOLVER_PNO[speed_humps]=heuristic
 SOLVER_PNO[sp_synth]=heuristic
 SOLVER_PNO[sp_planted]=heuristic
+SOLVER_PNO[pg_misspec]=heuristic
 SOLVER_PNO[shortestpath]=heuristic
 
 declare -A SOLVER_CVXPY  # QPTL, cpLayer — only valid for 3 tasks
@@ -228,7 +235,7 @@ METHOD_PROBLEMS[pairLTR]="all"
 METHOD_PROBLEMS[listLTR]="all"
 METHOD_PROBLEMS[lodl]="all"
 METHOD_PROBLEMS[perturb]="all"
-METHOD_PROBLEMS[pg]="knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps sp_synth sp_planted"
+METHOD_PROBLEMS[pg]="knapsack knapsack-real energy budgetalloc cubic bipartitematching portfolio asurv cook_county speed_humps sp_synth sp_planted pg_misspec"
 METHOD_PROBLEMS[qptl]="knapsack bipartitematching portfolio"
 METHOD_PROBLEMS[cpLayer]="knapsack bipartitematching portfolio"
 METHOD_PROBLEMS[dad]="all"
@@ -300,6 +307,7 @@ METHOD_PATH[dad]=openpto/config/models/default.yaml
 declare -A PRED_MODEL_ARGS
 PRED_MODEL_ARGS[sp_synth]="--pred_model dense --n_layers 1"      # linear model (SPO+ paper)
 PRED_MODEL_ARGS[sp_planted]="--pred_model dense --n_layers 1"    # linear model (PG paper)
+PRED_MODEL_ARGS[pg_misspec]="--pred_model dense --n_layers 1"    # linear model (PG paper §4.1)
 PRED_MODEL_ARGS[shortestpath]="--pred_model Resnet18"             # ResNet18 (DPO paper)
 
 # Extra args per method (e.g. --skip_solver_eval for PtO on energy)

@@ -33,6 +33,7 @@ def get_args():
             "asurv",
             "cook_county",
             "speed_humps",
+            "pg_misspec",
         ],
         default="knapsack",
     )
