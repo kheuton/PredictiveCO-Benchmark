@@ -111,6 +111,18 @@ bash shells/slurm/submit_bench_p1.sh --method mse       # filter by method
 # Monitor
 python rethink_exp/sweep_status.py --phase 1            # status grid (✓/R/--)
 python rethink_exp/sweep_status.py --phase 1 --vals     # best regret per cell
+python rethink_exp/sweep_status.py --phase 1 --queue    # split R into running (R) vs stranded (T = ckpt but not in squeue, usually TIMEOUT)
+
+# Cross-phase status overview: writes sweep_status.xlsx with a green/yellow/red
+# (method × task) grid. Cell categories:
+#   green  = P1 done AND (PtO-only OR P2 done with current best LR/batch)
+#   yellow = P1 done, P2 has running/stranded/missing jobs
+#   red    = P1 still has running/stranded jobs
+#   gray   = N/A (qptl/cpLayer non-LP, pg/shortestpath)
+# Reads sweep_manifest_p{1,2}.json directly, so flipped (lr, batch) cells from
+# the 5-LR expansion are already checked against the freshly-resubmitted P2 jobs.
+# Needs openpyxl (already in pco_bench_rhel7).
+python rethink_exp/export_sweep_status_xlsx.py          # → ./sweep_status.xlsx
 
 # Collect Phase 1 results → pick best (LR, batch) per method×task
 python rethink_exp/collect_bench_p1.py --metric val     # prints grid, writes bench_p1_best_val.json (val-selected; no test leakage)
