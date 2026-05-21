@@ -467,7 +467,44 @@ class ExpManager:
                 f"Previous best epoch: {best_epoch}, time since best: {time_since_best}"
             )
             _should_stop = False
-            if getattr(self.args, "skip_solver_eval", False):
+            if getattr(self.args, "selection_signal", "val_regret") == "train_mse":
+                # train_mse path: select on training MSE, skip all solver eval
+                # during training. Used by the mse_train pseudo-method in the
+                # Phase 1/2 sweep.
+                self.pred_model.eval()
+                with torch.no_grad():
+                    preds_train = self.pred_model(X_train)
+                    train_mse_losses = twostage_criterion(
+                        problem, preds_train, Y_train, **self.model_args
+                    )
+                    train_mse = float(do_reduction(train_mse_losses, "mean").item())
+                self.pred_model.train()
+                self.logger.info(f"Iter {iter_idx}, train MSE (no solver): {train_mse:.6f}")
+                _append_csv(_train_log_path,
+                            {"epoch": "Tr-" + str(iter_idx),
+                             "obj": 0.0,
+                             "loss": round(train_mse, 6),
+                             "pred_loss": round(train_mse, 6),
+                             "eval": round(train_mse, 6)})
+                if best[1] is None or train_mse < (
+                    float(best[0].mean()) if hasattr(best[0], "mean") else float(best[0])
+                ):
+                    best = (train_mse, deepcopy(self.pred_model))
+                    time_since_best = 0
+                    best_epoch = iter_idx
+                    torch.save(
+                        self.pred_model.state_dict(),
+                        os.path.join(self.args.log_dir, "checkpoints", "tr_pred_best.pt"),
+                    )
+                    torch.save(
+                        self.pred_model.state_dict(),
+                        os.path.join(
+                            self.args.bkup_log_dir, "checkpoints", "tr_pred_best.pt"
+                        ),
+                    )
+                if self.args.earlystopping and time_since_best > self.args.patience:
+                    _should_stop = True
+            elif getattr(self.args, "skip_solver_eval", False):
                 # Cheap path: skip train solver eval entirely.
                 # Val MSE is computed every epoch for logging.
                 # If solver_valfreq > 0, real val regret is computed every N epochs

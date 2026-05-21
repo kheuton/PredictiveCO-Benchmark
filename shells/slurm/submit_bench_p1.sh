@@ -225,6 +225,8 @@ LRS=(1e-2 5e-3 1e-3 5e-2 1e-1)
 # Format: METHOD_PROBLEMS[method] = "all" or space-separated problem names
 declare -A METHOD_PROBLEMS
 METHOD_PROBLEMS[mse]="all"
+METHOD_PROBLEMS[mse_train]="all"
+METHOD_PROBLEMS[mse_val]="all"
 METHOD_PROBLEMS[dfl]="all"
 METHOD_PROBLEMS[identity]="all"
 METHOD_PROBLEMS[spo]="all"
@@ -242,6 +244,8 @@ METHOD_PROBLEMS[dad]="all"
 
 declare -A METHOD_SOLVER_GROUP
 METHOD_SOLVER_GROUP[mse]=pto
+METHOD_SOLVER_GROUP[mse_train]=pto
+METHOD_SOLVER_GROUP[mse_val]=pto
 METHOD_SOLVER_GROUP[dfl]=pto
 METHOD_SOLVER_GROUP[identity]=pto
 METHOD_SOLVER_GROUP[spo]=pno
@@ -260,6 +264,8 @@ METHOD_SOLVER_GROUP[dad]=pno
 # Default batch config (benchmark default per method group)
 declare -A METHOD_DEFAULT_OPT
 METHOD_DEFAULT_OPT[mse]=gd
+METHOD_DEFAULT_OPT[mse_train]=gd
+METHOD_DEFAULT_OPT[mse_val]=gd
 METHOD_DEFAULT_OPT[dfl]=gd
 METHOD_DEFAULT_OPT[identity]=gd
 METHOD_DEFAULT_OPT[spo]=sgd      # benchmark used bs=1
@@ -288,6 +294,8 @@ METHOD_ALT_OPT=sgd   # all methods
 # Method config YAML (--method_path)
 declare -A METHOD_PATH
 METHOD_PATH[mse]=openpto/config/models/default.yaml
+METHOD_PATH[mse_train]=openpto/config/models/default.yaml
+METHOD_PATH[mse_val]=openpto/config/models/default.yaml
 METHOD_PATH[dfl]=openpto/config/models/default.yaml
 METHOD_PATH[identity]=openpto/config/models/default.yaml
 METHOD_PATH[spo]=openpto/config/models/default.yaml
@@ -443,6 +451,17 @@ submit_job() {
         extra_args="--skip_solver_eval"
     fi
 
+    # MSE selection-criterion variants:
+    #   mse_train: select on training MSE; no solver during training.
+    #   mse_val:   select on validation MSE; no solver during training.
+    # --opt_model carries the variant name (registered in utils_conf/wrapper_loss
+    # as aliases for MSE); ExpManager dispatches on --selection_signal.
+    if [[ "$method" == "mse_train" ]]; then
+        extra_args="--selection_signal train_mse --skip_solver_eval"
+    elif [[ "$method" == "mse_val" ]]; then
+        extra_args="--selection_signal val_mse --skip_solver_eval --solver_valfreq 0"
+    fi
+
     # Per-problem prediction model override
     local pred_model_args="${PRED_MODEL_ARGS[$prob]:-}"
 
@@ -520,7 +539,7 @@ $cmd
 # Main sweep
 # ====================================================================
 
-METHODS=(mse dfl identity spo nce blackbox pointLTR pairLTR listLTR lodl perturb pg qptl cpLayer dad)
+METHODS=(mse mse_train mse_val dfl identity spo nce blackbox pointLTR pairLTR listLTR lodl perturb pg qptl cpLayer dad)
 BATCH_LABELS=(default alt)
 
 echo "=== Benchmark Phase 1 sweep ==="

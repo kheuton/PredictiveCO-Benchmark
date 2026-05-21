@@ -1,6 +1,6 @@
 def get_ml_loss_fn(args, ptoSolver, conf):
     name = args.opt_model
-    if name == "mse":
+    if name in ("mse", "mse_train", "mse_val"):
         from openpto.method.Models.MSE import MSE
 
         ModelCalss = MSE
@@ -25,7 +25,7 @@ def get_ml_loss_fn(args, ptoSolver, conf):
 
 def get_loss_fn(args, ptoSolver, conf):
     name = args.opt_model
-    if name in ["mse", "msesum", "ce", "bce", "mae"]:
+    if name in ["mse", "mse_train", "mse_val", "msesum", "ce", "bce", "mae"]:
         ModelCalss = get_ml_loss_fn(args, ptoSolver, conf)
     elif name == "dfl":
         from openpto.method.Models.MSE import DFL

@@ -39,6 +39,10 @@ lodl:
   verbose: False
 mse:
   reduction: mean
+mse_train:
+  reduction: mean
+mse_val:
+  reduction: mean
 msemean:
   alpha: 0.1
 bce:

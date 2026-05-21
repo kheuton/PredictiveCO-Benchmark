@@ -48,6 +48,8 @@ def get_args():
         type=str,
         choices=[
             "mse",
+            "mse_train",
+            "mse_val",
             "dfl",
             "bce",
             "ce",
@@ -129,6 +131,13 @@ def get_args():
     parser.add_argument("--solver_valfreq", type=int, default=0,
                         help="With --skip_solver_eval: run solver on val every N epochs for "
                              "real val regret checkpoint selection. 0 = use val MSE only.")
+    parser.add_argument("--selection_signal", type=str,
+                        choices=["val_regret", "val_mse", "train_mse"],
+                        default="val_regret",
+                        help="Signal driving checkpoint selection and early stopping. "
+                             "val_regret (default): existing behavior. "
+                             "val_mse: equivalent to --skip_solver_eval --solver_valfreq 0. "
+                             "train_mse: select on training MSE; skip all solver eval during training.")
     parser.add_argument("--savefreq", type=int, default=-1)
     parser.add_argument("--prefix", type=str, default="default")
     # model

@@ -141,6 +141,290 @@
       "val_source": "val_eval"
     }
   },
+  "mse_train": {
+    "knapsack": {
+      "lr": "5e-2",
+      "batch": "alt",
+      "val": 1.389639,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-244",
+      "val_source": "train_pred_mse_csv"
+    },
+    "knapsack-real": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 633.487671,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-246",
+      "val_source": "train_pred_mse_csv"
+    },
+    "energy": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 671.81842,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-214",
+      "val_source": "train_pred_mse_csv"
+    },
+    "budgetalloc": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.000299,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-294",
+      "val_source": "train_pred_mse_csv"
+    },
+    "cubic": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 0.001639,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-289",
+      "val_source": "train_pred_mse_csv"
+    },
+    "bipartitematching": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.183467,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-82",
+      "val_source": "train_pred_mse_csv"
+    },
+    "portfolio": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.000381,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-201",
+      "val_source": "train_pred_mse_csv"
+    },
+    "asurv": {
+      "lr": "5e-2",
+      "batch": "default",
+      "val": 0.931114,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-298",
+      "val_source": "train_pred_mse_csv"
+    },
+    "cook_county": {
+      "lr": "1e-1",
+      "batch": "default",
+      "val": 0.885413,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-279",
+      "val_source": "train_pred_mse_csv"
+    },
+    "speed_humps": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 5.191636,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-297",
+      "val_source": "train_pred_mse_csv"
+    },
+    "sp_synth": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.449171,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-89",
+      "val_source": "train_pred_mse_csv"
+    },
+    "sp_planted": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.373943,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-266",
+      "val_source": "train_pred_mse_csv"
+    },
+    "pg_misspec": {
+      "lr": "5e-2",
+      "batch": "default",
+      "val": 0.320019,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-121",
+      "val_source": "train_pred_mse_csv"
+    },
+    "shortestpath": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 0.00455,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-300",
+      "val_source": "train_pred_mse_csv"
+    }
+  },
+  "mse_val": {
+    "knapsack": {
+      "lr": "5e-3",
+      "batch": "alt",
+      "val": 2.600906,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-223",
+      "val_source": "val_pred_mse"
+    },
+    "knapsack-real": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 824.580322,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-118",
+      "val_source": "val_pred_mse"
+    },
+    "energy": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 569.861145,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-100",
+      "val_source": "val_pred_mse"
+    },
+    "budgetalloc": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.000239,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-83",
+      "val_source": "val_pred_mse"
+    },
+    "cubic": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 0.001441,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-289",
+      "val_source": "val_pred_mse"
+    },
+    "bipartitematching": {
+      "lr": "1e-3",
+      "batch": "alt",
+      "val": 0.207678,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-25",
+      "val_source": "val_pred_mse"
+    },
+    "portfolio": {
+      "lr": "5e-2",
+      "batch": "alt",
+      "val": 0.000369,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-77",
+      "val_source": "val_pred_mse"
+    },
+    "asurv": {
+      "lr": "1e-1",
+      "batch": "default",
+      "val": 0.822447,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-67",
+      "val_source": "val_pred_mse"
+    },
+    "cook_county": {
+      "lr": "5e-3",
+      "batch": "default",
+      "val": 1.534544,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-22",
+      "val_source": "val_pred_mse"
+    },
+    "speed_humps": {
+      "lr": "1e-1",
+      "batch": "default",
+      "val": 4.104193,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-138",
+      "val_source": "val_pred_mse"
+    },
+    "sp_synth": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 0.623636,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-31",
+      "val_source": "val_pred_mse"
+    },
+    "sp_planted": {
+      "lr": "1e-1",
+      "batch": "alt",
+      "val": 0.502614,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-24",
+      "val_source": "val_pred_mse"
+    },
+    "pg_misspec": {
+      "lr": "5e-2",
+      "batch": "alt",
+      "val": 0.284635,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-86",
+      "val_source": "val_pred_mse"
+    },
+    "shortestpath": {
+      "lr": "1e-2",
+      "batch": "alt",
+      "val": 0.008685,
+      "n_done": 10,
+      "n_total": 10,
+      "metric": "val",
+      "best_epoch": "Tr-286",
+      "val_source": "val_pred_mse"
+    }
+  },
   "dfl": {
     "knapsack": {
       "lr": "5e-2",
@@ -985,11 +1269,11 @@
     "shortestpath": {
       "lr": "5e-3",
       "batch": "alt",
-      "val": 0.070048,
+      "val": 0.039856,
       "n_done": 10,
       "n_total": 10,
       "metric": "val",
-      "best_epoch": "Tr-203",
+      "best_epoch": "Tr-287",
       "val_source": "val_eval"
     }
   },
