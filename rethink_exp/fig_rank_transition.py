@@ -46,8 +46,8 @@ ALL_13 = ORIGINAL_7 + ["asurv", "cook_county", "speed_humps",
 # ---- Method sets ----
 PAPER_METHODS = ["mse", "spo", "dfl", "blackbox", "identity",
                  "nce", "pointLTR", "pairLTR", "listLTR", "lodl", "cpLayer"]
-NEW_METHODS   = ["perturb", "qptl", "pg", "dad"]
-ALL_METHODS   = PAPER_METHODS + NEW_METHODS   # 15 total
+NEW_METHODS   = ["perturb", "qptl", "pg", "dad", "mse_train", "mse_val"]
+ALL_METHODS   = PAPER_METHODS + NEW_METHODS   # 17 total
 
 METHOD_DISPLAY = {
     "mse": "MSE", "spo": "SPO+", "dfl": "DFL", "blackbox": "Blackbox",
@@ -55,6 +55,7 @@ METHOD_DISPLAY = {
     "pointLTR": "pt-LTR", "pairLTR": "pr-LTR", "listLTR": "L-LTR",
     "lodl": "LODL", "cpLayer": "cpLayer",
     "perturb": "Perturb", "qptl": "QPTL", "pg": "PG", "dad": "DAD",
+    "mse_train": "MSE (train-sel)", "mse_val": "MSE (val-sel)",
 }
 
 USE_ABSOLUTE = {"portfolio"}   # portfolio regret is raw, others are %

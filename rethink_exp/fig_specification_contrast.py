@@ -29,12 +29,14 @@ LOSS_MATRIX = "loss_matrix.json"
 OUT_FIG_DIR = "results"
 OUT_TAB     = "docs/tables/specification_contrast.md"
 
-METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
+METHODS = ["mse", "mse_train", "mse_val",
+           "dfl", "identity", "spo", "nce", "blackbox",
            "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
            "qptl", "cpLayer", "dad"]
 
 METHOD_DISPLAY = {
-    "mse": "MSE", "dfl": "DFL", "identity": "Identity", "spo": "SPO+",
+    "mse": "MSE", "mse_train": "MSE (train-sel)", "mse_val": "MSE (val-sel)",
+    "dfl": "DFL", "identity": "Identity", "spo": "SPO+",
     "nce": "NCE", "blackbox": "Blackbox",
     "pointLTR": "pt-LTR", "pairLTR": "pr-LTR", "listLTR": "L-LTR",
     "lodl": "LODL", "perturb": "Perturb", "pg": "PG",
@@ -43,7 +45,9 @@ METHOD_DISPLAY = {
 
 # Match family grouping from fig_bench_bump_rerun.py
 FAMILY = {
-    "mse":      ("Decision-blind",     "*", "#1f77b4", 180),
+    "mse":       ("Decision-blind",    "*", "#1f77b4", 180),
+    "mse_train": ("Decision-blind",    "*", "#7fb3d5", 180),
+    "mse_val":   ("Decision-blind",    "*", "#0e3a5e", 180),
     # Surrogate gradient
     "dfl":      ("Surrogate gradient", "h", "#bbbbbb", 90),
     "blackbox": ("Surrogate gradient", "h", "#888888", 90),

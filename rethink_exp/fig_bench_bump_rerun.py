@@ -93,12 +93,15 @@ PROB_DISPLAY = {
 }
 
 # ---- Method config ----
-METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
+METHODS = ["mse", "mse_train", "mse_val",
+           "dfl", "identity", "spo", "nce", "blackbox",
            "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg", "dad",
            "qptl", "cpLayer"]
 
 METHOD_DISPLAY = {
-    "mse":      "MSE",
+    "mse":       "MSE",
+    "mse_train": "MSE (train-sel)",
+    "mse_val":   "MSE (val-sel)",
     "dfl":      "DFL",
     "identity": "Identity",
     "spo":      "SPO+",
@@ -198,6 +201,18 @@ def get_best_result(prob, method, best_json):
     if allowed is not None and prob not in allowed:
         return None, None
 
+    # mse_train / mse_val use a non-val-regret selection criterion (train MSE
+    # and val MSE respectively). Their winners in best_json were picked by
+    # collect_bench_p1.py using the correct criterion — do NOT re-select by
+    # val regret here. Use only that single run's test regret.
+    if method in ("mse_train", "mse_val"):
+        cfg = best_json.get(method, {}).get(prob)
+        if cfg is None:
+            return None, None
+        prefix = f"bench_p1_{method}_{cfg['batch']}_lr{cfg['lr']}"
+        abs_r, rel_r = _read_test_regret(prob, method, prefix)
+        return abs_r, rel_r
+
     candidates = []  # list of (val_score, abs_r, rel_r)
 
     # ---- Phase 1: all LR × batch combos ----
@@ -269,6 +284,8 @@ for method in METHODS:
 # ============================================================
 
 MSE_C  = "#1f77b4"
+MSE_TRAIN_C = "#7fb3d5"  # lighter blue: MSE selected on train MSE
+MSE_VAL_C   = "#0e3a5e"  # darker blue:  MSE selected on val MSE
 LTRL_C = "#e67e22"
 
 G1 = "#bbbbbb"; G2 = "#888888"; G3 = "#444444"; G4 = "#222222"
@@ -276,7 +293,9 @@ G5 = "#666666"; G6 = "#999999"
 DAD_C = "#8e44ad"   # purple for DAD (new method, visually distinct)
 
 METHOD_STYLE = {
-    "mse":      ("*",  MSE_C,  80,  1.0),
+    "mse":       ("*",  MSE_C,       80,  1.0),
+    "mse_train": ("*",  MSE_TRAIN_C, 80,  1.0),
+    "mse_val":   ("*",  MSE_VAL_C,   80,  1.0),
     # Surrogate Gradient (hexagons)
     "dfl":      ("h",  G1,     50,  0.90),
     "blackbox": ("h",  G2,     50,  0.90),
@@ -316,7 +335,9 @@ plt.rcParams.update({
 
 np.random.seed(42)
 jitter_x = {m: np.random.uniform(-0.28, 0.28) for m in METHODS}
-jitter_x["mse"]     = -0.15
+jitter_x["mse"]       = -0.30
+jitter_x["mse_train"] = -0.15
+jitter_x["mse_val"]   = -0.22
 jitter_x["listLTR"] =  0.0
 jitter_x["perturb"] =  0.0
 jitter_x["dad"]     =  0.18
@@ -384,10 +405,15 @@ def _legend_elements(exclude_methods=()):
     def _hdr(t):
         return Line2D([0], [0], color="none",
                       label=r"$\bf{" + t.replace(" ", r"\ ") + r"}$")
+    def _star(col, lbl):
+        return Line2D([0], [0], marker="*", color="w", markerfacecolor=col,
+                      markeredgecolor="white", markersize=10, markeredgewidth=0.8,
+                      label=lbl)
     elements = [
-        Line2D([0], [0], marker="*", color="w", markerfacecolor=MSE_C,
-               markeredgecolor="white", markersize=10, markeredgewidth=0.8,
-               label="MSE  (Decision-Unaware)"),
+        _hdr("Decision-Unaware (MSE)"),
+        _star(MSE_C,       "MSE  (val regret sel.)"),
+        _star(MSE_VAL_C,   "MSE  (val MSE sel.)"),
+        _star(MSE_TRAIN_C, "MSE  (train MSE sel.)"),
         _hdr("Surrogate Gradient"),
         _le("h", G1, "DFL"), _le("h", G2, "Blackbox"),
         _le("h", G3, "Identity"), _le("h", G4, "Perturb"),
