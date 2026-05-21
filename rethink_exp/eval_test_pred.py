@@ -47,7 +47,8 @@ PROB_ARG = {
     "cubic": "cubic", "bipartitematching": "bipartitematching",
     "portfolio": "portfolio", "asurv": "asurv", "cook_county": "cook_county",
     "speed_humps": "speed_humps", "sp_synth": "sp_synth",
-    "sp_planted": "sp_planted", "shortestpath": "shortestpath",
+    "sp_planted": "sp_planted", "pg_misspec": "pg_misspec",
+    "shortestpath": "shortestpath",
 }
 
 INSTANCES = {
@@ -55,7 +56,7 @@ INSTANCES = {
     "budgetalloc": 400, "cubic": 250, "bipartitematching": 20,
     "portfolio": 400, "asurv": 400, "cook_county": 400,
     "speed_humps": 400, "sp_synth": 400, "sp_planted": 400,
-    "shortestpath": 10000,
+    "pg_misspec": 400, "shortestpath": 10000,
 }
 
 TESTINSTANCES = {
@@ -63,7 +64,7 @@ TESTINSTANCES = {
     "budgetalloc": 200, "cubic": 400, "bipartitematching": 6,
     "portfolio": 200, "asurv": 200, "cook_county": 200,
     "speed_humps": 200, "sp_synth": 10000, "sp_planted": 10000,
-    "shortestpath": 1000,
+    "pg_misspec": 10000, "shortestpath": 1000,
 }
 
 PROB_CONFIG = {
@@ -79,6 +80,7 @@ PROB_CONFIG = {
     "speed_humps": "openpto/config/probs/speed_humps.yaml",
     "sp_synth": "openpto/config/probs/sp_synth.yaml",
     "sp_planted": "openpto/config/probs/sp_planted.yaml",
+    "pg_misspec": "openpto/config/probs/pg_misspec.yaml",
     "shortestpath": "openpto/config/probs/shortestpath.yaml",
 }
 
@@ -86,6 +88,7 @@ PROB_CONFIG = {
 PRED_MODEL_OVERRIDE = {
     "sp_synth":     ("dense", 1),
     "sp_planted":   ("dense", 1),
+    "pg_misspec":   ("dense", 1),
     "shortestpath": ("Resnet18", 2),
 }
 

@@ -5,6 +5,8 @@ Each row: one method at its best (Phase 2) HP config. Values at the **best-val-r
 | Method | Config | Train pred | Val pred | Test pred | Train regret | Val regret | Test regret |
 |---|---|---|---|---|---|---|---|
 | mse | lr=1e-3, bs=alt | 0.0003 | 0.0003 | 0.0004 | 0.0392 | 0.0236 | 0.3657 |
+| mse_train | lr=1e-3, bs=alt | 0.0003 | 0.0003 | 0.0004 | — | — | 0.3442 |
+| mse_val | lr=1e-3, bs=alt | 0.0003 | 0.0002 | 0.0005 | — | — | 0.4202 |
 | dfl | lr=1e-3, bs=default, dflalpha=0.001 | 0.2350 | 0.2307 | 0.2341 | 0.0305 | 0.0198 | 0.2282 |
 | identity | lr=1e-2, bs=default | 1.2649 | 1.0798 | 1.0411 | 0.0193 | 0.0197 | 0.1465 |
 | spo | lr=1e-2, bs=alt | 0.0597 | 0.0481 | 0.0509 | 0.0039 | 0.0025 | 0.0510 |

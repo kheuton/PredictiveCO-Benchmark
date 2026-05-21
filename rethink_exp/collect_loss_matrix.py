@@ -40,9 +40,9 @@ import pandas as pd
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
             "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
-            "speed_humps", "sp_synth", "sp_planted", "shortestpath"]
+            "speed_humps", "sp_synth", "sp_planted", "pg_misspec", "shortestpath"]
 
-ALL_METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
+ALL_METHODS = ["mse", "mse_train", "mse_val", "dfl", "identity", "spo", "nce", "blackbox",
                "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
                "qptl", "cpLayer", "dad"]
 
@@ -59,6 +59,7 @@ PROB_ARG = {
     "speed_humps":        "speed_humps",
     "sp_synth":           "sp_synth",
     "sp_planted":         "sp_planted",
+    "pg_misspec":         "pg_misspec",
     "shortestpath":       "shortestpath",
 }
 PROB_VERSION = {
@@ -74,6 +75,7 @@ PROB_VERSION = {
     "speed_humps":        "real",
     "sp_synth":           "synth",
     "sp_planted":         "planted",
+    "pg_misspec":         "v3",
     "shortestpath":       "warcraft",
 }
 
@@ -82,7 +84,7 @@ METHOD_PROBLEMS = {
     "cpLayer": {"knapsack", "bipartitematching", "portfolio"},
     "pg":      {"knapsack", "knapsack-real", "energy", "cubic", "bipartitematching",
                 "portfolio", "asurv", "cook_county", "speed_humps",
-                "sp_synth", "sp_planted"},
+                "sp_synth", "sp_planted", "pg_misspec"},
 }
 
 # Methods with Phase-2 HP sweeps.
@@ -279,6 +281,73 @@ def read_test_pred_loss(dirpath):
         return np.nan
 
 
+def read_all_pred_losses(dirpath):
+    """Read all three (train, val, test) pred losses from test_pred_loss.json.
+    Returns (train, val, test) tuple of floats, nan where missing."""
+    path = os.path.join(dirpath, "test_pred_loss.json")
+    if not os.path.exists(path):
+        return np.nan, np.nan, np.nan
+    try:
+        with open(path) as f:
+            d = json.load(f)
+        return (float(d.get("train_pred_loss", np.nan)),
+                float(d.get("val_pred_loss",   np.nan)),
+                float(d.get("test_pred_loss",  np.nan)))
+    except Exception:
+        return np.nan, np.nan, np.nan
+
+
+def read_best_epoch_train_mse(dirpath):
+    """For mse_train runs: pick the epoch with min train MSE from train_logs.csv.
+    Returns (epoch_str, train_pred_loss) or (None, nan)."""
+    tpath = os.path.join(dirpath, "train_logs.csv")
+    if not os.path.exists(tpath):
+        return None, np.nan
+    try:
+        df = pd.read_csv(tpath)
+    except Exception:
+        return None, np.nan
+    if df.empty or "eval" not in df.columns:
+        return None, np.nan
+    df = df.dropna(subset=["eval"])
+    if df.empty:
+        return None, np.nan
+    idx = df["eval"].idxmin()
+    row = df.loc[idx]
+    return str(row["epoch"]), float(row["eval"])
+
+
+_LOG_VAL_MSE = __import__("re").compile(
+    r"Iter\s+(\d+),\s*val MSE \(no solver\):\s*([0-9eE+\-\.]+)"
+)
+
+
+def read_best_epoch_val_mse(dirpath):
+    """For mse_val runs: parse log.txt for min val MSE line.
+    Returns (epoch_str, val_pred_loss) or (None, nan)."""
+    lpath = os.path.join(dirpath, "log.txt")
+    if not os.path.exists(lpath):
+        return None, np.nan
+    try:
+        best = None
+        with open(lpath) as f:
+            for line in f:
+                m = _LOG_VAL_MSE.search(line)
+                if not m:
+                    continue
+                try:
+                    v = float(m.group(2))
+                except ValueError:
+                    continue
+                if best is None or v < best[1]:
+                    best = (f"Tr-{m.group(1)}", v)
+        if best is None:
+            return None, np.nan
+        return best
+    except Exception:
+        return None, np.nan
+
+
 def extract_run_metrics(dirpath, prob):
     """Return dict with six headline metrics + epoch + abs/rel test regret.
     nan where unavailable.
@@ -306,6 +375,21 @@ def extract_run_metrics(dirpath, prob):
         tp, te = read_train_row_at_epoch(dirpath, epoch_str)
         result["train_pred_loss"] = tp
         result["train_regret"] = te
+    else:
+        # No val_logs.csv (e.g., mse_train / mse_val / energy --skip_solver_eval
+        # runs). Best epoch comes from whatever selection signal was used.
+        # train/val regret will remain NaN since no solver was run during
+        # training, but pred losses can be filled from test_pred_loss.json
+        # (which eval_test_pred.py computes on the saved checkpoint).
+        method_dir = os.path.basename(os.path.dirname(dirpath))
+        if method_dir == "mse_train":
+            epoch_str, _ = read_best_epoch_train_mse(dirpath)
+            if epoch_str is not None:
+                result["best_epoch"] = epoch_str
+        elif method_dir == "mse_val":
+            epoch_str, _ = read_best_epoch_val_mse(dirpath)
+            if epoch_str is not None:
+                result["best_epoch"] = epoch_str
 
     abs_r, rel_r = load_test_regret(dirpath)
     if abs_r is not None:
@@ -316,7 +400,16 @@ def extract_run_metrics(dirpath, prob):
     if test_metric is not None:
         result["test_regret"] = test_metric
 
-    result["test_pred_loss"] = read_test_pred_loss(dirpath)
+    # test_pred_loss.json (produced by eval_test_pred.py on the saved
+    # checkpoint) carries train/val/test pred_loss. Use it to backfill any
+    # NaN pred-loss fields. This is the only source for mse_train / mse_val.
+    tr_pred, val_pred, te_pred = read_all_pred_losses(dirpath)
+    if np.isnan(result["test_pred_loss"]):
+        result["test_pred_loss"] = te_pred
+    if np.isnan(result["train_pred_loss"]):
+        result["train_pred_loss"] = tr_pred
+    if np.isnan(result["val_pred_loss"]):
+        result["val_pred_loss"] = val_pred
     return result
 
 

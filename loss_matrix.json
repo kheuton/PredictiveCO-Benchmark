@@ -2,66 +2,106 @@
   "knapsack": {
     "mse": {
       "metrics": {
-        "best_epoch": "Tr-76",
-        "train_pred_loss": 1.813249,
-        "train_regret": 1.690625,
-        "val_pred_loss": 2.682914,
-        "val_regret": 2.375,
-        "test_pred_loss": 2.3842861652374268,
-        "test_regret": 0.05438524025884621,
-        "test_regret_abs": 1.975,
-        "test_regret_rel": 0.05438524025884621
+        "best_epoch": "Tr-136",
+        "train_pred_loss": 1.725482,
+        "train_regret": 1.61875,
+        "val_pred_loss": 2.62547,
+        "val_regret": 2.3375,
+        "test_pred_loss": 2.3587472438812256,
+        "test_regret": 0.06016797466611593,
+        "test_regret_abs": 2.185,
+        "test_regret_rel": 0.06016797466611593
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "1e-1",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_mse_default_lr1e-1",
+      "run_dir": "saved_records/knapsack-gen/mse/bench_p1_mse_default_lr1e-1"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-244",
+        "train_pred_loss": 1.3896386623382568,
+        "train_regret": null,
+        "val_pred_loss": 3.537466049194336,
+        "val_regret": null,
+        "test_pred_loss": 2.8459012508392334,
+        "test_regret": 0.06333471017485887,
+        "test_regret_abs": 2.3,
+        "test_regret_rel": 0.06333471017485887
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
         "batch": "alt"
       },
-      "prefix": "bench_p1_mse_alt_lr1e-2",
-      "run_dir": "saved_records/knapsack-gen/mse/bench_p1_mse_alt_lr1e-2"
+      "prefix": "bench_p1_mse_train_alt_lr5e-2",
+      "run_dir": "saved_records/knapsack-gen/mse_train/bench_p1_mse_train_alt_lr5e-2"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-223",
+        "train_pred_loss": 1.7332432270050049,
+        "train_regret": null,
+        "val_pred_loss": 2.6009063720703125,
+        "val_regret": null,
+        "test_pred_loss": 2.378990650177002,
+        "test_regret": 0.05796502822525128,
+        "test_regret_abs": 2.105,
+        "test_regret_rel": 0.05796502822525128
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-3",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr5e-3",
+      "run_dir": "saved_records/knapsack-gen/mse_val/bench_p1_mse_val_alt_lr5e-3"
     },
     "dfl": {
       "metrics": {
-        "best_epoch": "Tr-112",
-        "train_pred_loss": 2.624712,
-        "train_regret": 2.096875,
-        "val_pred_loss": 3.468243,
-        "val_regret": 2.8125,
-        "test_pred_loss": 3.0091376304626465,
-        "test_regret": 0.06705218229381799,
-        "test_regret_abs": 2.435,
-        "test_regret_rel": 0.06705218229381799
+        "best_epoch": "Tr-49",
+        "train_pred_loss": 2.405742,
+        "train_regret": 2.01875,
+        "val_pred_loss": 3.140283,
+        "val_regret": 2.6375,
+        "test_pred_loss": 2.855987310409546,
+        "test_regret": 0.063747762632521,
+        "test_regret_abs": 2.315,
+        "test_regret_rel": 0.063747762632521
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "default",
         "hp_name": "dflalpha",
         "hp_val": "10.0",
         "hp_tag": "alpha10.0"
       },
-      "prefix": "bench_p2_dfl_alpha10.0_default_lr1e-2",
-      "run_dir": "saved_records/knapsack-gen/dfl/bench_p2_dfl_alpha10.0_default_lr1e-2"
+      "prefix": "bench_p2_dfl_alpha10.0_default_lr5e-2",
+      "run_dir": "saved_records/knapsack-gen/dfl/bench_p2_dfl_alpha10.0_default_lr5e-2"
     },
     "identity": {
       "metrics": {
-        "best_epoch": "Tr-4",
-        "train_pred_loss": 119.724129,
-        "train_regret": 9.3875,
-        "val_pred_loss": 129.220367,
-        "val_regret": 10.35,
-        "test_pred_loss": 120.40492248535156,
-        "test_regret": 0.2384689522235991,
-        "test_regret_abs": 8.66,
-        "test_regret_rel": 0.2384689522235991
+        "best_epoch": "Tr-53",
+        "train_pred_loss": 48922214400.0,
+        "train_regret": 9.528125,
+        "val_pred_loss": 50002145280.0,
+        "val_regret": 10.325,
+        "test_pred_loss": 37194768384.0,
+        "test_regret": 0.24232410849511224,
+        "test_regret_abs": 8.8,
+        "test_regret_rel": 0.24232410849511224
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "alt"
       },
-      "prefix": "bench_p1_identity_alt_lr1e-2",
-      "run_dir": "saved_records/knapsack-gen/identity/bench_p1_identity_alt_lr1e-2"
+      "prefix": "bench_p1_identity_alt_lr5e-2",
+      "run_dir": "saved_records/knapsack-gen/identity/bench_p1_identity_alt_lr5e-2"
     },
     "spo": {
       "metrics": {
@@ -260,26 +300,26 @@
     },
     "qptl": {
       "metrics": {
-        "best_epoch": "Tr-6",
-        "train_pred_loss": 339.071869,
-        "train_regret": 7.284375,
-        "val_pred_loss": 346.134583,
-        "val_regret": 8.1875,
-        "test_pred_loss": 345.05169677734375,
-        "test_regret": 0.20074349442379183,
-        "test_regret_abs": 7.29,
-        "test_regret_rel": 0.20074349442379183
+        "best_epoch": "Tr-3",
+        "train_pred_loss": 10093.807617,
+        "train_regret": 7.29375,
+        "val_pred_loss": 10133.694336,
+        "val_regret": 7.875,
+        "test_pred_loss": 10069.9482421875,
+        "test_regret": 0.19840286383037314,
+        "test_regret_abs": 7.205,
+        "test_regret_rel": 0.19840286383037314
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "alt",
         "hp_name": "tau",
         "hp_val": "0.1",
         "hp_tag": "tau0.1"
       },
-      "prefix": "bench_p2_qptl_tau0.1_alt_lr1e-2",
-      "run_dir": "saved_records/knapsack-gen/qptl/bench_p2_qptl_tau0.1_alt_lr1e-2"
+      "prefix": "bench_p2_qptl_tau0.1_alt_lr5e-2",
+      "run_dir": "saved_records/knapsack-gen/qptl/bench_p2_qptl_tau0.1_alt_lr5e-2"
     },
     "cpLayer": {
       "metrics": {
@@ -328,66 +368,106 @@
   "knapsack-real": {
     "mse": {
       "metrics": {
-        "best_epoch": "Tr-178",
-        "train_pred_loss": 669.725403,
-        "train_regret": 61.370861,
-        "val_pred_loss": 848.11792,
-        "val_regret": 72.132545,
-        "test_pred_loss": 589.8735961914062,
-        "test_regret": 0.07631500817567272,
-        "test_regret_abs": 62.8508059988545,
-        "test_regret_rel": 0.07631500817567272
+        "best_epoch": "Tr-15",
+        "train_pred_loss": 700.069763,
+        "train_regret": 62.383797,
+        "val_pred_loss": 870.17804,
+        "val_regret": 71.252731,
+        "test_pred_loss": 617.7439575195312,
+        "test_regret": 0.08168218818567424,
+        "test_regret_abs": 67.27105828780162,
+        "test_regret_rel": 0.08168218818567424
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "alt"
       },
-      "prefix": "bench_p1_mse_alt_lr1e-2",
-      "run_dir": "saved_records/knapsack-energy/mse/bench_p1_mse_alt_lr1e-2"
+      "prefix": "bench_p1_mse_alt_lr1e-1",
+      "run_dir": "saved_records/knapsack-energy/mse/bench_p1_mse_alt_lr1e-1"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-246",
+        "train_pred_loss": 633.4876708984375,
+        "train_regret": null,
+        "val_pred_loss": 848.8085327148438,
+        "val_regret": null,
+        "test_pred_loss": 581.1327514648438,
+        "test_regret": 0.07765710923536792,
+        "test_regret_abs": 63.95612113083465,
+        "test_regret_rel": 0.07765710923536792
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr1e-1",
+      "run_dir": "saved_records/knapsack-energy/mse_train/bench_p1_mse_train_alt_lr1e-1"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-118",
+        "train_pred_loss": 646.9794311523438,
+        "train_regret": null,
+        "val_pred_loss": 824.580322265625,
+        "val_regret": null,
+        "test_pred_loss": 571.187255859375,
+        "test_regret": 0.07799770609862776,
+        "test_regret_abs": 64.23662673370748,
+        "test_regret_rel": 0.07799770609862776
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr1e-1",
+      "run_dir": "saved_records/knapsack-energy/mse_val/bench_p1_mse_val_alt_lr1e-1"
     },
     "dfl": {
       "metrics": {
-        "best_epoch": "Tr-184",
-        "train_pred_loss": 712.266602,
-        "train_regret": 61.66132,
-        "val_pred_loss": 866.665405,
-        "val_regret": 71.665085,
-        "test_pred_loss": 621.0205078125,
-        "test_regret": 0.07112785952879858,
-        "test_regret_abs": 58.578822268715385,
-        "test_regret_rel": 0.07112785952879858
+        "best_epoch": "Tr-15",
+        "train_pred_loss": 727.540649,
+        "train_regret": 63.243454,
+        "val_pred_loss": 884.065918,
+        "val_regret": 71.22364,
+        "test_pred_loss": 623.3392333984375,
+        "test_regret": 0.08179992381525415,
+        "test_regret_abs": 67.36802190466773,
+        "test_regret_rel": 0.08179992381525415
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "alt",
         "hp_name": "dflalpha",
         "hp_val": "1.0",
         "hp_tag": "alpha1.0"
       },
-      "prefix": "bench_p2_dfl_alpha1.0_alt_lr1e-2",
-      "run_dir": "saved_records/knapsack-energy/dfl/bench_p2_dfl_alpha1.0_alt_lr1e-2"
+      "prefix": "bench_p2_dfl_alpha1.0_alt_lr1e-1",
+      "run_dir": "saved_records/knapsack-energy/dfl/bench_p2_dfl_alpha1.0_alt_lr1e-1"
     },
     "identity": {
       "metrics": {
-        "best_epoch": "Tr-205",
-        "train_pred_loss": 53711.792969,
-        "train_regret": 256.183075,
-        "val_pred_loss": 57338.722656,
-        "val_regret": 263.348602,
-        "test_pred_loss": 74613.1796875,
-        "test_regret": 0.3513607508024181,
-        "test_regret_abs": 289.37042545366893,
-        "test_regret_rel": 0.3513607508024181
+        "best_epoch": "Tr-154",
+        "train_pred_loss": 347938018557952.0,
+        "train_regret": 136.20784,
+        "val_pred_loss": 383889646288896.0,
+        "val_regret": 142.328735,
+        "test_pred_loss": 549216594165760.0,
+        "test_regret": 0.1641303050224688,
+        "test_regret_abs": 135.17291298395472,
+        "test_regret_rel": 0.1641303050224688
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
-        "batch": "default"
+        "lr": "1e-1",
+        "batch": "alt"
       },
-      "prefix": "bench_p1_identity_default_lr5e-3",
-      "run_dir": "saved_records/knapsack-energy/identity/bench_p1_identity_default_lr5e-3"
+      "prefix": "bench_p1_identity_alt_lr1e-1",
+      "run_dir": "saved_records/knapsack-energy/identity/bench_p1_identity_alt_lr1e-1"
     },
     "spo": {
       "metrics": {
@@ -431,26 +511,26 @@
     },
     "blackbox": {
       "metrics": {
-        "best_epoch": "Tr-8",
-        "train_pred_loss": 5273.407227,
-        "train_regret": 304.456726,
-        "val_pred_loss": 5549.210938,
-        "val_regret": 310.91214,
-        "test_pred_loss": 4813.43408203125,
-        "test_regret": 0.36568537576228993,
-        "test_regret_abs": 301.1677671022053,
-        "test_regret_rel": 0.36568537576228993
+        "best_epoch": "Tr-2",
+        "train_pred_loss": 4980.962891,
+        "train_regret": 302.974579,
+        "val_pred_loss": 5253.069824,
+        "val_regret": 303.624115,
+        "test_pred_loss": 4508.8720703125,
+        "test_regret": 0.37287297317887447,
+        "test_regret_abs": 307.0872618598777,
+        "test_regret_rel": 0.37287297317887447
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "default",
         "hp_name": "lambd",
         "hp_val": "0.01",
         "hp_tag": "lam0.01"
       },
-      "prefix": "bench_p2_blackbox_lam0.01_default_lr1e-2",
-      "run_dir": "saved_records/knapsack-energy/blackbox/bench_p2_blackbox_lam0.01_default_lr1e-2"
+      "prefix": "bench_p2_blackbox_lam0.01_default_lr1e-1",
+      "run_dir": "saved_records/knapsack-energy/blackbox/bench_p2_blackbox_lam0.01_default_lr1e-1"
     },
     "pointLTR": {
       "metrics": {
@@ -474,69 +554,69 @@
     },
     "pairLTR": {
       "metrics": {
-        "best_epoch": "Tr-107",
-        "train_pred_loss": 5448.092773,
-        "train_regret": 73.288727,
-        "val_pred_loss": 5725.777344,
-        "val_regret": 71.283371,
-        "test_pred_loss": 4996.3974609375,
-        "test_regret": 0.10984774234405008,
-        "test_regret_abs": 90.46738391988892,
-        "test_regret_rel": 0.10984774234405008
+        "best_epoch": "Tr-19",
+        "train_pred_loss": 5442.174316,
+        "train_regret": 59.73484,
+        "val_pred_loss": 5720.075195,
+        "val_regret": 69.940544,
+        "test_pred_loss": 4991.7919921875,
+        "test_regret": 0.08116365740872179,
+        "test_regret_abs": 66.84401152405557,
+        "test_regret_rel": 0.08116365740872179
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
+        "lr": "5e-2",
         "batch": "alt"
       },
-      "prefix": "bench_p1_pairLTR_alt_lr5e-3",
-      "run_dir": "saved_records/knapsack-energy/pairLTR/bench_p1_pairLTR_alt_lr5e-3"
+      "prefix": "bench_p1_pairLTR_alt_lr5e-2",
+      "run_dir": "saved_records/knapsack-energy/pairLTR/bench_p1_pairLTR_alt_lr5e-2"
     },
     "listLTR": {
       "metrics": {
-        "best_epoch": "Tr-2",
-        "train_pred_loss": 5160.394043,
-        "train_regret": 61.05191,
-        "val_pred_loss": 5445.466797,
-        "val_regret": 71.675362,
-        "test_pred_loss": 4748.642578125,
-        "test_regret": 0.07175740971931009,
-        "test_regret_abs": 59.09730137048391,
-        "test_regret_rel": 0.07175740971931009
+        "best_epoch": "Tr-20",
+        "train_pred_loss": 5081.034668,
+        "train_regret": 59.217365,
+        "val_pred_loss": 5372.978027,
+        "val_regret": 74.104546,
+        "test_pred_loss": 4663.40478515625,
+        "test_regret": 0.07839419909030541,
+        "test_regret_abs": 64.56316675113726,
+        "test_regret_rel": 0.07839419909030541
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
-        "batch": "default",
+        "lr": "5e-2",
+        "batch": "alt",
         "hp_name": "tau",
         "hp_val": "0.1",
         "hp_tag": "tau0.1"
       },
-      "prefix": "bench_p2_listLTR_tau0.1_default_lr1e-2",
-      "run_dir": "saved_records/knapsack-energy/listLTR/bench_p2_listLTR_tau0.1_default_lr1e-2"
+      "prefix": "bench_p2_listLTR_tau0.1_alt_lr5e-2",
+      "run_dir": "saved_records/knapsack-energy/listLTR/bench_p2_listLTR_tau0.1_alt_lr5e-2"
     },
     "lodl": {
       "metrics": {
-        "best_epoch": "Tr-261",
-        "train_pred_loss": 890.117249,
-        "train_regret": 76.815918,
-        "val_pred_loss": 1051.208862,
-        "val_regret": 81.750465,
-        "test_pred_loss": 803.0925903320312,
-        "test_regret": 0.09922076548106457,
-        "test_regret_abs": 81.71531696561017,
-        "test_regret_rel": 0.09922076548106457
+        "best_epoch": "Tr-72",
+        "train_pred_loss": 801.293579,
+        "train_regret": 67.19799,
+        "val_pred_loss": 973.673889,
+        "val_regret": 73.017426,
+        "test_pred_loss": 703.5408325195312,
+        "test_regret": 0.084862378542915,
+        "test_regret_abs": 69.89016994041732,
+        "test_regret_rel": 0.084862378542915
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
+        "lr": "1e-1",
         "batch": "default",
         "hp_name": "num_samples",
         "hp_val": "500",
         "hp_tag": "ns500"
       },
-      "prefix": "bench_p2_lodl_ns500_default_lr5e-3",
-      "run_dir": "saved_records/knapsack-energy/lodl/bench_p2_lodl_ns500_default_lr5e-3"
+      "prefix": "bench_p2_lodl_ns500_default_lr1e-1",
+      "run_dir": "saved_records/knapsack-energy/lodl/bench_p2_lodl_ns500_default_lr1e-1"
     },
     "perturb": {
       "metrics": {
@@ -563,26 +643,26 @@
     },
     "pg": {
       "metrics": {
-        "best_epoch": "Tr-78",
-        "train_pred_loss": 4089.800781,
-        "train_regret": 61.047958,
-        "val_pred_loss": 4377.189941,
-        "val_regret": 73.584724,
-        "test_pred_loss": 3888.142333984375,
-        "test_regret": 0.08121412190140623,
-        "test_regret_abs": 66.88557260247725,
-        "test_regret_rel": 0.08121412190140623
+        "best_epoch": "Tr-144",
+        "train_pred_loss": 48415.023438,
+        "train_regret": 57.040955,
+        "val_pred_loss": 44872.890625,
+        "val_regret": 70.581276,
+        "test_pred_loss": 45804.78125,
+        "test_regret": 0.07705163444972507,
+        "test_regret_abs": 63.45746982751516,
+        "test_regret_rel": 0.07705163444972507
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
+        "lr": "5e-2",
         "batch": "alt",
         "hp_name": "sigma",
-        "hp_val": "0.01",
-        "hp_tag": "s0p01"
+        "hp_val": "0.05",
+        "hp_tag": "s0p05"
       },
-      "prefix": "bench_p2_pg_s0p01_alt_lr5e-3",
-      "run_dir": "saved_records/knapsack-energy/pg/bench_p2_pg_s0p01_alt_lr5e-3"
+      "prefix": "bench_p2_pg_s0p05_alt_lr5e-2",
+      "run_dir": "saved_records/knapsack-energy/pg/bench_p2_pg_s0p05_alt_lr5e-2"
     },
     "dad": {
       "metrics": {
@@ -612,29 +692,69 @@
     "mse": {
       "metrics": {
         "best_epoch": null,
-        "train_pred_loss": null,
+        "train_pred_loss": 672.3024291992188,
         "train_regret": null,
-        "val_pred_loss": null,
+        "val_pred_loss": 565.3019409179688,
         "val_regret": null,
-        "test_pred_loss": 627.1151733398438,
-        "test_regret": 0.020395614348527945,
-        "test_regret_abs": 39029.838157955965,
-        "test_regret_rel": 0.020395614348527945
+        "test_pred_loss": 614.9794921875,
+        "test_regret": 0.021401392905195566,
+        "test_regret_abs": 40954.534988297484,
+        "test_regret_rel": 0.021401392905195566
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
+        "lr": "1e-1",
         "batch": "alt"
       },
-      "prefix": "bench_p1_mse_alt_lr5e-3",
-      "run_dir": "saved_records/energy-energy/mse/bench_p1_mse_alt_lr5e-3"
+      "prefix": "bench_p1_mse_alt_lr1e-1",
+      "run_dir": "saved_records/energy-energy/mse/bench_p1_mse_alt_lr1e-1"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-214",
+        "train_pred_loss": 671.818359375,
+        "train_regret": null,
+        "val_pred_loss": 567.8829956054688,
+        "val_regret": null,
+        "test_pred_loss": 611.027587890625,
+        "test_regret": 0.02135108949764989,
+        "test_regret_abs": 40858.27243784172,
+        "test_regret_rel": 0.02135108949764989
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr1e-1",
+      "run_dir": "saved_records/energy-energy/mse_train/bench_p1_mse_train_alt_lr1e-1"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-100",
+        "train_pred_loss": 683.0355224609375,
+        "train_regret": null,
+        "val_pred_loss": 569.8611450195312,
+        "val_regret": null,
+        "test_pred_loss": 626.4076538085938,
+        "test_regret": 0.020372296869604144,
+        "test_regret_abs": 38985.216926494344,
+        "test_regret_rel": 0.020372296869604144
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr1e-1",
+      "run_dir": "saved_records/energy-energy/mse_val/bench_p1_mse_val_alt_lr1e-1"
     },
     "dfl": {
       "metrics": {
         "best_epoch": null,
-        "train_pred_loss": null,
+        "train_pred_loss": 5353.3369140625,
         "train_regret": null,
-        "val_pred_loss": null,
+        "val_pred_loss": 5264.24755859375,
         "val_regret": null,
         "test_pred_loss": 5280.37353515625,
         "test_regret": 0.17147750254925068,
@@ -655,9 +775,9 @@
     "identity": {
       "metrics": {
         "best_epoch": null,
-        "train_pred_loss": null,
+        "train_pred_loss": 5353.31884765625,
         "train_regret": null,
-        "val_pred_loss": null,
+        "val_pred_loss": 5264.234375,
         "val_regret": null,
         "test_pred_loss": 5280.34130859375,
         "test_regret": 0.1708395871219079,
@@ -674,23 +794,23 @@
     },
     "spo": {
       "metrics": {
-        "best_epoch": "Tr-38",
-        "train_pred_loss": 4466.101074,
-        "train_regret": 25146.831186,
-        "val_pred_loss": 4373.248535,
-        "val_regret": 30827.969316,
-        "test_pred_loss": 4796.36572265625,
-        "test_regret": 0.01809187728030688,
-        "test_regret_abs": 34621.3176106138,
-        "test_regret_rel": 0.01809187728030688
+        "best_epoch": "Tr-28",
+        "train_pred_loss": 3769.348389,
+        "train_regret": 27866.394522,
+        "val_pred_loss": 3609.151367,
+        "val_regret": 29116.468444,
+        "test_pred_loss": 3851.390625,
+        "test_regret": 0.01998543934948327,
+        "test_regret_abs": 38244.91138126836,
+        "test_regret_rel": 0.01998543934948327
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
+        "lr": "1e-1",
         "batch": "default"
       },
-      "prefix": "bench_p1_spo_default_lr5e-3",
-      "run_dir": "saved_records/energy-energy/spo/bench_p1_spo_default_lr5e-3"
+      "prefix": "bench_p1_spo_default_lr1e-1",
+      "run_dir": "saved_records/energy-energy/spo/bench_p1_spo_default_lr1e-1"
     },
     "nce": {
       "metrics": {
@@ -714,26 +834,26 @@
     },
     "blackbox": {
       "metrics": {
-        "best_epoch": "Tr-3",
-        "train_pred_loss": 7686.289551,
-        "train_regret": 52421.973524,
-        "val_pred_loss": 7552.727051,
-        "val_regret": 56046.685418,
-        "test_pred_loss": 7376.51513671875,
-        "test_regret": 0.03468060961386717,
-        "test_regret_abs": 66366.15878874871,
-        "test_regret_rel": 0.03468060961386717
+        "best_epoch": "Tr-8",
+        "train_pred_loss": 9507.928711,
+        "train_regret": 36107.452208,
+        "val_pred_loss": 9317.40625,
+        "val_regret": 35115.120804,
+        "test_pred_loss": 9059.8896484375,
+        "test_regret": 0.02393300087852556,
+        "test_regret_abs": 45799.11813200612,
+        "test_regret_rel": 0.02393300087852556
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
-        "batch": "alt",
+        "lr": "1e-1",
+        "batch": "default",
         "hp_name": "lambd",
-        "hp_val": "0.01",
-        "hp_tag": "lam0.01"
+        "hp_val": "0.05",
+        "hp_tag": "lam0.05"
       },
-      "prefix": "bench_p2_blackbox_lam0.01_alt_lr1e-2",
-      "run_dir": "saved_records/energy-energy/blackbox/bench_p2_blackbox_lam0.01_alt_lr1e-2"
+      "prefix": "bench_p2_blackbox_lam0.05_default_lr1e-1",
+      "run_dir": "saved_records/energy-energy/blackbox/bench_p2_blackbox_lam0.05_default_lr1e-1"
     },
     "pointLTR": {
       "metrics": {
@@ -800,26 +920,26 @@
     },
     "lodl": {
       "metrics": {
-        "best_epoch": "Tr-94",
-        "train_pred_loss": 866.239319,
-        "train_regret": 37155.232372,
-        "val_pred_loss": 719.145813,
-        "val_regret": 44247.643178,
-        "test_pred_loss": 838.398193359375,
-        "test_regret": 0.024035624761233877,
-        "test_regret_abs": 45995.503171691664,
-        "test_regret_rel": 0.024035624761233877
+        "best_epoch": "Tr-41",
+        "train_pred_loss": 916.674194,
+        "train_regret": 35292.624542,
+        "val_pred_loss": 765.914429,
+        "val_regret": 38134.029558,
+        "test_pred_loss": 880.431396484375,
+        "test_regret": 0.02318464964492244,
+        "test_regret_abs": 44367.04420504718,
+        "test_regret_rel": 0.02318464964492244
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "alt",
         "hp_name": "num_samples",
         "hp_val": "250",
         "hp_tag": "ns250"
       },
-      "prefix": "bench_p2_lodl_ns250_alt_lr1e-2",
-      "run_dir": "saved_records/energy-energy/lodl/bench_p2_lodl_ns250_alt_lr1e-2"
+      "prefix": "bench_p2_lodl_ns250_alt_lr1e-1",
+      "run_dir": "saved_records/energy-energy/lodl/bench_p2_lodl_ns250_alt_lr1e-1"
     },
     "perturb": {
       "metrics": {
@@ -846,49 +966,49 @@
     },
     "pg": {
       "metrics": {
-        "best_epoch": "Tr-86",
-        "train_pred_loss": 4783.463379,
-        "train_regret": 28816.245336,
-        "val_pred_loss": 4675.835449,
-        "val_regret": 30131.292728,
-        "test_pred_loss": 4758.26416015625,
-        "test_regret": 0.019291176118762778,
-        "test_regret_abs": 36916.342353094115,
-        "test_regret_rel": 0.019291176118762778
+        "best_epoch": "Tr-13",
+        "train_pred_loss": 5557.65918,
+        "train_regret": 26599.981108,
+        "val_pred_loss": 5372.493164,
+        "val_regret": 29595.571474,
+        "test_pred_loss": 5443.8544921875,
+        "test_regret": 0.019416041468185978,
+        "test_regret_abs": 37155.28952557171,
+        "test_regret_rel": 0.019416041468185978
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
-        "batch": "default",
+        "lr": "5e-2",
+        "batch": "alt",
         "hp_name": "sigma",
         "hp_val": "0.1",
         "hp_tag": "s0p1"
       },
-      "prefix": "bench_p2_pg_s0p1_default_lr1e-2",
-      "run_dir": "saved_records/energy-energy/pg/bench_p2_pg_s0p1_default_lr1e-2"
+      "prefix": "bench_p2_pg_s0p1_alt_lr5e-2",
+      "run_dir": "saved_records/energy-energy/pg/bench_p2_pg_s0p1_alt_lr5e-2"
     },
     "dad": {
       "metrics": {
-        "best_epoch": "Tr-3",
-        "train_pred_loss": 5401.097656,
-        "train_regret": 208123.574078,
-        "val_pred_loss": 5310.967773,
-        "val_regret": 192400.778214,
-        "test_pred_loss": 5325.15087890625,
-        "test_regret": 0.11707640295569315,
-        "test_regret_abs": 224041.94261528298,
-        "test_regret_rel": 0.11707640295569315
+        "best_epoch": "Tr-1",
+        "train_pred_loss": 5513.84375,
+        "train_regret": 101446.690523,
+        "val_pred_loss": 5421.748047,
+        "val_regret": 101483.081732,
+        "test_pred_loss": 5431.66552734375,
+        "test_regret": 0.06550869517660395,
+        "test_regret_abs": 125359.97822817527,
+        "test_regret_rel": 0.06550869517660395
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "default",
         "hp_name": "stein_weight",
         "hp_val": "5.0",
         "hp_tag": "sw5p0"
       },
-      "prefix": "bench_p2_dad_sw5p0_default_lr1e-2",
-      "run_dir": "saved_records/energy-energy/dad/bench_p2_dad_sw5p0_default_lr1e-2"
+      "prefix": "bench_p2_dad_sw5p0_default_lr1e-1",
+      "run_dir": "saved_records/energy-energy/dad/bench_p2_dad_sw5p0_default_lr1e-1"
     }
   },
   "budgetalloc": {
@@ -911,6 +1031,46 @@
       },
       "prefix": "bench_p1_mse_alt_lr1e-3",
       "run_dir": "saved_records/budgetalloc-real/mse/bench_p1_mse_alt_lr1e-3"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-294",
+        "train_pred_loss": 0.0002992416557390243,
+        "train_regret": null,
+        "val_pred_loss": 0.00029496962088160217,
+        "val_regret": null,
+        "test_pred_loss": 0.00042825573473237455,
+        "test_regret": 0.3441647665868412,
+        "test_regret_abs": 0.04145933985710144,
+        "test_regret_rel": 0.3441647665868412
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-3",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr1e-3",
+      "run_dir": "saved_records/budgetalloc-real/mse_train/bench_p1_mse_train_alt_lr1e-3"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-83",
+        "train_pred_loss": 0.00033915723906829953,
+        "train_regret": null,
+        "val_pred_loss": 0.00023932075418997556,
+        "val_regret": null,
+        "test_pred_loss": 0.00045327076804824173,
+        "test_regret": 0.4202243124808028,
+        "test_regret_abs": 0.050621749460697175,
+        "test_regret_rel": 0.4202243124808028
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-3",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr1e-3",
+      "run_dir": "saved_records/budgetalloc-real/mse_val/bench_p1_mse_val_alt_lr1e-3"
     },
     "dfl": {
       "metrics": {
@@ -1154,23 +1314,63 @@
   "cubic": {
     "mse": {
       "metrics": {
-        "best_epoch": "Tr-160",
-        "train_pred_loss": 0.006872,
-        "train_regret": 0.003261,
-        "val_pred_loss": 0.006735,
-        "val_regret": 0.001664,
-        "test_pred_loss": 0.006880004890263081,
-        "test_regret": 0.000324411744628851,
-        "test_regret_abs": 0.0036461639404296877,
-        "test_regret_rel": 0.000324411744628851
+        "best_epoch": "Tr-68",
+        "train_pred_loss": 0.004993,
+        "train_regret": 0.003092,
+        "val_pred_loss": 0.00515,
+        "val_regret": 0.000347,
+        "test_pred_loss": 0.005285491235554218,
+        "test_regret": 0.00032940356917126364,
+        "test_regret_abs": 0.0037022686004638673,
+        "test_regret_rel": 0.00032940356917126364
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
+        "lr": "1e-1",
         "batch": "alt"
       },
-      "prefix": "bench_p1_mse_alt_lr5e-3",
-      "run_dir": "saved_records/cubic-gen/mse/bench_p1_mse_alt_lr5e-3"
+      "prefix": "bench_p1_mse_alt_lr1e-1",
+      "run_dir": "saved_records/cubic-gen/mse/bench_p1_mse_alt_lr1e-1"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-289",
+        "train_pred_loss": 0.001639244845137,
+        "train_regret": null,
+        "val_pred_loss": 0.001688032178208232,
+        "val_regret": null,
+        "test_pred_loss": 0.0016358179273083806,
+        "test_regret": 0.0007278664386678738,
+        "test_regret_abs": 0.008180716037750245,
+        "test_regret_rel": 0.0007278664386678738
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr1e-1",
+      "run_dir": "saved_records/cubic-gen/mse_train/bench_p1_mse_train_alt_lr1e-1"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-289",
+        "train_pred_loss": 0.0013822499895468354,
+        "train_regret": null,
+        "val_pred_loss": 0.0014407115522772074,
+        "val_regret": null,
+        "test_pred_loss": 0.0013656815281137824,
+        "test_regret": 0.00023446726304720525,
+        "test_regret_abs": 0.0026352500915527346,
+        "test_regret_rel": 0.00023446726304720525
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr1e-1",
+      "run_dir": "saved_records/cubic-gen/mse_val/bench_p1_mse_val_alt_lr1e-1"
     },
     "dfl": {
       "metrics": {
@@ -1197,23 +1397,23 @@
     },
     "identity": {
       "metrics": {
-        "best_epoch": "Tr-32",
-        "train_pred_loss": 2612.868164,
-        "train_regret": 1.467049,
-        "val_pred_loss": 2610.567139,
-        "val_regret": 1.387252,
-        "test_pred_loss": 2613.56982421875,
-        "test_regret": 0.13893718510010258,
-        "test_regret_abs": 1.5615579974651337,
-        "test_regret_rel": 0.13893718510010258
+        "best_epoch": "Tr-18",
+        "train_pred_loss": 3427.52002,
+        "train_regret": 1.430869,
+        "val_pred_loss": 3425.721924,
+        "val_regret": 1.352717,
+        "test_pred_loss": 3428.218505859375,
+        "test_regret": 0.13593154394677914,
+        "test_regret_abs": 1.527776666879654,
+        "test_regret_rel": 0.13593154394677914
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
-        "batch": "alt"
+        "lr": "1e-1",
+        "batch": "default"
       },
-      "prefix": "bench_p1_identity_alt_lr5e-3",
-      "run_dir": "saved_records/cubic-gen/identity/bench_p1_identity_alt_lr5e-3"
+      "prefix": "bench_p1_identity_default_lr1e-1",
+      "run_dir": "saved_records/cubic-gen/identity/bench_p1_identity_default_lr1e-1"
     },
     "spo": {
       "metrics": {
@@ -1238,45 +1438,45 @@
     "nce": {
       "metrics": {
         "best_epoch": "Tr-1",
-        "train_pred_loss": 35.480663,
-        "train_regret": 15.902142,
-        "val_pred_loss": 35.68568,
-        "val_regret": 15.579153,
-        "test_pred_loss": 35.76116180419922,
-        "test_regret": 1.4260177895483168,
-        "test_regret_abs": 16.02745501279831,
-        "test_regret_rel": 1.4260177895483168
+        "train_pred_loss": 15832.161133,
+        "train_regret": 15.493603,
+        "val_pred_loss": 16079.308594,
+        "val_regret": 15.232672,
+        "test_pred_loss": 15813.5869140625,
+        "test_regret": 1.3910919692086359,
+        "test_regret_abs": 15.634912915229798,
+        "test_regret_rel": 1.3910919692086359
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "default"
       },
-      "prefix": "bench_p1_nce_default_lr1e-2",
-      "run_dir": "saved_records/cubic-gen/nce/bench_p1_nce_default_lr1e-2"
+      "prefix": "bench_p1_nce_default_lr5e-2",
+      "run_dir": "saved_records/cubic-gen/nce/bench_p1_nce_default_lr5e-2"
     },
     "blackbox": {
       "metrics": {
-        "best_epoch": "Tr-32",
-        "train_pred_loss": 2612.868164,
-        "train_regret": 1.467049,
-        "val_pred_loss": 2610.567139,
-        "val_regret": 1.387252,
-        "test_pred_loss": 2613.56982421875,
-        "test_regret": 0.13893718510010258,
-        "test_regret_abs": 1.5615579974651337,
-        "test_regret_rel": 0.13893718510010258
+        "best_epoch": "Tr-18",
+        "train_pred_loss": 3427.52002,
+        "train_regret": 1.430869,
+        "val_pred_loss": 3425.721924,
+        "val_regret": 1.352717,
+        "test_pred_loss": 3428.218505859375,
+        "test_regret": 0.13593154394677914,
+        "test_regret_abs": 1.527776666879654,
+        "test_regret_rel": 0.13593154394677914
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
-        "batch": "alt",
+        "lr": "1e-1",
+        "batch": "default",
         "hp_name": "lambd",
         "hp_val": "0.01",
         "hp_tag": "lam0.01"
       },
-      "prefix": "bench_p2_blackbox_lam0.01_alt_lr5e-3",
-      "run_dir": "saved_records/cubic-gen/blackbox/bench_p2_blackbox_lam0.01_alt_lr5e-3"
+      "prefix": "bench_p2_blackbox_lam0.01_default_lr1e-1",
+      "run_dir": "saved_records/cubic-gen/blackbox/bench_p2_blackbox_lam0.01_default_lr1e-1"
     },
     "pointLTR": {
       "metrics": {
@@ -1343,26 +1543,26 @@
     },
     "lodl": {
       "metrics": {
-        "best_epoch": "Tr-127",
-        "train_pred_loss": 2.352266,
-        "train_regret": 0.558741,
-        "val_pred_loss": 2.31706,
-        "val_regret": 0.571253,
-        "test_pred_loss": 2.369393825531006,
-        "test_regret": 0.04218017365838041,
-        "test_regret_abs": 0.47407601833343505,
-        "test_regret_rel": 0.04218017365838041
+        "best_epoch": "Tr-66",
+        "train_pred_loss": 2.2895,
+        "train_regret": 0.088335,
+        "val_pred_loss": 2.256038,
+        "val_regret": 0.07024,
+        "test_pred_loss": 2.3050546646118164,
+        "test_regret": 0.007261499739616276,
+        "test_regret_abs": 0.08161424160003662,
+        "test_regret_rel": 0.007261499739616276
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
-        "batch": "alt",
+        "lr": "5e-2",
+        "batch": "default",
         "hp_name": "num_samples",
-        "hp_val": "500",
-        "hp_tag": "ns500"
+        "hp_val": "2000",
+        "hp_tag": "ns2000"
       },
-      "prefix": "bench_p2_lodl_ns500_alt_lr5e-3",
-      "run_dir": "saved_records/cubic-gen/lodl/bench_p2_lodl_ns500_alt_lr5e-3"
+      "prefix": "bench_p2_lodl_ns2000_default_lr5e-2",
+      "run_dir": "saved_records/cubic-gen/lodl/bench_p2_lodl_ns2000_default_lr5e-2"
     },
     "perturb": {
       "metrics": {
@@ -1412,26 +1612,26 @@
     },
     "dad": {
       "metrics": {
-        "best_epoch": "Tr-19",
-        "train_pred_loss": 2.463804,
-        "train_regret": 1.47939,
-        "val_pred_loss": 2.409255,
-        "val_regret": 1.379495,
-        "test_pred_loss": 2.4881207942962646,
-        "test_regret": 0.14071763327896503,
-        "test_regret_abs": 1.5815690052509308,
-        "test_regret_rel": 0.14071763327896503
+        "best_epoch": "Tr-4",
+        "train_pred_loss": 22568.816406,
+        "train_regret": 2.392121,
+        "val_pred_loss": 22561.341797,
+        "val_regret": 2.349092,
+        "test_pred_loss": 22570.90625,
+        "test_regret": 0.223645262995097,
+        "test_regret_abs": 2.5136182856559754,
+        "test_regret_rel": 0.223645262995097
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-3",
-        "batch": "default",
+        "lr": "1e-1",
+        "batch": "alt",
         "hp_name": "stein_weight",
         "hp_val": "0.5",
         "hp_tag": "sw0p5"
       },
-      "prefix": "bench_p2_dad_sw0p5_default_lr1e-3",
-      "run_dir": "saved_records/cubic-gen/dad/bench_p2_dad_sw0p5_default_lr1e-3"
+      "prefix": "bench_p2_dad_sw0p5_alt_lr1e-1",
+      "run_dir": "saved_records/cubic-gen/dad/bench_p2_dad_sw0p5_alt_lr1e-1"
     }
   },
   "bipartitematching": {
@@ -1455,28 +1655,68 @@
       "prefix": "bench_p1_mse_alt_lr5e-3",
       "run_dir": "saved_records/bipartitematching-cora/mse/bench_p1_mse_alt_lr5e-3"
     },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-82",
+        "train_pred_loss": 0.18346655368804932,
+        "train_regret": null,
+        "val_pred_loss": 0.24137943983078003,
+        "val_regret": null,
+        "test_pred_loss": 0.25643303990364075,
+        "test_regret": 0.9299852778649205,
+        "test_regret_abs": 37.974364933122416,
+        "test_regret_rel": 0.9299852778649205
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-3",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr5e-3",
+      "run_dir": "saved_records/bipartitematching-cora/mse_train/bench_p1_mse_train_alt_lr5e-3"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-25",
+        "train_pred_loss": 0.2147931605577469,
+        "train_regret": null,
+        "val_pred_loss": 0.20767775177955627,
+        "val_regret": null,
+        "test_pred_loss": 0.22737105190753937,
+        "test_regret": 0.9158794056306806,
+        "test_regret_abs": 37.398375664611834,
+        "test_regret_rel": 0.9158794056306806
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-3",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr1e-3",
+      "run_dir": "saved_records/bipartitematching-cora/mse_val/bench_p1_mse_val_alt_lr1e-3"
+    },
     "dfl": {
       "metrics": {
-        "best_epoch": "Tr-21",
-        "train_pred_loss": 3.268227,
-        "train_regret": 37.195999,
-        "val_pred_loss": 2.969886,
-        "val_regret": 33.107831,
-        "test_pred_loss": 3.1521236896514893,
-        "test_regret": 0.9431105650363344,
-        "test_regret_abs": 38.510313680659145,
-        "test_regret_rel": 0.9431105650363344
+        "best_epoch": "Tr-91",
+        "train_pred_loss": 5.331677,
+        "train_regret": 37.449171,
+        "val_pred_loss": 4.589707,
+        "val_regret": 33.650923,
+        "test_pred_loss": 5.071606636047363,
+        "test_regret": 0.946545594079357,
+        "test_regret_abs": 38.650577241320114,
+        "test_regret_rel": 0.946545594079357
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "alt",
         "hp_name": "dflalpha",
-        "hp_val": "1.0",
-        "hp_tag": "alpha1.0"
+        "hp_val": "0.1",
+        "hp_tag": "alpha0.1"
       },
-      "prefix": "bench_p2_dfl_alpha1.0_alt_lr1e-2",
-      "run_dir": "saved_records/bipartitematching-cora/dfl/bench_p2_dfl_alpha1.0_alt_lr1e-2"
+      "prefix": "bench_p2_dfl_alpha0.1_alt_lr5e-2",
+      "run_dir": "saved_records/bipartitematching-cora/dfl/bench_p2_dfl_alpha0.1_alt_lr5e-2"
     },
     "identity": {
       "metrics": {
@@ -1563,23 +1803,23 @@
     },
     "pointLTR": {
       "metrics": {
-        "best_epoch": "Tr-20",
-        "train_pred_loss": 0.244269,
-        "train_regret": 37.09096,
-        "val_pred_loss": 0.223049,
-        "val_regret": 34.614382,
-        "test_pred_loss": 0.24999754130840302,
-        "test_regret": 0.9214692773377259,
-        "test_regret_abs": 37.62662855547481,
-        "test_regret_rel": 0.9214692773377259
+        "best_epoch": "Tr-46",
+        "train_pred_loss": 3.580251,
+        "train_regret": 36.556133,
+        "val_pred_loss": 2.934157,
+        "val_regret": 34.203168,
+        "test_pred_loss": 3.6273486614227295,
+        "test_regret": 0.931522386854716,
+        "test_regret_abs": 38.03713016081988,
+        "test_regret_rel": 0.931522386854716
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
+        "lr": "1e-1",
         "batch": "alt"
       },
-      "prefix": "bench_p1_pointLTR_alt_lr5e-3",
-      "run_dir": "saved_records/bipartitematching-cora/pointLTR/bench_p1_pointLTR_alt_lr5e-3"
+      "prefix": "bench_p1_pointLTR_alt_lr1e-1",
+      "run_dir": "saved_records/bipartitematching-cora/pointLTR/bench_p1_pointLTR_alt_lr1e-1"
     },
     "pairLTR": {
       "metrics": {
@@ -1649,26 +1889,26 @@
     },
     "perturb": {
       "metrics": {
-        "best_epoch": "Tr-32",
-        "train_pred_loss": 1.994396,
-        "train_regret": 36.807786,
-        "val_pred_loss": 1.787062,
-        "val_regret": 32.80322,
-        "test_pred_loss": 1.8973397016525269,
-        "test_regret": 0.9359156061162716,
-        "test_regret_abs": 38.216519787129386,
-        "test_regret_rel": 0.9359156061162716
+        "best_epoch": "Tr-1",
+        "train_pred_loss": 0.352562,
+        "train_regret": 37.17395,
+        "val_pred_loss": 0.364316,
+        "val_regret": 32.356766,
+        "test_pred_loss": 0.35782507061958313,
+        "test_regret": 0.9280407657005613,
+        "test_regret_abs": 37.89496409065338,
+        "test_regret_rel": 0.9280407657005613
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
-        "batch": "alt",
-        "hp_name": "n_samples",
-        "hp_val": "5",
-        "hp_tag": "s1p0_n5"
+        "lr": "5e-2",
+        "batch": "default",
+        "hp_name": "sigma",
+        "hp_val": "1.0",
+        "hp_tag": "s1p0_n10"
       },
-      "prefix": "bench_p2_perturb_s1p0_n5_alt_lr1e-2",
-      "run_dir": "saved_records/bipartitematching-cora/perturb/bench_p2_perturb_s1p0_n5_alt_lr1e-2"
+      "prefix": "bench_p2_perturb_s1p0_n10_default_lr5e-2",
+      "run_dir": "saved_records/bipartitematching-cora/perturb/bench_p2_perturb_s1p0_n10_default_lr5e-2"
     },
     "pg": {
       "metrics": {
@@ -1738,26 +1978,26 @@
     },
     "dad": {
       "metrics": {
-        "best_epoch": "Tr-41",
-        "train_pred_loss": 0.350063,
-        "train_regret": 37.479196,
-        "val_pred_loss": 0.359022,
-        "val_regret": 33.459004,
-        "test_pred_loss": 0.3839692175388336,
-        "test_regret": 0.9174141716170477,
-        "test_regret_abs": 37.461045219754745,
-        "test_regret_rel": 0.9174141716170477
+        "best_epoch": "Tr-98",
+        "train_pred_loss": 2.576072,
+        "train_regret": 37.204657,
+        "val_pred_loss": 1.46936,
+        "val_regret": 33.209486,
+        "test_pred_loss": 1.5045229196548462,
+        "test_regret": 0.942191030602993,
+        "test_regret_abs": 38.47276605816297,
+        "test_regret_rel": 0.942191030602993
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
-        "batch": "default",
+        "lr": "1e-1",
+        "batch": "alt",
         "hp_name": "stein_weight",
         "hp_val": "1.0",
         "hp_tag": "sw1p0"
       },
-      "prefix": "bench_p2_dad_sw1p0_default_lr5e-3",
-      "run_dir": "saved_records/bipartitematching-cora/dad/bench_p2_dad_sw1p0_default_lr5e-3"
+      "prefix": "bench_p2_dad_sw1p0_alt_lr1e-1",
+      "run_dir": "saved_records/bipartitematching-cora/dad/bench_p2_dad_sw1p0_alt_lr1e-1"
     }
   },
   "portfolio": {
@@ -1781,28 +2021,68 @@
       "prefix": "bench_p1_mse_default_lr5e-3",
       "run_dir": "saved_records/portfolio-real/mse/bench_p1_mse_default_lr5e-3"
     },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-201",
+        "train_pred_loss": 0.0003808059555012733,
+        "train_regret": null,
+        "val_pred_loss": 0.00040143769001588225,
+        "val_regret": null,
+        "test_pred_loss": 0.00043177403858862817,
+        "test_regret": 0.23985737195648318,
+        "test_regret_abs": 0.23985737195648318,
+        "test_regret_rel": 6.542628769993717
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-2",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr1e-2",
+      "run_dir": "saved_records/portfolio-real/mse_train/bench_p1_mse_train_alt_lr1e-2"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-77",
+        "train_pred_loss": 0.00044358649756759405,
+        "train_regret": null,
+        "val_pred_loss": 0.00036945685860700905,
+        "val_regret": null,
+        "test_pred_loss": 0.00040659672231413424,
+        "test_regret": 0.2774032925983413,
+        "test_regret_abs": 0.2774032925983413,
+        "test_regret_rel": 7.566774988988768
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr5e-2",
+      "run_dir": "saved_records/portfolio-real/mse_val/bench_p1_mse_val_alt_lr5e-2"
+    },
     "dfl": {
       "metrics": {
-        "best_epoch": "Tr-12",
-        "train_pred_loss": 0.427898,
-        "train_regret": 0.284151,
-        "val_pred_loss": 0.422041,
-        "val_regret": 0.258703,
-        "test_pred_loss": 0.3894405961036682,
-        "test_regret": 0.27609344731555047,
-        "test_regret_abs": 0.27609344731555047,
-        "test_regret_rel": 7.53104612494959
+        "best_epoch": "Tr-84",
+        "train_pred_loss": 0.129185,
+        "train_regret": 0.278803,
+        "val_pred_loss": 0.121654,
+        "val_regret": 0.252019,
+        "test_pred_loss": 0.12186751514673233,
+        "test_regret": 0.25558397784762493,
+        "test_regret_abs": 0.25558397784762493,
+        "test_regret_rel": 6.971605971396576
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
+        "lr": "5e-2",
         "batch": "alt",
         "hp_name": "dflalpha",
         "hp_val": "0.1",
         "hp_tag": "alpha0.1"
       },
-      "prefix": "bench_p2_dfl_alpha0.1_alt_lr5e-3",
-      "run_dir": "saved_records/portfolio-real/dfl/bench_p2_dfl_alpha0.1_alt_lr5e-3"
+      "prefix": "bench_p2_dfl_alpha0.1_alt_lr5e-2",
+      "run_dir": "saved_records/portfolio-real/dfl/bench_p2_dfl_alpha0.1_alt_lr5e-2"
     },
     "identity": {
       "metrics": {
@@ -1952,72 +2232,72 @@
     },
     "lodl": {
       "metrics": {
-        "best_epoch": "Tr-8",
-        "train_pred_loss": 0.001576,
-        "train_regret": 0.239529,
-        "val_pred_loss": 0.001194,
-        "val_regret": 0.208819,
-        "test_pred_loss": 0.001044721808284521,
-        "test_regret": 0.24207795983621444,
-        "test_regret_abs": 0.24207795983621444,
-        "test_regret_rel": 6.603200108826133
+        "best_epoch": "Tr-26",
+        "train_pred_loss": 0.002095,
+        "train_regret": 0.257395,
+        "val_pred_loss": 0.001206,
+        "val_regret": 0.206814,
+        "test_pred_loss": 0.0012851577484980226,
+        "test_regret": 0.25417524137411834,
+        "test_regret_abs": 0.25417524137411834,
+        "test_regret_rel": 6.93317962154224
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
-        "batch": "alt",
+        "lr": "5e-2",
+        "batch": "default",
         "hp_name": "num_samples",
         "hp_val": "500",
         "hp_tag": "ns500"
       },
-      "prefix": "bench_p2_lodl_ns500_alt_lr5e-3",
-      "run_dir": "saved_records/portfolio-real/lodl/bench_p2_lodl_ns500_alt_lr5e-3"
+      "prefix": "bench_p2_lodl_ns500_default_lr5e-2",
+      "run_dir": "saved_records/portfolio-real/lodl/bench_p2_lodl_ns500_default_lr5e-2"
     },
     "perturb": {
       "metrics": {
-        "best_epoch": "Tr-33",
-        "train_pred_loss": 0.297671,
-        "train_regret": 0.419468,
-        "val_pred_loss": 0.330721,
-        "val_regret": 0.324605,
-        "test_pred_loss": 0.22565366327762604,
-        "test_regret": 0.3821784757945879,
-        "test_regret_abs": 0.3821784757945879,
-        "test_regret_rel": 10.424744799837422
+        "best_epoch": "Tr-36",
+        "train_pred_loss": 0.981734,
+        "train_regret": 0.296546,
+        "val_pred_loss": 0.980793,
+        "val_regret": 0.268415,
+        "test_pred_loss": 0.9787130951881409,
+        "test_regret": 0.3081681268022764,
+        "test_regret_abs": 0.3081681268022764,
+        "test_regret_rel": 8.405952403987174
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
-        "batch": "default",
-        "hp_name": "sigma",
-        "hp_val": "1.0",
-        "hp_tag": "s1p0_n10"
+        "lr": "5e-2",
+        "batch": "alt",
+        "hp_name": "n_samples",
+        "hp_val": "25",
+        "hp_tag": "s1p0_n25"
       },
-      "prefix": "bench_p2_perturb_s1p0_n10_default_lr1e-2",
-      "run_dir": "saved_records/portfolio-real/perturb/bench_p2_perturb_s1p0_n10_default_lr1e-2"
+      "prefix": "bench_p2_perturb_s1p0_n25_alt_lr5e-2",
+      "run_dir": "saved_records/portfolio-real/perturb/bench_p2_perturb_s1p0_n25_alt_lr5e-2"
     },
     "pg": {
       "metrics": {
-        "best_epoch": "Tr-1",
-        "train_pred_loss": 0.025302,
-        "train_regret": 0.383306,
-        "val_pred_loss": 0.019085,
-        "val_regret": 0.321495,
-        "test_pred_loss": 0.01916496455669403,
-        "test_regret": 0.35333265455742335,
-        "test_regret_abs": 0.35333265455742335,
-        "test_regret_rel": 9.6379126154399
+        "best_epoch": "Tr-103",
+        "train_pred_loss": 0.995828,
+        "train_regret": 0.314106,
+        "val_pred_loss": 0.996115,
+        "val_regret": 0.259021,
+        "test_pred_loss": 0.9967843890190125,
+        "test_regret": 0.3255829603042562,
+        "test_regret_abs": 0.3255829603042562,
+        "test_regret_rel": 8.88097964734625
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-3",
-        "batch": "default",
+        "lr": "1e-1",
+        "batch": "alt",
         "hp_name": "sigma",
-        "hp_val": "0.5",
-        "hp_tag": "s0p5"
+        "hp_val": "0.05",
+        "hp_tag": "s0p05"
       },
-      "prefix": "bench_p2_pg_s0p5_default_lr1e-3",
-      "run_dir": "saved_records/portfolio-real/pg/bench_p2_pg_s0p5_default_lr1e-3"
+      "prefix": "bench_p2_pg_s0p05_alt_lr1e-1",
+      "run_dir": "saved_records/portfolio-real/pg/bench_p2_pg_s0p05_alt_lr1e-1"
     },
     "qptl": {
       "metrics": {
@@ -2064,48 +2344,88 @@
     },
     "dad": {
       "metrics": {
-        "best_epoch": "Tr-1",
-        "train_pred_loss": 0.023903,
-        "train_regret": 0.389078,
-        "val_pred_loss": 0.017737,
-        "val_regret": 0.312494,
-        "test_pred_loss": 0.018215149641036987,
-        "test_regret": 0.3492086297852275,
-        "test_regret_abs": 0.3492086297852275,
-        "test_regret_rel": 9.52542091713333
+        "best_epoch": "Tr-86",
+        "train_pred_loss": 0.9989,
+        "train_regret": 0.273325,
+        "val_pred_loss": 0.997222,
+        "val_regret": 0.247337,
+        "test_pred_loss": 0.9991048574447632,
+        "test_regret": 0.28206524421479257,
+        "test_regret_abs": 0.28206524421479257,
+        "test_regret_rel": 7.6939397895835615
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-3",
-        "batch": "default",
+        "lr": "1e-1",
+        "batch": "alt",
         "hp_name": "stein_weight",
-        "hp_val": "5.0",
-        "hp_tag": "sw5p0"
+        "hp_val": "0.1",
+        "hp_tag": "sw0p1"
       },
-      "prefix": "bench_p2_dad_sw5p0_default_lr1e-3",
-      "run_dir": "saved_records/portfolio-real/dad/bench_p2_dad_sw5p0_default_lr1e-3"
+      "prefix": "bench_p2_dad_sw0p1_alt_lr1e-1",
+      "run_dir": "saved_records/portfolio-real/dad/bench_p2_dad_sw0p1_alt_lr1e-1"
     }
   },
   "asurv": {
     "mse": {
       "metrics": {
-        "best_epoch": "Tr-83",
-        "train_pred_loss": 1.120646,
-        "train_regret": 120.333336,
-        "val_pred_loss": 0.890436,
-        "val_regret": 116.5,
-        "test_pred_loss": 0.6759991645812988,
-        "test_regret": 0.6968190854870775,
-        "test_regret_abs": 116.83333333333333,
-        "test_regret_rel": 0.6968190854870775
+        "best_epoch": "Tr-39",
+        "train_pred_loss": 1.076526,
+        "train_regret": 116.73333,
+        "val_pred_loss": 0.893034,
+        "val_regret": 116.166664,
+        "test_pred_loss": 0.8312528729438782,
+        "test_regret": 0.668986083499006,
+        "test_regret_abs": 112.16666666666667,
+        "test_regret_rel": 0.668986083499006
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-3",
+        "lr": "1e-1",
         "batch": "default"
       },
-      "prefix": "bench_p1_mse_default_lr1e-3",
-      "run_dir": "saved_records/asurv-real/mse/bench_p1_mse_default_lr1e-3"
+      "prefix": "bench_p1_mse_default_lr1e-1",
+      "run_dir": "saved_records/asurv-real/mse/bench_p1_mse_default_lr1e-1"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-298",
+        "train_pred_loss": 0.9311140775680542,
+        "train_regret": null,
+        "val_pred_loss": 1.208244800567627,
+        "val_regret": null,
+        "test_pred_loss": 2.3832149505615234,
+        "test_regret": 0.7713717693836979,
+        "test_regret_abs": 129.33333333333334,
+        "test_regret_rel": 0.7713717693836979
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_mse_train_default_lr5e-2",
+      "run_dir": "saved_records/asurv-real/mse_train/bench_p1_mse_train_default_lr5e-2"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-67",
+        "train_pred_loss": 1.0509721040725708,
+        "train_regret": null,
+        "val_pred_loss": 0.8224472403526306,
+        "val_regret": null,
+        "test_pred_loss": 0.6465045809745789,
+        "test_regret": 0.6898608349900597,
+        "test_regret_abs": 115.66666666666667,
+        "test_regret_rel": 0.6898608349900597
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_mse_val_default_lr1e-1",
+      "run_dir": "saved_records/asurv-real/mse_val/bench_p1_mse_val_default_lr1e-1"
     },
     "dfl": {
       "metrics": {
@@ -2152,43 +2472,43 @@
     },
     "spo": {
       "metrics": {
-        "best_epoch": "Tr-17",
-        "train_pred_loss": 1.495633,
-        "train_regret": 130.800003,
-        "val_pred_loss": 0.994983,
-        "val_regret": 115.833336,
-        "test_pred_loss": 0.737243115901947,
-        "test_regret": 0.7107355864811133,
-        "test_regret_abs": 119.16666666666667,
-        "test_regret_rel": 0.7107355864811133
+        "best_epoch": "Tr-76",
+        "train_pred_loss": 1.517424,
+        "train_regret": 115.400002,
+        "val_pred_loss": 1.215874,
+        "val_regret": 115.0,
+        "test_pred_loss": 0.9577187895774841,
+        "test_regret": 0.7842942345924454,
+        "test_regret_abs": 131.5,
+        "test_regret_rel": 0.7842942345924454
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-3",
-        "batch": "alt"
+        "lr": "5e-2",
+        "batch": "default"
       },
-      "prefix": "bench_p1_spo_alt_lr1e-3",
-      "run_dir": "saved_records/asurv-real/spo/bench_p1_spo_alt_lr1e-3"
+      "prefix": "bench_p1_spo_default_lr5e-2",
+      "run_dir": "saved_records/asurv-real/spo/bench_p1_spo_default_lr5e-2"
     },
     "nce": {
       "metrics": {
-        "best_epoch": "Tr-4",
-        "train_pred_loss": 32.373699,
-        "train_regret": 117.800003,
-        "val_pred_loss": 17.283882,
-        "val_regret": 118.666664,
-        "test_pred_loss": 12.911446571350098,
-        "test_regret": 0.6451292246520876,
-        "test_regret_abs": 108.16666666666667,
-        "test_regret_rel": 0.6451292246520876
+        "best_epoch": "Tr-3",
+        "train_pred_loss": 38492.066406,
+        "train_regret": 120.066666,
+        "val_pred_loss": 18265.65625,
+        "val_regret": 117.833336,
+        "test_pred_loss": 13292.400390625,
+        "test_regret": 0.643141153081511,
+        "test_regret_abs": 107.83333333333333,
+        "test_regret_rel": 0.643141153081511
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "default"
       },
-      "prefix": "bench_p1_nce_default_lr1e-2",
-      "run_dir": "saved_records/asurv-real/nce/bench_p1_nce_default_lr1e-2"
+      "prefix": "bench_p1_nce_default_lr1e-1",
+      "run_dir": "saved_records/asurv-real/nce/bench_p1_nce_default_lr1e-1"
     },
     "blackbox": {
       "metrics": {
@@ -2215,23 +2535,23 @@
     },
     "pointLTR": {
       "metrics": {
-        "best_epoch": "Tr-9",
-        "train_pred_loss": 1.289558,
-        "train_regret": 121.73333,
-        "val_pred_loss": 1.070904,
-        "val_regret": 116.333336,
-        "test_pred_loss": 0.9544491767883301,
-        "test_regret": 0.6998011928429424,
-        "test_regret_abs": 117.33333333333333,
-        "test_regret_rel": 0.6998011928429424
+        "best_epoch": "Tr-122",
+        "train_pred_loss": 2.394315,
+        "train_regret": 142.800003,
+        "val_pred_loss": 14.364511,
+        "val_regret": 114.0,
+        "test_pred_loss": 38.83013916015625,
+        "test_regret": 0.7326043737574552,
+        "test_regret_abs": 122.83333333333333,
+        "test_regret_rel": 0.7326043737574552
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-3",
+        "lr": "5e-2",
         "batch": "default"
       },
-      "prefix": "bench_p1_pointLTR_default_lr1e-3",
-      "run_dir": "saved_records/asurv-real/pointLTR/bench_p1_pointLTR_default_lr1e-3"
+      "prefix": "bench_p1_pointLTR_default_lr5e-2",
+      "run_dir": "saved_records/asurv-real/pointLTR/bench_p1_pointLTR_default_lr5e-2"
     },
     "pairLTR": {
       "metrics": {
@@ -2255,49 +2575,49 @@
     },
     "listLTR": {
       "metrics": {
-        "best_epoch": "Tr-1",
-        "train_pred_loss": 1.7127,
-        "train_regret": 161.666672,
-        "val_pred_loss": 1.042015,
-        "val_regret": 127.5,
-        "test_pred_loss": 0.6937839984893799,
-        "test_regret": 0.7037773359840954,
-        "test_regret_abs": 118.0,
-        "test_regret_rel": 0.7037773359840954
+        "best_epoch": "Tr-15",
+        "train_pred_loss": 1.649,
+        "train_regret": 134.800003,
+        "val_pred_loss": 1.35522,
+        "val_regret": 117.333336,
+        "test_pred_loss": 1.3992549180984497,
+        "test_regret": 0.6988071570576542,
+        "test_regret_abs": 117.16666666666667,
+        "test_regret_rel": 0.6988071570576542
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
-        "batch": "default",
+        "lr": "5e-2",
+        "batch": "alt",
         "hp_name": "tau",
         "hp_val": "0.1",
         "hp_tag": "tau0.1"
       },
-      "prefix": "bench_p2_listLTR_tau0.1_default_lr5e-3",
-      "run_dir": "saved_records/asurv-real/listLTR/bench_p2_listLTR_tau0.1_default_lr5e-3"
+      "prefix": "bench_p2_listLTR_tau0.1_alt_lr5e-2",
+      "run_dir": "saved_records/asurv-real/listLTR/bench_p2_listLTR_tau0.1_alt_lr5e-2"
     },
     "lodl": {
       "metrics": {
-        "best_epoch": "Tr-26",
-        "train_pred_loss": 1.270856,
-        "train_regret": 130.527786,
-        "val_pred_loss": 0.959291,
-        "val_regret": 116.397888,
-        "test_pred_loss": 0.7252596020698547,
-        "test_regret": 0.7226640159045726,
-        "test_regret_abs": 121.16666666666667,
-        "test_regret_rel": 0.7226640159045726
+        "best_epoch": "Tr-162",
+        "train_pred_loss": 1.499053,
+        "train_regret": 118.956039,
+        "val_pred_loss": 1.075467,
+        "val_regret": 114.682671,
+        "test_pred_loss": 0.8758837580680847,
+        "test_regret": 0.6829025844930418,
+        "test_regret_abs": 114.5,
+        "test_regret_rel": 0.6829025844930418
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-3",
+        "lr": "1e-1",
         "batch": "default",
         "hp_name": "num_samples",
-        "hp_val": "100",
-        "hp_tag": "ns100"
+        "hp_val": "250",
+        "hp_tag": "ns250"
       },
-      "prefix": "bench_p2_lodl_ns100_default_lr1e-3",
-      "run_dir": "saved_records/asurv-real/lodl/bench_p2_lodl_ns100_default_lr1e-3"
+      "prefix": "bench_p2_lodl_ns250_default_lr1e-1",
+      "run_dir": "saved_records/asurv-real/lodl/bench_p2_lodl_ns250_default_lr1e-1"
     },
     "perturb": {
       "metrics": {
@@ -2324,26 +2644,26 @@
     },
     "pg": {
       "metrics": {
-        "best_epoch": "Tr-34",
-        "train_pred_loss": 4.298387,
-        "train_regret": 118.800003,
-        "val_pred_loss": 2.788812,
-        "val_regret": 114.166664,
-        "test_pred_loss": 2.0712037086486816,
-        "test_regret": 0.6848906560636183,
-        "test_regret_abs": 114.83333333333333,
-        "test_regret_rel": 0.6848906560636183
+        "best_epoch": "Tr-28",
+        "train_pred_loss": 28.150118,
+        "train_regret": 124.133331,
+        "val_pred_loss": 20.855259,
+        "val_regret": 111.833336,
+        "test_pred_loss": 20.345474243164062,
+        "test_regret": 0.6998011928429424,
+        "test_regret_abs": 117.33333333333333,
+        "test_regret_rel": 0.6998011928429424
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "default",
         "hp_name": "sigma",
-        "hp_val": "0.1",
-        "hp_tag": "s0p1"
+        "hp_val": "0.01",
+        "hp_tag": "s0p01"
       },
-      "prefix": "bench_p2_pg_s0p1_default_lr1e-2",
-      "run_dir": "saved_records/asurv-real/pg/bench_p2_pg_s0p1_default_lr1e-2"
+      "prefix": "bench_p2_pg_s0p01_default_lr5e-2",
+      "run_dir": "saved_records/asurv-real/pg/bench_p2_pg_s0p01_default_lr5e-2"
     },
     "dad": {
       "metrics": {
@@ -2372,23 +2692,63 @@
   "cook_county": {
     "mse": {
       "metrics": {
-        "best_epoch": "Tr-13",
-        "train_pred_loss": 1.163809,
-        "train_regret": 129.5,
-        "val_pred_loss": 1.542151,
-        "val_regret": 93.0,
-        "test_pred_loss": 2.1764638423919678,
-        "test_regret": 0.19531821506949523,
-        "test_regret_abs": 133.5,
-        "test_regret_rel": 0.19531821506949523
+        "best_epoch": "Tr-4",
+        "train_pred_loss": 1.166292,
+        "train_regret": 134.5,
+        "val_pred_loss": 1.682226,
+        "val_regret": 91.0,
+        "test_pred_loss": 1.942455768585205,
+        "test_regret": 0.2011704462326262,
+        "test_regret_abs": 137.5,
+        "test_regret_rel": 0.2011704462326262
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "default"
       },
-      "prefix": "bench_p1_mse_default_lr1e-2",
-      "run_dir": "saved_records/cook_county-real/mse/bench_p1_mse_default_lr1e-2"
+      "prefix": "bench_p1_mse_default_lr5e-2",
+      "run_dir": "saved_records/cook_county-real/mse/bench_p1_mse_default_lr5e-2"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-279",
+        "train_pred_loss": 0.8854125738143921,
+        "train_regret": null,
+        "val_pred_loss": 2.081580877304077,
+        "val_regret": null,
+        "test_pred_loss": 2.6171140670776367,
+        "test_regret": 0.2794440380395026,
+        "test_regret_abs": 191.0,
+        "test_regret_rel": 0.2794440380395026
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_mse_train_default_lr1e-1",
+      "run_dir": "saved_records/cook_county-real/mse_train/bench_p1_mse_train_default_lr1e-1"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-22",
+        "train_pred_loss": 1.1577640771865845,
+        "train_regret": null,
+        "val_pred_loss": 1.5345444679260254,
+        "val_regret": null,
+        "test_pred_loss": 2.1218621730804443,
+        "test_regret": 0.19458668617410388,
+        "test_regret_abs": 133.0,
+        "test_regret_rel": 0.19458668617410388
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-3",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_mse_val_default_lr5e-3",
+      "run_dir": "saved_records/cook_county-real/mse_val/bench_p1_mse_val_default_lr5e-3"
     },
     "dfl": {
       "metrics": {
@@ -2455,23 +2815,23 @@
     },
     "nce": {
       "metrics": {
-        "best_epoch": "Tr-21",
-        "train_pred_loss": 2.045985,
-        "train_regret": 171.25,
-        "val_pred_loss": 4.157137,
-        "val_regret": 112.0,
-        "test_pred_loss": 4.491212844848633,
-        "test_regret": 0.21799561082662766,
-        "test_regret_abs": 149.0,
-        "test_regret_rel": 0.21799561082662766
+        "best_epoch": "Tr-2",
+        "train_pred_loss": 1.682351,
+        "train_regret": 150.25,
+        "val_pred_loss": 1.93986,
+        "val_regret": 108.0,
+        "test_pred_loss": 2.2389583587646484,
+        "test_regret": 0.18361375274323335,
+        "test_regret_abs": 125.5,
+        "test_regret_rel": 0.18361375274323335
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-3",
+        "lr": "1e-1",
         "batch": "alt"
       },
-      "prefix": "bench_p1_nce_alt_lr1e-3",
-      "run_dir": "saved_records/cook_county-real/nce/bench_p1_nce_alt_lr1e-3"
+      "prefix": "bench_p1_nce_alt_lr1e-1",
+      "run_dir": "saved_records/cook_county-real/nce/bench_p1_nce_alt_lr1e-1"
     },
     "blackbox": {
       "metrics": {
@@ -2518,46 +2878,46 @@
     },
     "pairLTR": {
       "metrics": {
-        "best_epoch": "Tr-2",
-        "train_pred_loss": 2.090486,
-        "train_regret": 170.75,
-        "val_pred_loss": 4.175654,
-        "val_regret": 113.0,
-        "test_pred_loss": 4.515082836151123,
-        "test_regret": 0.1894659839063643,
-        "test_regret_abs": 129.5,
-        "test_regret_rel": 0.1894659839063643
+        "best_epoch": "Tr-3",
+        "train_pred_loss": 2.478665,
+        "train_regret": 162.25,
+        "val_pred_loss": 3.85489,
+        "val_regret": 106.0,
+        "test_pred_loss": 3.994791030883789,
+        "test_regret": 0.19751280175566935,
+        "test_regret_abs": 135.0,
+        "test_regret_rel": 0.19751280175566935
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "default"
       },
-      "prefix": "bench_p1_pairLTR_default_lr1e-2",
-      "run_dir": "saved_records/cook_county-real/pairLTR/bench_p1_pairLTR_default_lr1e-2"
+      "prefix": "bench_p1_pairLTR_default_lr5e-2",
+      "run_dir": "saved_records/cook_county-real/pairLTR/bench_p1_pairLTR_default_lr5e-2"
     },
     "listLTR": {
       "metrics": {
         "best_epoch": "Tr-1",
-        "train_pred_loss": 2.005688,
-        "train_regret": 158.5,
-        "val_pred_loss": 4.130414,
-        "val_regret": 128.0,
-        "test_pred_loss": 4.516713619232178,
-        "test_regret": 0.19531821506949523,
-        "test_regret_abs": 133.5,
-        "test_regret_rel": 0.19531821506949523
+        "train_pred_loss": 1.794177,
+        "train_regret": 184.25,
+        "val_pred_loss": 3.167242,
+        "val_regret": 115.0,
+        "test_pred_loss": 3.287111520767212,
+        "test_regret": 0.20482809070958302,
+        "test_regret_abs": 140.0,
+        "test_regret_rel": 0.20482809070958302
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
-        "batch": "default",
+        "lr": "5e-2",
+        "batch": "alt",
         "hp_name": "tau",
         "hp_val": "0.1",
         "hp_tag": "tau0.1"
       },
-      "prefix": "bench_p2_listLTR_tau0.1_default_lr1e-2",
-      "run_dir": "saved_records/cook_county-real/listLTR/bench_p2_listLTR_tau0.1_default_lr1e-2"
+      "prefix": "bench_p2_listLTR_tau0.1_alt_lr5e-2",
+      "run_dir": "saved_records/cook_county-real/listLTR/bench_p2_listLTR_tau0.1_alt_lr5e-2"
     },
     "lodl": {
       "metrics": {
@@ -2655,23 +3015,63 @@
   "speed_humps": {
     "mse": {
       "metrics": {
-        "best_epoch": "Tr-84",
-        "train_pred_loss": 6.104576,
-        "train_regret": 219.600006,
-        "val_pred_loss": 4.424657,
-        "val_regret": 169.0,
-        "test_pred_loss": 3.05107045173645,
-        "test_regret": 0.1825173032555755,
-        "test_regret_abs": 178.0,
-        "test_regret_rel": 0.1825173032555755
+        "best_epoch": "Tr-32",
+        "train_pred_loss": 5.824754,
+        "train_regret": 196.399994,
+        "val_pred_loss": 4.258877,
+        "val_regret": 156.0,
+        "test_pred_loss": 2.8288843631744385,
+        "test_regret": 0.19635990771597026,
+        "test_regret_abs": 191.5,
+        "test_regret_rel": 0.19635990771597026
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "default"
       },
-      "prefix": "bench_p1_mse_default_lr1e-2",
-      "run_dir": "saved_records/speed_humps-real/mse/bench_p1_mse_default_lr1e-2"
+      "prefix": "bench_p1_mse_default_lr1e-1",
+      "run_dir": "saved_records/speed_humps-real/mse/bench_p1_mse_default_lr1e-1"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-297",
+        "train_pred_loss": 5.191635608673096,
+        "train_regret": null,
+        "val_pred_loss": 4.1144866943359375,
+        "val_regret": null,
+        "test_pred_loss": 2.745434045791626,
+        "test_regret": 0.19456549602665982,
+        "test_regret_abs": 189.75,
+        "test_regret_rel": 0.19456549602665982
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr1e-1",
+      "run_dir": "saved_records/speed_humps-real/mse_train/bench_p1_mse_train_alt_lr1e-1"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-138",
+        "train_pred_loss": 5.285678863525391,
+        "train_regret": null,
+        "val_pred_loss": 4.104193210601807,
+        "val_regret": null,
+        "test_pred_loss": 2.6862828731536865,
+        "test_regret": 0.18764419379646244,
+        "test_regret_abs": 183.0,
+        "test_regret_rel": 0.18764419379646244
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_mse_val_default_lr1e-1",
+      "run_dir": "saved_records/speed_humps-real/mse_val/bench_p1_mse_val_default_lr1e-1"
     },
     "dfl": {
       "metrics": {
@@ -2718,23 +3118,23 @@
     },
     "spo": {
       "metrics": {
-        "best_epoch": "Tr-34",
-        "train_pred_loss": 28.370342,
-        "train_regret": 187.0,
-        "val_pred_loss": 22.08164,
-        "val_regret": 150.5,
-        "test_pred_loss": 22.39121437072754,
-        "test_regret": 0.17303255575493462,
-        "test_regret_abs": 168.75,
-        "test_regret_rel": 0.17303255575493462
+        "best_epoch": "Tr-16",
+        "train_pred_loss": 23.352434,
+        "train_regret": 193.0,
+        "val_pred_loss": 17.719503,
+        "val_regret": 148.0,
+        "test_pred_loss": 19.348526000976562,
+        "test_regret": 0.19866700845936938,
+        "test_regret_abs": 193.75,
+        "test_regret_rel": 0.19866700845936938
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "default"
       },
-      "prefix": "bench_p1_spo_default_lr1e-2",
-      "run_dir": "saved_records/speed_humps-real/spo/bench_p1_spo_default_lr1e-2"
+      "prefix": "bench_p1_spo_default_lr5e-2",
+      "run_dir": "saved_records/speed_humps-real/spo/bench_p1_spo_default_lr5e-2"
     },
     "nce": {
       "metrics": {
@@ -2821,49 +3221,49 @@
     },
     "listLTR": {
       "metrics": {
-        "best_epoch": "Tr-7",
-        "train_pred_loss": 33.129642,
-        "train_regret": 231.199997,
-        "val_pred_loss": 24.137775,
-        "val_regret": 188.0,
-        "test_pred_loss": 10.900629043579102,
-        "test_regret": 0.32914637272494235,
-        "test_regret_abs": 321.0,
-        "test_regret_rel": 0.32914637272494235
+        "best_epoch": "Tr-34",
+        "train_pred_loss": 55.103737,
+        "train_regret": 217.199997,
+        "val_pred_loss": 42.343708,
+        "val_regret": 176.0,
+        "test_pred_loss": 41.88144302368164,
+        "test_regret": 0.2068700333247885,
+        "test_regret_abs": 201.75,
+        "test_regret_rel": 0.2068700333247885
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "alt",
         "hp_name": "tau",
         "hp_val": "0.1",
         "hp_tag": "tau0.1"
       },
-      "prefix": "bench_p2_listLTR_tau0.1_alt_lr1e-2",
-      "run_dir": "saved_records/speed_humps-real/listLTR/bench_p2_listLTR_tau0.1_alt_lr1e-2"
+      "prefix": "bench_p2_listLTR_tau0.1_alt_lr1e-1",
+      "run_dir": "saved_records/speed_humps-real/listLTR/bench_p2_listLTR_tau0.1_alt_lr1e-1"
     },
     "lodl": {
       "metrics": {
-        "best_epoch": "Tr-54",
-        "train_pred_loss": 9.905397,
-        "train_regret": 215.242554,
-        "val_pred_loss": 7.257579,
-        "val_regret": 190.03363,
-        "test_pred_loss": 6.270125865936279,
-        "test_regret": 0.21661112535247373,
-        "test_regret_abs": 211.25,
-        "test_regret_rel": 0.21661112535247373
+        "best_epoch": "Tr-33",
+        "train_pred_loss": 9.357006,
+        "train_regret": 218.827148,
+        "val_pred_loss": 8.619406,
+        "val_regret": 185.072754,
+        "test_pred_loss": 7.536144256591797,
+        "test_regret": 0.20225583183799026,
+        "test_regret_abs": 197.25,
+        "test_regret_rel": 0.20225583183799026
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "5e-2",
         "batch": "default",
         "hp_name": "num_samples",
         "hp_val": "100",
         "hp_tag": "ns100"
       },
-      "prefix": "bench_p2_lodl_ns100_default_lr1e-2",
-      "run_dir": "saved_records/speed_humps-real/lodl/bench_p2_lodl_ns100_default_lr1e-2"
+      "prefix": "bench_p2_lodl_ns100_default_lr5e-2",
+      "run_dir": "saved_records/speed_humps-real/lodl/bench_p2_lodl_ns100_default_lr5e-2"
     },
     "perturb": {
       "metrics": {
@@ -2938,23 +3338,63 @@
   "sp_synth": {
     "mse": {
       "metrics": {
-        "best_epoch": "Tr-27",
-        "train_pred_loss": 0.449369,
-        "train_regret": 0.303696,
-        "val_pred_loss": 0.636242,
-        "val_regret": 0.26658,
-        "test_pred_loss": 1.0043859481811523,
-        "test_regret": 0.09813310425307768,
-        "test_regret_abs": 0.37748745191106575,
-        "test_regret_rel": 0.09813310425307768
+        "best_epoch": "Tr-19",
+        "train_pred_loss": 0.457798,
+        "train_regret": 0.290601,
+        "val_pred_loss": 0.631675,
+        "val_regret": 0.242445,
+        "test_pred_loss": 1.0109565258026123,
+        "test_regret": 0.0898708808699856,
+        "test_regret_abs": 0.3457052549068816,
+        "test_regret_rel": 0.0898708808699856
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "alt"
       },
-      "prefix": "bench_p1_mse_alt_lr1e-2",
-      "run_dir": "saved_records/sp_synth-synth/mse/bench_p1_mse_alt_lr1e-2"
+      "prefix": "bench_p1_mse_alt_lr1e-1",
+      "run_dir": "saved_records/sp_synth-synth/mse/bench_p1_mse_alt_lr1e-1"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-89",
+        "train_pred_loss": 0.44917136430740356,
+        "train_regret": null,
+        "val_pred_loss": 0.6362996101379395,
+        "val_regret": null,
+        "test_pred_loss": 1.0034734010696411,
+        "test_regret": 0.09968560811324315,
+        "test_regret_abs": 0.38345945015484467,
+        "test_regret_rel": 0.09968560811324315
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-3",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr5e-3",
+      "run_dir": "saved_records/sp_synth-synth/mse_train/bench_p1_mse_train_alt_lr5e-3"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-31",
+        "train_pred_loss": 0.4560280740261078,
+        "train_regret": null,
+        "val_pred_loss": 0.6236363053321838,
+        "val_regret": null,
+        "test_pred_loss": 1.0137165784835815,
+        "test_regret": 0.10223951939864015,
+        "test_regret_abs": 0.39328355050170793,
+        "test_regret_rel": 0.10223951939864015
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr1e-1",
+      "run_dir": "saved_records/sp_synth-synth/mse_val/bench_p1_mse_val_alt_lr1e-1"
     },
     "dfl": {
       "metrics": {
@@ -3041,135 +3481,135 @@
     },
     "blackbox": {
       "metrics": {
-        "best_epoch": "Tr-1",
-        "train_pred_loss": 2.279674,
-        "train_regret": 2.642435,
-        "val_pred_loss": 2.744659,
-        "val_regret": 3.114171,
-        "test_pred_loss": 3.251502513885498,
-        "test_regret": 0.747205472704022,
-        "test_regret_abs": 2.8742664577045476,
-        "test_regret_rel": 0.747205472704022
+        "best_epoch": "Tr-5",
+        "train_pred_loss": 95.639069,
+        "train_regret": 2.434522,
+        "val_pred_loss": 96.516914,
+        "val_regret": 3.095949,
+        "test_pred_loss": 98.05487060546875,
+        "test_regret": 0.7543830582881622,
+        "test_regret_abs": 2.9018763913110828,
+        "test_regret_rel": 0.7543830582881622
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-3",
-        "batch": "default",
+        "lr": "1e-1",
+        "batch": "alt",
         "hp_name": "lambd",
         "hp_val": "0.01",
         "hp_tag": "lam0.01"
       },
-      "prefix": "bench_p2_blackbox_lam0.01_default_lr1e-3",
-      "run_dir": "saved_records/sp_synth-synth/blackbox/bench_p2_blackbox_lam0.01_default_lr1e-3"
+      "prefix": "bench_p2_blackbox_lam0.01_alt_lr1e-1",
+      "run_dir": "saved_records/sp_synth-synth/blackbox/bench_p2_blackbox_lam0.01_alt_lr1e-1"
     },
     "pointLTR": {
       "metrics": {
-        "best_epoch": "Tr-15",
-        "train_pred_loss": 1.086957,
-        "train_regret": 0.320568,
-        "val_pred_loss": 1.336466,
-        "val_regret": 0.2586,
-        "test_pred_loss": 1.7540693283081055,
-        "test_regret": 0.09527079822992625,
-        "test_regret_abs": 0.366477053172607,
-        "test_regret_rel": 0.09527079822992625
+        "best_epoch": "Tr-17",
+        "train_pred_loss": 1.208151,
+        "train_regret": 0.417632,
+        "val_pred_loss": 1.515573,
+        "val_regret": 0.216021,
+        "test_pred_loss": 1.9280173778533936,
+        "test_regret": 0.11518655573837261,
+        "test_regret_abs": 0.44308676211806014,
+        "test_regret_rel": 0.11518655573837261
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "default"
       },
-      "prefix": "bench_p1_pointLTR_default_lr1e-2",
-      "run_dir": "saved_records/sp_synth-synth/pointLTR/bench_p1_pointLTR_default_lr1e-2"
+      "prefix": "bench_p1_pointLTR_default_lr1e-1",
+      "run_dir": "saved_records/sp_synth-synth/pointLTR/bench_p1_pointLTR_default_lr1e-1"
     },
     "pairLTR": {
       "metrics": {
-        "best_epoch": "Tr-71",
-        "train_pred_loss": 1.975668,
-        "train_regret": 0.218726,
-        "val_pred_loss": 2.402644,
-        "val_regret": 0.192515,
-        "test_pred_loss": 2.9124741554260254,
-        "test_regret": 0.08108731177013268,
-        "test_regret_abs": 0.3119176034978591,
-        "test_regret_rel": 0.08108731177013268
+        "best_epoch": "Tr-23",
+        "train_pred_loss": 71.576645,
+        "train_regret": 0.193597,
+        "val_pred_loss": 75.253563,
+        "val_regret": 0.177021,
+        "test_pred_loss": 76.23381805419922,
+        "test_regret": 0.06556591468289547,
+        "test_regret_abs": 0.252211628830526,
+        "test_regret_rel": 0.06556591468289547
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-3",
+        "lr": "1e-1",
         "batch": "default"
       },
-      "prefix": "bench_p1_pairLTR_default_lr1e-3",
-      "run_dir": "saved_records/sp_synth-synth/pairLTR/bench_p1_pairLTR_default_lr1e-3"
+      "prefix": "bench_p1_pairLTR_default_lr1e-1",
+      "run_dir": "saved_records/sp_synth-synth/pairLTR/bench_p1_pairLTR_default_lr1e-1"
     },
     "listLTR": {
       "metrics": {
-        "best_epoch": "Tr-59",
-        "train_pred_loss": 2.00806,
-        "train_regret": 0.336371,
-        "val_pred_loss": 2.440495,
-        "val_regret": 0.183248,
-        "test_pred_loss": 2.922760248184204,
-        "test_regret": 0.08056711779185005,
-        "test_regret_abs": 0.30991657947180795,
-        "test_regret_rel": 0.08056711779185005
+        "best_epoch": "Tr-14",
+        "train_pred_loss": 2.095682,
+        "train_regret": 0.222628,
+        "val_pred_loss": 2.538816,
+        "val_regret": 0.168561,
+        "test_pred_loss": 3.0156407356262207,
+        "test_regret": 0.06813611576928559,
+        "test_regret_abs": 0.2620983909622766,
+        "test_regret_rel": 0.06813611576928559
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
-        "batch": "default",
+        "lr": "5e-2",
+        "batch": "alt",
         "hp_name": "tau",
-        "hp_val": "0.5",
-        "hp_tag": "tau0.5"
+        "hp_val": "1",
+        "hp_tag": "tau1"
       },
-      "prefix": "bench_p2_listLTR_tau0.5_default_lr5e-3",
-      "run_dir": "saved_records/sp_synth-synth/listLTR/bench_p2_listLTR_tau0.5_default_lr5e-3"
+      "prefix": "bench_p2_listLTR_tau1_alt_lr5e-2",
+      "run_dir": "saved_records/sp_synth-synth/listLTR/bench_p2_listLTR_tau1_alt_lr5e-2"
     },
     "lodl": {
       "metrics": {
-        "best_epoch": "Tr-72",
-        "train_pred_loss": 1.525401,
-        "train_regret": 1.973606,
-        "val_pred_loss": 1.861714,
-        "val_regret": 2.048342,
-        "test_pred_loss": 2.2619874477386475,
-        "test_regret": 0.6055352431106875,
-        "test_regret_abs": 2.329305260482803,
-        "test_regret_rel": 0.6055352431106875
+        "best_epoch": "Tr-11",
+        "train_pred_loss": 1.722427,
+        "train_regret": 1.798109,
+        "val_pred_loss": 2.044087,
+        "val_regret": 1.741385,
+        "test_pred_loss": 2.4781901836395264,
+        "test_regret": 0.49078578190566113,
+        "test_regret_abs": 1.8878998647384346,
+        "test_regret_rel": 0.49078578190566113
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "alt",
         "hp_name": "num_samples",
-        "hp_val": "250",
-        "hp_tag": "ns250"
+        "hp_val": "500",
+        "hp_tag": "ns500"
       },
-      "prefix": "bench_p2_lodl_ns250_alt_lr1e-2",
-      "run_dir": "saved_records/sp_synth-synth/lodl/bench_p2_lodl_ns250_alt_lr1e-2"
+      "prefix": "bench_p2_lodl_ns500_alt_lr1e-1",
+      "run_dir": "saved_records/sp_synth-synth/lodl/bench_p2_lodl_ns500_alt_lr1e-1"
     },
     "perturb": {
       "metrics": {
-        "best_epoch": "Tr-275",
-        "train_pred_loss": 5.70409,
-        "train_regret": 0.183704,
-        "val_pred_loss": 6.261322,
-        "val_regret": 0.201577,
-        "test_pred_loss": 6.902091026306152,
-        "test_regret": 0.07193705119014566,
-        "test_regret_abs": 0.2767194043075666,
-        "test_regret_rel": 0.07193705119014566
+        "best_epoch": "Tr-89",
+        "train_pred_loss": 4.219468,
+        "train_regret": 0.197755,
+        "val_pred_loss": 4.610346,
+        "val_regret": 0.272826,
+        "test_pred_loss": 5.3239617347717285,
+        "test_regret": 0.07545972962758547,
+        "test_regret_abs": 0.29027004980454224,
+        "test_regret_rel": 0.07545972962758547
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
-        "batch": "alt",
+        "lr": "5e-2",
+        "batch": "default",
         "hp_name": "n_samples",
         "hp_val": "100",
         "hp_tag": "s1p0_n100"
       },
-      "prefix": "bench_p2_perturb_s1p0_n100_alt_lr1e-2",
-      "run_dir": "saved_records/sp_synth-synth/perturb/bench_p2_perturb_s1p0_n100_alt_lr1e-2"
+      "prefix": "bench_p2_perturb_s1p0_n100_default_lr5e-2",
+      "run_dir": "saved_records/sp_synth-synth/perturb/bench_p2_perturb_s1p0_n100_default_lr5e-2"
     },
     "pg": {
       "metrics": {
@@ -3196,48 +3636,88 @@
     },
     "dad": {
       "metrics": {
-        "best_epoch": "Tr-3",
-        "train_pred_loss": 2.287991,
-        "train_regret": 2.638638,
-        "val_pred_loss": 2.753011,
-        "val_regret": 3.104637,
-        "test_pred_loss": 3.2607855796813965,
-        "test_regret": 0.7501437775397557,
-        "test_regret_abs": 2.885569200176839,
-        "test_regret_rel": 0.7501437775397557
+        "best_epoch": "Tr-103",
+        "train_pred_loss": 1843.530151,
+        "train_regret": 2.323439,
+        "val_pred_loss": 1760.994263,
+        "val_regret": 2.341228,
+        "test_pred_loss": 1737.06591796875,
+        "test_regret": 0.709339082130516,
+        "test_regret_abs": 2.7286062607765196,
+        "test_regret_rel": 0.709339082130516
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-3",
-        "batch": "default",
+        "lr": "5e-2",
+        "batch": "alt",
         "hp_name": "stein_weight",
-        "hp_val": "2.0",
-        "hp_tag": "sw2p0"
+        "hp_val": "5.0",
+        "hp_tag": "sw5p0"
       },
-      "prefix": "bench_p2_dad_sw2p0_default_lr1e-3",
-      "run_dir": "saved_records/sp_synth-synth/dad/bench_p2_dad_sw2p0_default_lr1e-3"
+      "prefix": "bench_p2_dad_sw5p0_alt_lr5e-2",
+      "run_dir": "saved_records/sp_synth-synth/dad/bench_p2_dad_sw5p0_alt_lr5e-2"
     }
   },
   "sp_planted": {
     "mse": {
       "metrics": {
-        "best_epoch": "Tr-88",
-        "train_pred_loss": 0.374596,
-        "train_regret": 0.958166,
-        "val_pred_loss": 0.508631,
-        "val_regret": 0.981925,
-        "test_pred_loss": 0.6680343747138977,
-        "test_regret": 0.10215117977781976,
-        "test_regret_abs": 1.0373309518575669,
-        "test_regret_rel": 0.10215117977781976
+        "best_epoch": "Tr-9",
+        "train_pred_loss": 0.378653,
+        "train_regret": 0.960629,
+        "val_pred_loss": 0.511144,
+        "val_regret": 0.864473,
+        "test_pred_loss": 0.6714930534362793,
+        "test_regret": 0.10196652879595663,
+        "test_regret_abs": 1.0354558469474315,
+        "test_regret_rel": 0.10196652879595663
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-2",
+        "lr": "1e-1",
         "batch": "alt"
       },
-      "prefix": "bench_p1_mse_alt_lr1e-2",
-      "run_dir": "saved_records/sp_planted-planted/mse/bench_p1_mse_alt_lr1e-2"
+      "prefix": "bench_p1_mse_alt_lr1e-1",
+      "run_dir": "saved_records/sp_planted-planted/mse/bench_p1_mse_alt_lr1e-1"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-266",
+        "train_pred_loss": 0.3739432394504547,
+        "train_regret": null,
+        "val_pred_loss": 0.508301854133606,
+        "val_regret": null,
+        "test_pred_loss": 0.6673129200935364,
+        "test_regret": 0.10192751304996218,
+        "test_regret_abs": 1.035059647500515,
+        "test_regret_rel": 0.10192751304996218
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-3",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_train_alt_lr5e-3",
+      "run_dir": "saved_records/sp_planted-planted/mse_train/bench_p1_mse_train_alt_lr5e-3"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-24",
+        "train_pred_loss": 0.3803616762161255,
+        "train_regret": null,
+        "val_pred_loss": 0.5026139616966248,
+        "val_regret": null,
+        "test_pred_loss": 0.6678756475448608,
+        "test_regret": 0.1060798590783265,
+        "test_regret_abs": 1.077226140999794,
+        "test_regret_rel": 0.1060798590783265
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-1",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr1e-1",
+      "run_dir": "saved_records/sp_planted-planted/mse_val/bench_p1_mse_val_alt_lr1e-1"
     },
     "dfl": {
       "metrics": {
@@ -3304,23 +3784,23 @@
     },
     "nce": {
       "metrics": {
-        "best_epoch": "Tr-21",
-        "train_pred_loss": 231.591583,
-        "train_regret": 1.634293,
-        "val_pred_loss": 263.374146,
-        "val_regret": 1.672249,
-        "test_pred_loss": 241.4945068359375,
-        "test_regret": 0.15662769208185404,
-        "test_regret_abs": 1.5905323195278644,
-        "test_regret_rel": 0.15662769208185404
+        "best_epoch": "Tr-4",
+        "train_pred_loss": 12.688515,
+        "train_regret": 1.741446,
+        "val_pred_loss": 14.769199,
+        "val_regret": 1.670326,
+        "test_pred_loss": 13.554106712341309,
+        "test_regret": 0.16813497445237735,
+        "test_regret_abs": 1.707387163501978,
+        "test_regret_rel": 0.16813497445237735
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
-        "batch": "default"
+        "lr": "5e-2",
+        "batch": "alt"
       },
-      "prefix": "bench_p1_nce_default_lr5e-3",
-      "run_dir": "saved_records/sp_planted-planted/nce/bench_p1_nce_default_lr5e-3"
+      "prefix": "bench_p1_nce_alt_lr5e-2",
+      "run_dir": "saved_records/sp_planted-planted/nce/bench_p1_nce_alt_lr5e-2"
     },
     "blackbox": {
       "metrics": {
@@ -3367,69 +3847,69 @@
     },
     "pairLTR": {
       "metrics": {
-        "best_epoch": "Tr-64",
-        "train_pred_loss": 3.312888,
-        "train_regret": 0.75978,
-        "val_pred_loss": 3.575853,
-        "val_regret": 0.752615,
-        "test_pred_loss": 3.641148328781128,
-        "test_regret": 0.08261278188829976,
-        "test_regret_abs": 0.8389212523847819,
-        "test_regret_rel": 0.08261278188829976
+        "best_epoch": "Tr-25",
+        "train_pred_loss": 18.562244,
+        "train_regret": 0.940965,
+        "val_pred_loss": 21.014248,
+        "val_regret": 0.719778,
+        "test_pred_loss": 20.08123207092285,
+        "test_regret": 0.0920569999341738,
+        "test_regret_abs": 0.9348259665191173,
+        "test_regret_rel": 0.0920569999341738
       },
       "meta": {
         "phase": 1,
-        "lr": "5e-3",
-        "batch": "alt"
+        "lr": "5e-2",
+        "batch": "default"
       },
-      "prefix": "bench_p1_pairLTR_alt_lr5e-3",
-      "run_dir": "saved_records/sp_planted-planted/pairLTR/bench_p1_pairLTR_alt_lr5e-3"
+      "prefix": "bench_p1_pairLTR_default_lr5e-2",
+      "run_dir": "saved_records/sp_planted-planted/pairLTR/bench_p1_pairLTR_default_lr5e-2"
     },
     "listLTR": {
       "metrics": {
-        "best_epoch": "Tr-17",
-        "train_pred_loss": 3.208323,
-        "train_regret": 0.537941,
-        "val_pred_loss": 3.480663,
-        "val_regret": 0.485026,
-        "test_pred_loss": 3.5347719192504883,
-        "test_regret": 0.056006825504380624,
-        "test_regret_abs": 0.5687414843112231,
-        "test_regret_rel": 0.056006825504380624
+        "best_epoch": "Tr-13",
+        "train_pred_loss": 3.556432,
+        "train_regret": 0.556799,
+        "val_pred_loss": 3.86179,
+        "val_regret": 0.452302,
+        "test_pred_loss": 3.9053568840026855,
+        "test_regret": 0.058148216849963213,
+        "test_regret_abs": 0.5904870140999555,
+        "test_regret_rel": 0.058148216849963213
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
-        "batch": "default",
+        "lr": "5e-2",
+        "batch": "alt",
         "hp_name": "tau",
         "hp_val": "0.5",
         "hp_tag": "tau0.5"
       },
-      "prefix": "bench_p2_listLTR_tau0.5_default_lr5e-3",
-      "run_dir": "saved_records/sp_planted-planted/listLTR/bench_p2_listLTR_tau0.5_default_lr5e-3"
+      "prefix": "bench_p2_listLTR_tau0.5_alt_lr5e-2",
+      "run_dir": "saved_records/sp_planted-planted/listLTR/bench_p2_listLTR_tau0.5_alt_lr5e-2"
     },
     "lodl": {
       "metrics": {
-        "best_epoch": "Tr-43",
-        "train_pred_loss": 2.508722,
-        "train_regret": 3.823827,
-        "val_pred_loss": 2.729959,
-        "val_regret": 3.557402,
-        "test_pred_loss": 2.8632755279541016,
-        "test_regret": 0.3867616006159109,
-        "test_regret_abs": 3.9275099923610686,
-        "test_regret_rel": 0.3867616006159109
+        "best_epoch": "Tr-116",
+        "train_pred_loss": 0.982109,
+        "train_regret": 3.049572,
+        "val_pred_loss": 1.218446,
+        "val_regret": 3.095848,
+        "test_pred_loss": 1.3680912256240845,
+        "test_regret": 0.3106398937392602,
+        "test_regret_abs": 3.1545046993911265,
+        "test_regret_rel": 0.3106398937392602
       },
       "meta": {
         "phase": 2,
-        "lr": "5e-3",
-        "batch": "default",
+        "lr": "5e-2",
+        "batch": "alt",
         "hp_name": "num_samples",
-        "hp_val": "500",
-        "hp_tag": "ns500"
+        "hp_val": "100",
+        "hp_tag": "ns100"
       },
-      "prefix": "bench_p2_lodl_ns500_default_lr5e-3",
-      "run_dir": "saved_records/sp_planted-planted/lodl/bench_p2_lodl_ns500_default_lr5e-3"
+      "prefix": "bench_p2_lodl_ns100_alt_lr5e-2",
+      "run_dir": "saved_records/sp_planted-planted/lodl/bench_p2_lodl_ns100_alt_lr5e-2"
     },
     "perturb": {
       "metrics": {
@@ -3501,6 +3981,329 @@
       "run_dir": "saved_records/sp_planted-planted/dad/bench_p2_dad_sw5p0_default_lr1e-3"
     }
   },
+  "pg_misspec": {
+    "mse": {
+      "metrics": {
+        "best_epoch": "Tr-18",
+        "train_pred_loss": 0.427242,
+        "train_regret": 0.098673,
+        "val_pred_loss": 0.373005,
+        "val_regret": 0.07379,
+        "test_pred_loss": 0.5613483190536499,
+        "test_regret": 0.39159629004003427,
+        "test_regret_abs": 0.09614477981925011,
+        "test_regret_rel": 0.39159629004003427
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_mse_default_lr5e-2",
+      "run_dir": "saved_records/pg_misspec-v3/mse/bench_p1_mse_default_lr5e-2"
+    },
+    "mse_train": {
+      "metrics": {
+        "best_epoch": "Tr-121",
+        "train_pred_loss": 0.32001858949661255,
+        "train_regret": null,
+        "val_pred_loss": 0.28549498319625854,
+        "val_regret": null,
+        "test_pred_loss": 0.4209398925304413,
+        "test_regret": 0.613915020966907,
+        "test_regret_abs": 0.15072850795537232,
+        "test_regret_rel": 0.613915020966907
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_mse_train_default_lr5e-2",
+      "run_dir": "saved_records/pg_misspec-v3/mse_train/bench_p1_mse_train_default_lr5e-2"
+    },
+    "mse_val": {
+      "metrics": {
+        "best_epoch": "Tr-86",
+        "train_pred_loss": 0.32112574577331543,
+        "train_regret": null,
+        "val_pred_loss": 0.2846347987651825,
+        "val_regret": null,
+        "test_pred_loss": 0.4257621467113495,
+        "test_regret": 0.5962474406312867,
+        "test_regret_abs": 0.1463907609835267,
+        "test_regret_rel": 0.5962474406312867
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr5e-2",
+      "run_dir": "saved_records/pg_misspec-v3/mse_val/bench_p1_mse_val_alt_lr5e-2"
+    },
+    "dfl": {
+      "metrics": {
+        "best_epoch": "Tr-15",
+        "train_pred_loss": 0.459442,
+        "train_regret": 0.117902,
+        "val_pred_loss": 0.408124,
+        "val_regret": 0.100337,
+        "test_pred_loss": 0.596598744392395,
+        "test_regret": 0.5229068395879058,
+        "test_regret_abs": 0.12838416562378407,
+        "test_regret_rel": 0.5229068395879058
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "5e-3",
+        "batch": "alt",
+        "hp_name": "dflalpha",
+        "hp_val": "0.01",
+        "hp_tag": "alpha0.01"
+      },
+      "prefix": "bench_p2_dfl_alpha0.01_alt_lr5e-3",
+      "run_dir": "saved_records/pg_misspec-v3/dfl/bench_p2_dfl_alpha0.01_alt_lr5e-3"
+    },
+    "identity": {
+      "metrics": {
+        "best_epoch": "Tr-1",
+        "train_pred_loss": 1.266146,
+        "train_regret": 0.239969,
+        "val_pred_loss": 1.322004,
+        "val_regret": 0.244101,
+        "test_pred_loss": 1.392317295074463,
+        "test_regret": 1.0,
+        "test_regret_abs": 0.24552014987021684,
+        "test_regret_rel": 1.0
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-2",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_identity_default_lr1e-2",
+      "run_dir": "saved_records/pg_misspec-v3/identity/bench_p1_identity_default_lr1e-2"
+    },
+    "spo": {
+      "metrics": {
+        "best_epoch": "Tr-58",
+        "train_pred_loss": 0.580761,
+        "train_regret": 0.099813,
+        "val_pred_loss": 0.526728,
+        "val_regret": 0.06462,
+        "test_pred_loss": 0.7343226671218872,
+        "test_regret": 0.3887596768175569,
+        "test_regret_abs": 0.09544833411574363,
+        "test_regret_rel": 0.3887596768175569
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_spo_default_lr5e-2",
+      "run_dir": "saved_records/pg_misspec-v3/spo/bench_p1_spo_default_lr5e-2"
+    },
+    "nce": {
+      "metrics": {
+        "best_epoch": "Tr-1",
+        "train_pred_loss": 1.439901,
+        "train_regret": 0.310196,
+        "val_pred_loss": 1.301116,
+        "val_regret": 0.260912,
+        "test_pred_loss": 1.6340821981430054,
+        "test_regret": 1.4080020406278593,
+        "test_regret_abs": 0.34569287203252314,
+        "test_regret_rel": 1.4080020406278593
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-2",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_nce_default_lr1e-2",
+      "run_dir": "saved_records/pg_misspec-v3/nce/bench_p1_nce_default_lr1e-2"
+    },
+    "blackbox": {
+      "metrics": {
+        "best_epoch": "Tr-1",
+        "train_pred_loss": 1.213677,
+        "train_regret": 0.239969,
+        "val_pred_loss": 1.265327,
+        "val_regret": 0.244101,
+        "test_pred_loss": 1.33973228931427,
+        "test_regret": 1.0,
+        "test_regret_abs": 0.24552014987021684,
+        "test_regret_rel": 1.0
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "1e-2",
+        "batch": "default",
+        "hp_name": "lambd",
+        "hp_val": "0.01",
+        "hp_tag": "lam0.01"
+      },
+      "prefix": "bench_p2_blackbox_lam0.01_default_lr1e-2",
+      "run_dir": "saved_records/pg_misspec-v3/blackbox/bench_p2_blackbox_lam0.01_default_lr1e-2"
+    },
+    "pointLTR": {
+      "metrics": {
+        "best_epoch": "Tr-41",
+        "train_pred_loss": 0.46116,
+        "train_regret": 0.099813,
+        "val_pred_loss": 0.403916,
+        "val_regret": 0.06462,
+        "test_pred_loss": 0.6006972789764404,
+        "test_regret": 0.3889633609277734,
+        "test_regret_abs": 0.09549834266901017,
+        "test_regret_rel": 0.3889633609277734
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_pointLTR_default_lr5e-2",
+      "run_dir": "saved_records/pg_misspec-v3/pointLTR/bench_p1_pointLTR_default_lr5e-2"
+    },
+    "pairLTR": {
+      "metrics": {
+        "best_epoch": "Tr-16",
+        "train_pred_loss": 0.45872,
+        "train_regret": 0.099813,
+        "val_pred_loss": 0.408276,
+        "val_regret": 0.06462,
+        "test_pred_loss": 0.5954592823982239,
+        "test_regret": 0.38889468431445134,
+        "test_regret_abs": 0.09548148117661476,
+        "test_regret_rel": 0.38889468431445134
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "1e-2",
+        "batch": "default"
+      },
+      "prefix": "bench_p1_pairLTR_default_lr1e-2",
+      "run_dir": "saved_records/pg_misspec-v3/pairLTR/bench_p1_pairLTR_default_lr1e-2"
+    },
+    "listLTR": {
+      "metrics": {
+        "best_epoch": "Tr-9",
+        "train_pred_loss": 0.450166,
+        "train_regret": 0.090678,
+        "val_pred_loss": 0.399062,
+        "val_regret": 0.06462,
+        "test_pred_loss": 0.5860589742660522,
+        "test_regret": 0.3898166833412006,
+        "test_regret_abs": 0.09570785051584244,
+        "test_regret_rel": 0.3898166833412006
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "1e-2",
+        "batch": "alt",
+        "hp_name": "tau",
+        "hp_val": "1",
+        "hp_tag": "tau1"
+      },
+      "prefix": "bench_p2_listLTR_tau1_alt_lr1e-2",
+      "run_dir": "saved_records/pg_misspec-v3/listLTR/bench_p2_listLTR_tau1_alt_lr1e-2"
+    },
+    "lodl": {
+      "metrics": {
+        "best_epoch": "Tr-126",
+        "train_pred_loss": 0.482447,
+        "train_regret": 0.098419,
+        "val_pred_loss": 0.415305,
+        "val_regret": 0.071107,
+        "test_pred_loss": 0.6100482940673828,
+        "test_regret": 0.39432944731649466,
+        "test_regret_abs": 0.09681582500338555,
+        "test_regret_rel": 0.39432944731649466
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "1e-1",
+        "batch": "alt",
+        "hp_name": "num_samples",
+        "hp_val": "500",
+        "hp_tag": "ns500"
+      },
+      "prefix": "bench_p2_lodl_ns500_alt_lr1e-1",
+      "run_dir": "saved_records/pg_misspec-v3/lodl/bench_p2_lodl_ns500_alt_lr1e-1"
+    },
+    "perturb": {
+      "metrics": {
+        "best_epoch": "Tr-56",
+        "train_pred_loss": 6.386872,
+        "train_regret": 0.099813,
+        "val_pred_loss": 6.599237,
+        "val_regret": 0.06462,
+        "test_pred_loss": 7.179290771484375,
+        "test_regret": 0.3893129895022695,
+        "test_regret_abs": 0.09558418352901936,
+        "test_regret_rel": 0.3893129895022695
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "5e-2",
+        "batch": "alt",
+        "hp_name": "sigma",
+        "hp_val": "0.5",
+        "hp_tag": "s0p5_n10"
+      },
+      "prefix": "bench_p2_perturb_s0p5_n10_alt_lr5e-2",
+      "run_dir": "saved_records/pg_misspec-v3/perturb/bench_p2_perturb_s0p5_n10_alt_lr5e-2"
+    },
+    "pg": {
+      "metrics": {
+        "best_epoch": "Tr-1",
+        "train_pred_loss": 1.213677,
+        "train_regret": 0.239969,
+        "val_pred_loss": 1.265327,
+        "val_regret": 0.244101,
+        "test_pred_loss": 1.33973228931427,
+        "test_regret": 1.0,
+        "test_regret_abs": 0.24552014987021684,
+        "test_regret_rel": 1.0
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "1e-2",
+        "batch": "default",
+        "hp_name": "sigma",
+        "hp_val": "0.01",
+        "hp_tag": "s0p01"
+      },
+      "prefix": "bench_p2_pg_s0p01_default_lr1e-2",
+      "run_dir": "saved_records/pg_misspec-v3/pg/bench_p2_pg_s0p01_default_lr1e-2"
+    },
+    "dad": {
+      "metrics": {
+        "best_epoch": "Tr-1",
+        "train_pred_loss": 1.266142,
+        "train_regret": 0.239969,
+        "val_pred_loss": 1.322,
+        "val_regret": 0.244101,
+        "test_pred_loss": 1.3923137187957764,
+        "test_regret": 1.0,
+        "test_regret_abs": 0.24552014987021684,
+        "test_regret_rel": 1.0
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "1e-2",
+        "batch": "default",
+        "hp_name": "stein_weight",
+        "hp_val": "0.1",
+        "hp_tag": "sw0p1"
+      },
+      "prefix": "bench_p2_dad_sw0p1_default_lr1e-2",
+      "run_dir": "saved_records/pg_misspec-v3/dad/bench_p2_dad_sw0p1_default_lr1e-2"
+    }
+  },
   "shortestpath": {
     "mse": {
       "metrics": {
@@ -3522,48 +4325,88 @@
       "prefix": "bench_p1_mse_alt_lr5e-3",
       "run_dir": "saved_records/shortestpath-warcraft/mse/bench_p1_mse_alt_lr5e-3"
     },
-    "dfl": {
+    "mse_train": {
       "metrics": {
-        "best_epoch": "Tr-182",
-        "train_pred_loss": 8.312032,
-        "train_regret": 12.554803,
-        "val_pred_loss": 7.231827,
-        "val_regret": 14.906951,
-        "test_pred_loss": 7.225754261016846,
-        "test_regret": 0.5095428464570927,
-        "test_regret_abs": 15.138158203125,
-        "test_regret_rel": 0.5095428464570927
+        "best_epoch": "Tr-300",
+        "train_pred_loss": 0.0045503415167331696,
+        "train_regret": null,
+        "val_pred_loss": 0.015355797484517097,
+        "val_regret": null,
+        "test_pred_loss": 0.015251967124640942,
+        "test_regret": 0.001695663088383439,
+        "test_regret_abs": 0.050376953125,
+        "test_regret_rel": 0.001695663088383439
       },
       "meta": {
-        "phase": 2,
-        "lr": "1e-2",
-        "batch": "alt",
-        "hp_name": "dflalpha",
-        "hp_val": "10.0",
-        "hp_tag": "alpha10.0"
+        "phase": 1,
+        "lr": "5e-3",
+        "batch": "alt"
       },
-      "prefix": "bench_p2_dfl_alpha10.0_alt_lr1e-2",
-      "run_dir": "saved_records/shortestpath-warcraft/dfl/bench_p2_dfl_alpha10.0_alt_lr1e-2"
+      "prefix": "bench_p1_mse_train_alt_lr5e-3",
+      "run_dir": "saved_records/shortestpath-warcraft/mse_train/bench_p1_mse_train_alt_lr5e-3"
     },
-    "identity": {
+    "mse_val": {
       "metrics": {
-        "best_epoch": "Tr-1",
-        "train_pred_loss": 1.0164112426361315e+20,
-        "train_regret": 193.552933,
-        "val_pred_loss": 1.0421020794870248e+20,
-        "val_regret": 193.170685,
-        "test_pred_loss": 1.0100201773680558e+20,
-        "test_regret": 6.477848120509691,
-        "test_regret_abs": 192.4522939453125,
-        "test_regret_rel": 6.477848120509691
+        "best_epoch": "Tr-286",
+        "train_pred_loss": 0.00464514410123229,
+        "train_regret": null,
+        "val_pred_loss": 0.008682421408593655,
+        "val_regret": null,
+        "test_pred_loss": 0.008527287282049656,
+        "test_regret": 0.0007828134852450588,
+        "test_regret_abs": 0.0232568359375,
+        "test_regret_rel": 0.0007828134852450588
       },
       "meta": {
         "phase": 1,
         "lr": "1e-2",
+        "batch": "alt"
+      },
+      "prefix": "bench_p1_mse_val_alt_lr1e-2",
+      "run_dir": "saved_records/shortestpath-warcraft/mse_val/bench_p1_mse_val_alt_lr1e-2"
+    },
+    "dfl": {
+      "metrics": {
+        "best_epoch": "Tr-2",
+        "train_pred_loss": null,
+        "train_regret": 14.440394,
+        "val_pred_loss": null,
+        "val_regret": 15.013949,
+        "test_pred_loss": null,
+        "test_regret": 0.48687317274354874,
+        "test_regret_abs": 14.464658203125,
+        "test_regret_rel": 0.48687317274354874
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "1e-1",
+        "batch": "default",
+        "hp_name": "dflalpha",
+        "hp_val": "0.001",
+        "hp_tag": "alpha0.001"
+      },
+      "prefix": "bench_p2_dfl_alpha0.001_default_lr1e-1",
+      "run_dir": "saved_records/shortestpath-warcraft/dfl/bench_p2_dfl_alpha0.001_default_lr1e-1"
+    },
+    "identity": {
+      "metrics": {
+        "best_epoch": "Tr-2",
+        "train_pred_loss": null,
+        "train_regret": 14.440394,
+        "val_pred_loss": null,
+        "val_regret": 15.013949,
+        "test_pred_loss": null,
+        "test_regret": 0.48687317274354874,
+        "test_regret_abs": 14.464658203125,
+        "test_regret_rel": 0.48687317274354874
+      },
+      "meta": {
+        "phase": 1,
+        "lr": "5e-2",
         "batch": "default"
       },
-      "prefix": "bench_p1_identity_default_lr1e-2",
-      "run_dir": "saved_records/shortestpath-warcraft/identity/bench_p1_identity_default_lr1e-2"
+      "prefix": "bench_p1_identity_default_lr5e-2",
+      "run_dir": "saved_records/shortestpath-warcraft/identity/bench_p1_identity_default_lr5e-2"
     },
     "spo": {
       "metrics": {
@@ -3630,31 +4473,31 @@
     },
     "pointLTR": {
       "metrics": {
-        "best_epoch": "Tr-110",
-        "train_pred_loss": 0.361028,
-        "train_regret": 0.115559,
-        "val_pred_loss": 0.371108,
-        "val_regret": 0.160572,
-        "test_pred_loss": 0.3799073398113251,
-        "test_regret": null,
-        "test_regret_abs": null,
-        "test_regret_rel": null
+        "best_epoch": "Tr-287",
+        "train_pred_loss": 0.217236,
+        "train_regret": 0.018859,
+        "val_pred_loss": 0.223107,
+        "val_regret": 0.039856,
+        "test_pred_loss": 0.2237958163022995,
+        "test_regret": 0.0015204627576525483,
+        "test_regret_abs": 0.045171875,
+        "test_regret_rel": 0.0015204627576525483
       },
       "meta": {
         "phase": 1,
-        "lr": "1e-3",
+        "lr": "5e-3",
         "batch": "alt"
       },
-      "prefix": "bench_p1_pointLTR_alt_lr1e-3",
-      "run_dir": "saved_records/shortestpath-warcraft/pointLTR/bench_p1_pointLTR_alt_lr1e-3"
+      "prefix": "bench_p1_pointLTR_alt_lr5e-3",
+      "run_dir": "saved_records/shortestpath-warcraft/pointLTR/bench_p1_pointLTR_alt_lr5e-3"
     },
     "pairLTR": {
       "metrics": {
-        "best_epoch": "Tr-23",
-        "train_pred_loss": 24.237257,
-        "train_regret": 7.131086,
-        "val_pred_loss": 24.413601,
-        "val_regret": 8.161118,
+        "best_epoch": "Tr-34",
+        "train_pred_loss": 24.242493,
+        "train_regret": 5.87476,
+        "val_pred_loss": 24.418638,
+        "val_regret": 6.607599,
         "test_pred_loss": 23.772172927856445,
         "test_regret": null,
         "test_regret_abs": null,
@@ -3668,28 +4511,51 @@
       "prefix": "bench_p1_pairLTR_alt_lr1e-3",
       "run_dir": "saved_records/shortestpath-warcraft/pairLTR/bench_p1_pairLTR_alt_lr1e-3"
     },
+    "listLTR": {
+      "metrics": {
+        "best_epoch": "Tr-14",
+        "train_pred_loss": 16.024702,
+        "train_regret": 0.056344,
+        "val_pred_loss": 16.155209,
+        "val_regret": 0.239658,
+        "test_pred_loss": 15.622538566589355,
+        "test_regret": null,
+        "test_regret_abs": null,
+        "test_regret_rel": null
+      },
+      "meta": {
+        "phase": 2,
+        "lr": "1e-3",
+        "batch": "default",
+        "hp_name": "tau",
+        "hp_val": "0.5",
+        "hp_tag": "tau0.5"
+      },
+      "prefix": "bench_p2_listLTR_tau0.5_default_lr1e-3",
+      "run_dir": "saved_records/shortestpath-warcraft/listLTR/bench_p2_listLTR_tau0.5_default_lr1e-3"
+    },
     "lodl": {
       "metrics": {
         "best_epoch": "Tr-1",
-        "train_pred_loss": 3.47399503478784e+16,
-        "train_regret": 14.44276,
-        "val_pred_loss": 3.5244196688297984e+16,
-        "val_regret": 15.02682,
-        "test_pred_loss": 3.458044385243955e+16,
+        "train_pred_loss": 11.047603,
+        "train_regret": 14.454387,
+        "val_pred_loss": 11.065684,
+        "val_regret": 14.979754,
+        "test_pred_loss": 10.775407791137695,
         "test_regret": 0.48687317274354874,
         "test_regret_abs": 14.464658203125,
         "test_regret_rel": 0.48687317274354874
       },
       "meta": {
         "phase": 2,
-        "lr": "1e-2",
-        "batch": "default",
+        "lr": "1e-1",
+        "batch": "alt",
         "hp_name": "num_samples",
-        "hp_val": "2000",
-        "hp_tag": "ns2000"
+        "hp_val": "250",
+        "hp_tag": "ns250"
       },
-      "prefix": "bench_p2_lodl_ns2000_default_lr1e-2",
-      "run_dir": "saved_records/shortestpath-warcraft/lodl/bench_p2_lodl_ns2000_default_lr1e-2"
+      "prefix": "bench_p2_lodl_ns250_alt_lr1e-1",
+      "run_dir": "saved_records/shortestpath-warcraft/lodl/bench_p2_lodl_ns250_alt_lr1e-1"
     },
     "perturb": {
       "metrics": {
@@ -3713,29 +4579,6 @@
       },
       "prefix": "bench_p2_perturb_s1p0_n5_alt_lr1e-2",
       "run_dir": "saved_records/shortestpath-warcraft/perturb/bench_p2_perturb_s1p0_n5_alt_lr1e-2"
-    },
-    "dad": {
-      "metrics": {
-        "best_epoch": "Tr-40",
-        "train_pred_loss": "inf",
-        "train_regret": 14.440394,
-        "val_pred_loss": "inf",
-        "val_regret": 15.013949,
-        "test_pred_loss": "inf",
-        "test_regret": 0.48687317274354874,
-        "test_regret_abs": 14.464658203125,
-        "test_regret_rel": 0.48687317274354874
-      },
-      "meta": {
-        "phase": 2,
-        "lr": "1e-2",
-        "batch": "alt",
-        "hp_name": "stein_weight",
-        "hp_val": "1.0",
-        "hp_tag": "sw1p0"
-      },
-      "prefix": "bench_p2_dad_sw1p0_alt_lr1e-2",
-      "run_dir": "saved_records/shortestpath-warcraft/dad/bench_p2_dad_sw1p0_alt_lr1e-2"
     }
   }
 }
