@@ -42,7 +42,7 @@ OUT_PATH = "docs/tables/tuning_benefit.tex"
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
             "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
-            "speed_humps", "sp_synth", "sp_planted", "shortestpath"]
+            "speed_humps", "sp_synth", "sp_planted", "pg_misspec", "shortestpath"]
 
 # Short labels for column headers (defined in the caption).
 PROB_LABELS = {
@@ -50,14 +50,19 @@ PROB_LABELS = {
     "budgetalloc": "BA", "cubic": "Cu", "bipartitematching": "BM",
     "portfolio": "Pf", "asurv": "AS", "cook_county": "CC",
     "speed_humps": "SH", "sp_synth": "sp\\textsubscript{s}",
-    "sp_planted": "sp\\textsubscript{p}", "shortestpath": "SP-W",
+    "sp_planted": "sp\\textsubscript{p}",
+    "pg_misspec": "pg\\textsubscript{ms}",
+    "shortestpath": "SP-W",
 }
 
-ALL_METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
+ALL_METHODS = ["mse", "mse_train", "mse_val", "dfl", "identity", "spo", "nce", "blackbox",
                "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg"]
 
 METHOD_LABELS = {
-    "mse": "MSE", "dfl": "DFL", "identity": "Identity",
+    "mse": "MSE",
+    "mse_train": "MSE\\textsubscript{train}",
+    "mse_val":   "MSE\\textsubscript{val}",
+    "dfl": "DFL", "identity": "Identity",
     "spo": "SPO\\textsuperscript{+}", "nce": "NCE", "blackbox": "Blackbox",
     "pointLTR": "ptLTR", "pairLTR": "prLTR", "listLTR": "lsLTR",
     "lodl": "LODL", "perturb": "DPO", "pg": "PG",

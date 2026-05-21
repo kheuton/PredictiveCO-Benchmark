@@ -31,7 +31,7 @@ DEFAULT_OUT = "docs/tables/error_per_problem.tex"
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
             "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
-            "speed_humps", "sp_synth", "sp_planted", "shortestpath"]
+            "speed_humps", "sp_synth", "sp_planted", "pg_misspec", "shortestpath"]
 
 # Display name without trailing period; the caption template adds one.
 PROBLEM_DISPLAY = {
@@ -47,14 +47,18 @@ PROBLEM_DISPLAY = {
     "speed_humps": "NYC speed humps",
     "sp_synth": "Shortest path (synth)",
     "sp_planted": "Shortest path (planted)",
+    "pg_misspec": "PG mis-specification",
     "shortestpath": "Warcraft shortest path",
 }
 
-ALL_METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
+ALL_METHODS = ["mse", "mse_train", "mse_val", "dfl", "identity", "spo", "nce", "blackbox",
                "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg"]
 
 METHOD_LABELS = {
-    "mse": "MSE", "dfl": "DFL", "identity": "Identity",
+    "mse": "MSE",
+    "mse_train": r"MSE\textsubscript{train}",
+    "mse_val":   r"MSE\textsubscript{val}",
+    "dfl": "DFL", "identity": "Identity",
     "spo": r"SPO\textsuperscript{+}", "nce": "NCE", "blackbox": "Blackbox",
     "pointLTR": "ptLTR", "pairLTR": "prLTR", "listLTR": "lsLTR",
     "lodl": "LODL", "perturb": "DPO", "pg": "PG",

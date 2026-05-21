@@ -50,7 +50,10 @@ UNIVERSAL_FIXED = (
     r"prediction model = 2-layer dense MLP with 32 hidden units "
     r"(\texttt{Resnet18} for the Warcraft shortest-path task only), "
     r"Adam optimiser. Selection criterion for every cell of the search "
-    r"grid is minimum validation decision regret."
+    r"grid is minimum validation decision regret, "
+    r"except for MSE\textsubscript{train} (minimum training MSE) and "
+    r"MSE\textsubscript{val} (minimum validation MSE) which are kept as "
+    r"reference baselines."
 )
 
 # Two HPs swept for every method.
@@ -69,7 +72,22 @@ METHODS = [
     dict(
         key="mse", display="MSE", ref=r"\citep{de2018end}",
         tuned_extra=[],
-        fixed_extra=[("reduction", "mean")],
+        fixed_extra=[("reduction", "mean"),
+                     ("selection signal", "val regret")],
+    ),
+    dict(
+        key="mse_train", display=r"MSE\textsubscript{train}",
+        ref=r"\citep{de2018end}",
+        tuned_extra=[],
+        fixed_extra=[("reduction", "mean"),
+                     ("selection signal", "train MSE")],
+    ),
+    dict(
+        key="mse_val", display=r"MSE\textsubscript{val}",
+        ref=r"\citep{de2018end}",
+        tuned_extra=[],
+        fixed_extra=[("reduction", "mean"),
+                     ("selection signal", "val MSE")],
     ),
     dict(
         key="dfl", display="DFL", ref=r"\citep{wilder2019melding}",

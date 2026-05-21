@@ -31,22 +31,27 @@ LOSS_MATRIX_PATH = "loss_matrix.json"
 
 PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
             "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
-            "speed_humps", "sp_synth", "sp_planted", "shortestpath"]
+            "speed_humps", "sp_synth", "sp_planted", "pg_misspec", "shortestpath"]
 
 PROB_LABELS = {
     "knapsack": "KS", "knapsack-real": "KS-E", "energy": "En",
     "budgetalloc": "BA", "cubic": "Cu", "bipartitematching": "BM",
     "portfolio": "Pf", "asurv": "AS", "cook_county": "CC",
     "speed_humps": "SH", "sp_synth": r"sp\textsubscript{s}",
-    "sp_planted": r"sp\textsubscript{p}", "shortestpath": "SP-W",
+    "sp_planted": r"sp\textsubscript{p}",
+    "pg_misspec": r"pg\textsubscript{ms}",
+    "shortestpath": "SP-W",
 }
 
-ALL_METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
+ALL_METHODS = ["mse", "mse_train", "mse_val", "dfl", "identity", "spo", "nce", "blackbox",
                "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
                "qptl", "cpLayer", "dad"]
 
 METHOD_LABELS = {
-    "mse": "MSE", "dfl": "DFL", "identity": "Identity",
+    "mse": "MSE",
+    "mse_train": r"MSE\textsubscript{train}",
+    "mse_val":   r"MSE\textsubscript{val}",
+    "dfl": "DFL", "identity": "Identity",
     "spo": r"SPO\textsuperscript{+}", "nce": "NCE", "blackbox": "Blackbox",
     "pointLTR": "ptLTR", "pairLTR": "prLTR", "listLTR": "lsLTR",
     "lodl": "LODL", "perturb": "DPO", "pg": "PG",
