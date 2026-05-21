@@ -30,7 +30,8 @@ python rethink_exp/main_results.py \
 
 **Key arguments** (see `openpto/config/utils_conf.py` for full list):
 - `--problem`: `knapsack`, `portfolio`, `budgetalloc`, `energy`, `cubic`, `bipartitematching`, `advertising`, `shortestpath`, `sp_synth`, `sp_planted`, `pg_misspec`, `TSP`, `asurv`, `cook_county`, `speed_humps`
-- `--opt_model`: `mse`, `dfl`, `blackbox`, `identity`, `spo`, `nce`, `qptl`, `pointLTR`, `pairLTR`, `listLTR`, `lodl`, `perturb`, `cpLayer`, `pg`, `dad`
+- `--opt_model`: `mse`, `mse_train`, `mse_val`, `dfl`, `blackbox`, `identity`, `spo`, `nce`, `qptl`, `pointLTR`, `pairLTR`, `listLTR`, `lodl`, `perturb`, `cpLayer`, `pg`, `dad`
+- `--selection_signal`: `val_regret` (default), `val_mse`, `train_mse` — drives early stopping + checkpoint selection. Only `mse_train` uses `train_mse`; `mse_val` uses `val_mse` via `--skip_solver_eval --solver_valfreq 0`. All other methods stay on `val_regret`.
 - `--solver`: `gurobi`, `cvxpy`, `heuristic`, `neural`, `ortools`, `qptl`
 - `--method_path`: path to model config YAML (default `openpto/config/models/default.yaml`)
 - `--config_path`: path to problem config YAML (auto-detected from `--problem` if empty)
@@ -91,6 +92,8 @@ The original benchmark only tuned learning rate. Our re-run sweeps **both LR and
 
 Method-specific HPs swept in Phase 2: dflalpha (dfl), lambd (blackbox), tau (qptl, listLTR), num_samples (lodl), sigma+n_samples (perturb), sigma (pg), stein_weight (dad).
 
+`mse_train` and `mse_val` (added 2026-05-21) are MSE-loss-trained baselines with non-val-regret selection signals (train MSE and val MSE respectively). PtO-only — no Phase 2. They share `mse`'s loss class via `wrapper_loss.py` and route through a new `--selection_signal` branch in `ExpManager`. The Phase 1/2 collectors (`collect_bench_p1.py`, `collect_bench_p2_val.py`) read the right signal per method; the bump-figure picker (`fig_bench_bump_rerun.py:get_best_result`) trusts the JSON winner for these two rather than re-selecting on val regret.
+
 Always prefer results from the Phase 1/2 sweep over ad-hoc runs when reporting numbers.
 
 ## Running Tests
@@ -104,7 +107,7 @@ python -m pytest tests/test_perturbed_softdecision.py -v
 The canonical benchmark comparison lives in the Phase 1/2 sweep infrastructure:
 
 ```bash
-# Submit Phase 1 (~1870 manifest entries: 15 methods × 14 tasks × 5 LR × 2 batch; qptl/cpLayer limited to 3 problems, pg excludes shortestpath)
+# Submit Phase 1 (~2150 manifest entries: 17 methods × 14 tasks × 5 LR × 2 batch; qptl/cpLayer limited to 3 problems, pg excludes shortestpath, mse_train/mse_val have no Phase 2)
 bash shells/slurm/submit_bench_p1.sh --dry-run          # preview
 bash shells/slurm/submit_bench_p1.sh                    # submit all
 bash shells/slurm/submit_bench_p1.sh --problem knapsack # filter by problem
