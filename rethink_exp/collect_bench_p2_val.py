@@ -47,7 +47,7 @@ PROBLEMS = ["knapsack", "knapsack-real", "energy", "budgetalloc",
             "cubic", "bipartitematching", "portfolio", "asurv", "cook_county",
             "speed_humps", "sp_synth", "sp_planted", "pg_misspec", "shortestpath"]
 
-ALL_METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
+ALL_METHODS = ["mse", "mse_train", "mse_val", "dfl", "identity", "spo", "nce", "blackbox",
                "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
                "qptl", "cpLayer", "dad"]
 
@@ -194,7 +194,7 @@ def load_test_regret(dirpath, prob):
         return None
 
 
-def pick_winner(prob, method, lr, batch):
+def pick_winner(prob, method, lr, batch, p1_val=None):
     """
     For a Phase-2 method, enumerate every (sweep, value) candidate, read each
     val_logs.csv, return (best_val, best_hp_name, best_hp_value, best_tag,
@@ -202,9 +202,14 @@ def pick_winner(prob, method, lr, batch):
     entry instead. None on failure.
     """
     if method not in HP_SWEEPS:
+        # PtO methods (no Phase-2 HP sweep): propagate Phase-1 winner. We do
+        # NOT re-read val regret here, because mse_train selects on training
+        # MSE and mse_val on val MSE — those signals would be inaccessible
+        # via val_logs.csv. Caller passes p1_val from bench_p1_best_val.json
+        # which already has the correct selection-metric value for the method.
         prefix = p1_prefix(method, lr, batch)
         d = run_dir(prob, method, prefix)
-        v = load_min_val_regret(d)
+        v = p1_val if p1_val is not None else load_min_val_regret(d)
         if v is None:
             return None
         return dict(val=v, hp_name=None, hp_value=None, hp_tag=None,
@@ -294,7 +299,7 @@ def main():
             if lr is None or batch is None:
                 continue
 
-            winner = pick_winner(prob, method, lr, batch)
+            winner = pick_winner(prob, method, lr, batch, p1_val=cfg.get("val"))
             if winner is None:
                 continue
             test = load_test_regret(winner["run_dir"], prob)

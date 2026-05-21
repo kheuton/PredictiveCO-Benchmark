@@ -63,7 +63,7 @@ PROB_VERSION = {
     "shortestpath":       "warcraft",
 }
 
-METHODS = ["mse", "dfl", "identity", "spo", "nce", "blackbox",
+METHODS = ["mse", "mse_train", "mse_val", "dfl", "identity", "spo", "nce", "blackbox",
            "pointLTR", "pairLTR", "listLTR", "lodl", "perturb", "pg",
            "qptl", "cpLayer", "dad"]
 
@@ -103,6 +103,10 @@ def val_log_path(prob, method, batch, lr):
 
 def train_log_txt_path(prob, method, batch, lr):
     return os.path.join(run_dir(prob, method, batch, lr), "log.txt")
+
+
+def train_log_csv_path(prob, method, batch, lr):
+    return os.path.join(run_dir(prob, method, batch, lr), "train_logs.csv")
 
 
 def load_test_regret(path, absolute=False):
@@ -155,6 +159,70 @@ def load_val_regret(path):
 _VAL_MSE_LINE = __import__("re").compile(
     r"Iter\s+(\d+),\s*val MSE \(no solver\):\s*([0-9eE+\-\.]+)"
 )
+
+# Regex picks up lines like "Iter 42, train MSE (no solver): 5.23" (mse_train pseudo-method)
+_TRAIN_MSE_LINE = __import__("re").compile(
+    r"Iter\s+(\d+),\s*train MSE \(no solver\):\s*([0-9eE+\-\.]+)"
+)
+
+
+def load_train_pred_mse_from_log(path):
+    """
+    Parse log.txt for 'train MSE (no solver)' lines (mse_train pseudo-method)
+    and return (min_train_mse, best_iter, source). Used when train_logs.csv
+    is missing or malformed.
+    """
+    if not os.path.exists(path):
+        return None, None, None
+    try:
+        min_val = None
+        best_iter = None
+        with open(path) as f:
+            for line in f:
+                m = _TRAIN_MSE_LINE.search(line)
+                if not m:
+                    continue
+                try:
+                    v = float(m.group(2))
+                except ValueError:
+                    continue
+                if min_val is None or v < min_val:
+                    min_val = v
+                    best_iter = f"Tr-{m.group(1)}"
+        if min_val is None:
+            return None, None, None
+        return min_val, best_iter, "train_pred_mse"
+    except Exception:
+        return None, None, None
+
+
+def load_train_mse_from_csv(path):
+    """
+    For mse_train runs we write train MSE into train_logs.csv's 'eval' column
+    every epoch. Return (min_train_mse, best_epoch, source) or (None, None, None).
+    """
+    if not os.path.exists(path):
+        return None, None, None
+    try:
+        min_val = None
+        best_epoch = None
+        with open(path, newline="") as f:
+            reader = csv.DictReader(f)
+            if "eval" not in (reader.fieldnames or []):
+                return None, None, None
+            for row in reader:
+                try:
+                    v = float(row["eval"])
+                except (TypeError, ValueError):
+                    continue
+                if min_val is None or v < min_val:
+                    min_val = v
+                    best_epoch = row.get("epoch")
+        if min_val is None:
+            return None, None, None
+        return min_val, best_epoch, "train_pred_mse_csv"
+    except Exception:
+        return None, None, None
 
 
 def load_val_pred_mse_from_log(path):
@@ -209,11 +277,26 @@ def best_config_for(prob, method, metric="test"):
                 val = abs_r if absolute else rel_r
                 results[(batch, lr)] = val
             elif metric == "val":
-                v, best_epoch, source = load_val_regret(val_log_path(prob, method, batch, lr))
-                if v is None:
-                    # Fallback for --skip_solver_eval runs (e.g. energy/mse)
+                # mse_train / mse_val pseudo-methods use a different selection
+                # signal than val regret. Route them through method-specific
+                # readers; everything else falls through to the val-regret path.
+                if method == "mse_train":
+                    v, best_epoch, source = load_train_mse_from_csv(
+                        train_log_csv_path(prob, method, batch, lr))
+                    if v is None:
+                        v, best_epoch, source = load_train_pred_mse_from_log(
+                            train_log_txt_path(prob, method, batch, lr))
+                elif method == "mse_val":
+                    # No val_logs.csv written when solver_valfreq==0; go straight
+                    # to log.txt "val MSE (no solver)" parsing.
                     v, best_epoch, source = load_val_pred_mse_from_log(
                         train_log_txt_path(prob, method, batch, lr))
+                else:
+                    v, best_epoch, source = load_val_regret(val_log_path(prob, method, batch, lr))
+                    if v is None:
+                        # Fallback for --skip_solver_eval runs (e.g. energy/mse)
+                        v, best_epoch, source = load_val_pred_mse_from_log(
+                            train_log_txt_path(prob, method, batch, lr))
                 results[(batch, lr)] = v
                 extras[(batch, lr)] = {"best_epoch": best_epoch, "val_source": source}
             else:
